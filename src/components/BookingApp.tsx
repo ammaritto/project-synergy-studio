@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './StripePaymentForm';
-import SearchForm from './SearchForm';
 import StickySearchCTA from './StickySearchCTA';
 import GuestDetailsForm from './GuestDetailsForm';
 
@@ -539,17 +538,21 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
   // Main interface
   return (
     <div className="min-h-screen bg-white">
-      {/* Search Section */}
-      <SearchForm
-        searchParams={searchParams}
-        setSearchParams={setSearchParams}
-        onSearch={searchAvailability}
-        loading={loading}
-        getMinEndDate={getMinEndDate}
-        inventoryFilter={inventoryFilter}
-        setInventoryFilter={setInventoryFilter}
-        hideFilter={studioFilter !== 'ALL'} // Hide filter buttons when using route-based filtering
-      />
+      {/* Hero Content or Location Info can go here */}
+      <div className="py-8">
+        <div className="container-modern">
+          <div className="text-center">
+            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+              {studioFilter === 'Studio Plus' ? 'Studio Plus' : 
+               studioFilter === 'Studio' ? 'Studio' : 
+               'Find Your Perfect Studio'}
+            </h1>
+            <p className="text-lg text-muted-foreground">
+              Book your stay with our easy booking flow
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Error Message (hidden on no-results to show screenshot only) */}
       {error && !(hasSearched && !loading && availability.length === 0) && (
