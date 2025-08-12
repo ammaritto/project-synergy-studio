@@ -538,21 +538,7 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
   // Main interface
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Content or Location Info can go here */}
-      <div className="py-8">
-        <div className="container-modern">
-          <div className="text-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
-              {studioFilter === 'Studio Plus' ? 'Studio Plus' : 
-               studioFilter === 'Studio' ? 'Studio' : 
-               'Find Your Perfect Studio'}
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Book your stay with our easy booking flow
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Minimal interface - just the sticky CTA */}
 
       {/* Error Message (hidden on no-results to show screenshot only) */}
       {error && !(hasSearched && !loading && availability.length === 0) && (
