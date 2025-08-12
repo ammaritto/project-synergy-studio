@@ -688,7 +688,7 @@ const App: React.FC = () => {
 
   // Main interface
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
+    <div className="min-h-screen bg-white">
 
       {/* Search Section */}
       <SearchForm
@@ -697,6 +697,8 @@ const App: React.FC = () => {
         onSearch={searchAvailability}
         loading={loading}
         getMinEndDate={getMinEndDate}
+        inventoryFilter={inventoryFilter}
+        setInventoryFilter={setInventoryFilter}
       />
 
       {/* Error Message */}

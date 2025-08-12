@@ -16,6 +16,8 @@ interface SearchFormProps {
   onSearch: () => void;
   loading: boolean;
   getMinEndDate: () => string;
+  inventoryFilter: 'ALL' | 'Studio Plus' | 'Studio';
+  setInventoryFilter: React.Dispatch<React.SetStateAction<'ALL' | 'Studio Plus' | 'Studio'>>;
 }
 
 const SearchForm: React.FC<SearchFormProps> = ({
@@ -23,7 +25,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
   setSearchParams,
   onSearch,
   loading,
-  getMinEndDate
+  getMinEndDate,
+  inventoryFilter,
+  setInventoryFilter
 }) => {
   // Format date for display (dd/mm/yyyy)
   const formatDateForDisplay = (dateString: string): string => {
@@ -35,13 +39,20 @@ const SearchForm: React.FC<SearchFormProps> = ({
     return `${day}/${month}/${year}`;
   };
 
-const toISODate = (d: Date) => d.toISOString().split('T')[0];
+const toLocalISO = (d: Date) => {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+};
 
   const selectedRange = React.useMemo(() => {
     const from = searchParams.startDate ? new Date(searchParams.startDate) : undefined;
     const to = searchParams.endDate ? new Date(searchParams.endDate) : undefined;
     return from || to ? { from, to } : undefined;
   }, [searchParams.startDate, searchParams.endDate]);
+
+  const [open, setOpen] = React.useState(false);
 
   return (
     <div className="py-16 md:py-20 bg-white" id="search-section">
@@ -50,9 +61,6 @@ const toISODate = (d: Date) => d.toISOString().split('T')[0];
           <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
             Available Studios
           </h2>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            When are you looking to stay with us?
-          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-lg p-8 animate-slide-up max-w-5xl mx-auto border border-gray-100">
@@ -61,15 +69,16 @@ const toISODate = (d: Date) => d.toISOString().split('T')[0];
               <label htmlFor="dateRange" className="block text-sm font-medium text-foreground mb-2">
                 Pick a date range
               </label>
-              <Popover>
+              <Popover open={open} onOpenChange={setOpen}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
                     className="w-full justify-start text-left font-normal border-border"
+                    onClick={() => setOpen(true)}
                   >
                     <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
                     {selectedRange?.from && selectedRange?.to
-                      ? `${formatDateForDisplay(selectedRange.from!.toISOString())} - ${formatDateForDisplay(selectedRange.to!.toISOString())}`
+                      ? `${formatDateForDisplay(toLocalISO(selectedRange.from!))} - ${formatDateForDisplay(toLocalISO(selectedRange.to!))}`
                       : "Pick a date range"}
                   </Button>
                 </PopoverTrigger>
@@ -80,11 +89,12 @@ const toISODate = (d: Date) => d.toISOString().split('T')[0];
                       selected={selectedRange as any}
                       onSelect={(range) => {
                         const r = range as { from?: Date; to?: Date } | undefined;
-                        setSearchParams(prev => ({
-                          ...prev,
-                          startDate: r?.from ? toISODate(r.from) : '',
-                          endDate: r?.to ? toISODate(r.to) : '',
-                        }));
+                        const newStart = r?.from ? toLocalISO(r.from) : '';
+                        const newEnd = r?.to ? toLocalISO(r.to) : '';
+                        setSearchParams(prev => ({ ...prev, startDate: newStart, endDate: newEnd }));
+                        if (r?.from && r?.to) {
+                          setOpen(false);
+                        }
                       }}
                       numberOfMonths={2}
                       initialFocus
@@ -92,8 +102,9 @@ const toISODate = (d: Date) => d.toISOString().split('T')[0];
                       disabled={{ before: new Date() }}
                       min={4}
                     />
-                    <div className="flex justify-end pt-2">
-                      <Button variant="ghost" size="sm" onClick={() => setSearchParams(prev => ({ ...prev, startDate: '', endDate: '' }))}>
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-xs text-muted-foreground">Min 3 nights</span>
+                      <Button variant="ghost" size="sm" onClick={() => { setSearchParams(prev => ({ ...prev, startDate: '', endDate: '' })); setOpen(false); }}>
                         Clear dates
                       </Button>
                     </div>
