@@ -703,8 +703,8 @@ const App: React.FC = () => {
         setInventoryFilter={setInventoryFilter}
       />
 
-      {/* Error Message */}
-      {error && (
+      {/* Error Message (hidden on no-results to show screenshot only) */}
+      {error && !(hasSearched && !loading && availability.length === 0) && (
         <div className="max-w-6xl mx-auto px-4 mb-8">
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-start">
             <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
@@ -713,32 +713,16 @@ const App: React.FC = () => {
         </div>
       )}
 
-      {/* No results message */}
       {hasSearched && !loading && availability.length === 0 && (
         <div ref={resultsSectionRef} className="section-spacing">
           <div className="container-modern">
-            <div className="text-center mb-8 animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              No Studios Found
-            </h2>
-          </div>
-            <div className="card-elegant p-8 md:p-12 text-center animate-slide-up max-w-2xl mx-auto">
-              <div className="text-gray-400 mb-6">
-                <Search className="w-20 h-20 md:w-24 md:h-24 mx-auto" />
-            </div>
-              <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
-              No studios match your search
-            </h3>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-              Try adjusting your dates or number of guests to find available studios.
-            </p>
-              <button
-                onClick={searchAvailability}
-                className="bg-gradient-to-r from-orange-400 to-amber-500 text-white py-4 px-8 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto shadow-lg hover:shadow-xl group"
-              >
-                <Search className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
-                Search Again
-              </button>
+            <div className="flex items-center justify-center">
+              <img
+                src="/lovable-uploads/8dd47ad5-4115-46fc-ba06-6573f685d2da.png"
+                alt="No studios match your search - try different dates or guests"
+                className="max-w-full h-auto"
+                loading="lazy"
+              />
             </div>
           </div>
         </div>
