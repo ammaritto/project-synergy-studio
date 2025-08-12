@@ -62,19 +62,44 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
         <div className="space-y-6">
           {/* Booking Summary */}
           <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
-            <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">From:</span> {formatDateWithWeekday(confirmedSearchParams.startDate)}
-            </p>
-            <p className="text-sm text-gray-600">
-              <span className="font-medium">To:</span> {formatDateWithWeekday(confirmedSearchParams.endDate)}
-            </p>
-            <p className="text-sm text-gray-600">({calculateNights()} nights)</p>
-            <p className="text-sm font-semibold text-gray-800 mt-2">
-              <span className="font-medium">Total Amount:</span> {formatCurrency(selectedUnit.selectedRate.totalPrice)}
-            </p>
-            <p className="text-xs text-gray-500">(VAT incl.)</p>
+            <h3 className="font-semibold text-gray-800 mb-3">Booking Summary</h3>
+            <p className="text-sm text-gray-600 mb-3">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
+            
+            <div className="space-y-2 mb-3">
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">From:</span>
+                <span className="font-medium text-gray-700">{formatDateWithWeekday(confirmedSearchParams.startDate)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">To:</span>
+                <span className="font-medium text-gray-700">{formatDateWithWeekday(confirmedSearchParams.endDate)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Duration:</span>
+                <span className="font-medium text-gray-700">({calculateNights()} nights)</span>
+              </div>
+            </div>
+
+            {/* VAT Breakdown */}
+            <div className="border-t border-gray-200 pt-3 mt-3">
+              <div className="space-y-2 mb-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Price (excl. VAT):</span>
+                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice / 1.12)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">VAT (12%):</span>
+                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice - (selectedUnit.selectedRate.totalPrice / 1.12))}</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center border-t border-gray-200 pt-2">
+                <span className="font-semibold text-gray-800">Total Amount:</span>
+                <div className="text-right">
+                  <div className="text-lg font-bold text-gray-900">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
+                  <div className="text-xs text-gray-500">(VAT incl.)</div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {error && (
@@ -155,19 +180,19 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
               </div>
             </div>
 
-            <div className="flex space-x-3 pt-4">
+            <div className="flex gap-3 pt-6">
               <button
                 type="button"
                 onClick={onBack}
-                className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
+                className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
               >
                 Back
               </button>
               <button
                 type="submit"
-                className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
+                className="flex-1 px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center gap-2"
               >
-                <CreditCard className="w-4 h-4 mr-2" />
+                <CreditCard className="w-4 h-4" />
                 Continue to Payment
               </button>
             </div>
