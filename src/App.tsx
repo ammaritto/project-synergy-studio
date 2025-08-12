@@ -578,6 +578,16 @@ const App: React.FC = () => {
               </div>
               
               <div className="pt-4 border-t border-gray-200">
+                <div className="space-y-2 mb-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">Price (excl. VAT):</span>
+                    <span className="text-gray-800">{formatCurrency(selectedUnit.selectedRate.totalPrice / 1.12)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-600">VAT (12%):</span>
+                    <span className="text-gray-800">{formatCurrency(selectedUnit.selectedRate.totalPrice - (selectedUnit.selectedRate.totalPrice / 1.12))}</span>
+                  </div>
+                </div>
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-800">Total:</span>
                   <div className="text-right">
