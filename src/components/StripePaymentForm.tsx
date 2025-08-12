@@ -229,15 +229,9 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   } : undefined;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-blue-100 py-8 px-4">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply animate-float opacity-20"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply animate-float opacity-20" style={{animationDelay: '2s'}}></div>
-        <div className="absolute -bottom-32 left-20 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply animate-float opacity-20" style={{animationDelay: '4s'}}></div>
-      </div>
+    <div className="min-h-screen bg-white py-8 px-4">
 
-      <div className="relative z-10 max-w-4xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="flex items-center justify-center mb-4">
