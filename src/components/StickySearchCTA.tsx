@@ -32,6 +32,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [manuallyExpanded, setManuallyExpanded] = useState(false);
 
   // Format date for display (dd/mm/yyyy)
   const formatDateForDisplay = (dateString: string): string => {
@@ -60,6 +61,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
 
   const handleApplyClick = () => {
     setIsExpanded(true);
+    setManuallyExpanded(true);
   };
 
   // Auto-expand when no results found
@@ -69,13 +71,9 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
     }
   }, [hasSearched, hasResults]);
 
-  const handleCollapseClick = () => {
-    setIsExpanded(false);
-  };
-
   const handleSearchClick = () => {
     onSearch();
-    setIsExpanded(false);
+    // Don't collapse after search if manually expanded
   };
 
   const getTodayDate = () => {
@@ -104,16 +102,6 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
           : 'max-h-0 opacity-0 translate-y-4 overflow-hidden'
       }`}>
         <div className="container-modern py-4">
-          <div className="flex items-center justify-end mb-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleCollapseClick}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronUp className="h-4 w-4" />
-            </Button>
-          </div>
           
           {/* No Results Message */}
           {hasSearched && !hasResults && (
