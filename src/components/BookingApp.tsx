@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
-import StripePaymentForm from './StripePaymentForm';
 import SearchForm from './SearchForm';
-import GuestDetailsForm from './GuestDetailsForm';
+import InlineGuestDetailsForm from './InlineGuestDetailsForm';
+import InlineStripePaymentForm from './InlineStripePaymentForm';
 
 // TypeScript interfaces
 interface SearchParams {
@@ -408,8 +408,18 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
     setError('');
   };
 
+  // Current view state management
+  const getCurrentView = () => {
+    if (bookingComplete) return 'confirmation';
+    if (showPaymentForm) return 'payment';
+    if (showBookingForm) return 'guest-details';
+    return 'search';
+  };
+
+  const currentView = getCurrentView();
+
   // Booking confirmation screen
-  if (bookingComplete) {
+  if (currentView === 'confirmation') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 section-spacing">
         <div className="container-modern">
@@ -535,7 +545,51 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
     );
   }
 
-  // Main interface
+  // Guest Details View
+  if (currentView === 'guest-details' && selectedUnit && lastSearchParams) {
+    return (
+      <InlineGuestDetailsForm
+        selectedUnit={selectedUnit}
+        confirmedSearchParams={lastSearchParams}
+        guestDetails={guestDetails}
+        setGuestDetails={setGuestDetails}
+        onSubmit={handleGuestDetailsSubmit}
+        onBack={() => {
+          setShowBookingForm(false);
+          setHasSearched(false);
+          setAvailability([]);
+        }}
+        error={error}
+        calculateNights={() => {
+          if (!lastSearchParams?.startDate || !lastSearchParams?.endDate) return 0;
+          const start = new Date(lastSearchParams.startDate);
+          const end = new Date(lastSearchParams.endDate);
+          return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        }}
+      />
+    );
+  }
+
+  // Payment View
+  if (currentView === 'payment' && selectedUnit && lastSearchParams) {
+    return (
+      <InlineStripePaymentForm
+        totalAmount={selectedUnit.selectedRate.totalPrice}
+        currency={selectedUnit.selectedRate.currency}
+        onPaymentSuccess={handleStripePaymentSuccess}
+        onBack={handleBackFromPayment}
+        bookingDetails={{
+          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+          checkIn: lastSearchParams.startDate,
+          checkOut: lastSearchParams.endDate,
+          propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
+          nights: selectedUnit.selectedRate.nights
+        }}
+      />
+    );
+  }
+
+  // Main search interface
   return (
     <div className="min-h-screen bg-white">
       {/* Search Section */}
@@ -573,50 +627,6 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
             </div>
           </div>
         </div>
-      )}
-
-      {/* Guest Details Dialog */}
-      {selectedUnit && lastSearchParams && (
-        <GuestDetailsForm
-          selectedUnit={selectedUnit}
-          confirmedSearchParams={lastSearchParams}
-          guestDetails={guestDetails}
-          setGuestDetails={setGuestDetails}
-          onSubmit={handleGuestDetailsSubmit}
-          onBack={() => {
-            setShowBookingForm(false);
-            setHasSearched(false);
-            setAvailability([]);
-          }}
-          error={error}
-          calculateNights={() => {
-            if (!lastSearchParams?.startDate || !lastSearchParams?.endDate) return 0;
-            const start = new Date(lastSearchParams.startDate);
-            const end = new Date(lastSearchParams.endDate);
-            return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-          }}
-          open={showBookingForm}
-          onOpenChange={handleGuestDetailsClose}
-        />
-      )}
-
-      {/* Payment Dialog */}
-      {selectedUnit && lastSearchParams && (
-        <StripePaymentForm
-          totalAmount={selectedUnit.selectedRate.totalPrice}
-          currency={selectedUnit.selectedRate.currency}
-          onPaymentSuccess={handleStripePaymentSuccess}
-          onBack={handleBackFromPayment}
-          open={showPaymentForm}
-          onOpenChange={handlePaymentDialogClose}
-          bookingDetails={{
-            guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-            checkIn: lastSearchParams.startDate,
-            checkOut: lastSearchParams.endDate,
-            propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-            nights: selectedUnit.selectedRate.nights
-          }}
-        />
       )}
     </div>
   );
