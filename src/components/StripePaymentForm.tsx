@@ -261,31 +261,30 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
               <div className="space-y-4">
                 <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
-                  <div className="font-semibold text-gray-800 mb-2">{bookingDetails.propertyName}</div>
-                  <div className="text-sm text-gray-600">
-                    Premium short-stay accommodation in Stockholm
-                  </div>
+                  <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="font-medium text-gray-700 mb-1">Guest</div>
-                    <div className="text-gray-600">{bookingDetails.guestName}</div>
+                <div className="grid grid-cols-1 gap-4 text-sm">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <div className="font-medium text-gray-700 mb-1">Guest</div>
+                      <div className="text-gray-600">{bookingDetails.guestName}</div>
+                    </div>
+                    <div>
+                      <div className="font-medium text-gray-700 mb-1">Duration</div>
+                      <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
+                    </div>
                   </div>
-                  <div>
-                    <div className="font-medium text-gray-700 mb-1">Duration</div>
-                    <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Check-in:</span>
-                    <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Check-out:</span>
-                    <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
+                  
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex justify-between">
+                      <span className="font-medium text-gray-700">Check-in:</span>
+                      <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="font-medium text-gray-700">Check-out:</span>
+                      <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
+                    </div>
                   </div>
                 </div>
                 
