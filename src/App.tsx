@@ -548,9 +548,9 @@ const App: React.FC = () => {
             </div>
             
             {/* Booking Summary */}
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 mb-8 border border-orange-100">
+            <div className="bg-white rounded-xl p-6 mb-8 border border-gray-200 shadow-md">
               <h3 className="font-bold text-gray-800 mb-4 flex items-center">
-                <Sparkles className="w-5 h-5 mr-2 text-orange-600" />
+                <Sparkles className="w-5 h-5 mr-2 text-gray-900/70" />
                 Booking Summary
               </h3>
               
@@ -571,13 +571,17 @@ const App: React.FC = () => {
                   <span className="text-gray-600">Duration:</span>
                   <span className="font-medium text-gray-800">{selectedUnit.selectedRate.nights} nights</span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Guests:</span>
+                  <span className="font-medium text-gray-800">{lastSearchParams.guests}</span>
+                </div>
               </div>
               
-              <div className="pt-4 border-t border-blue-200">
+              <div className="pt-4 border-t border-gray-200">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-800">Total:</span>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-600">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
+                    <div className="text-2xl font-bold text-amber-600">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
                     <div className="text-xs text-gray-500">VAT included</div>
                   </div>
                 </div>
@@ -598,7 +602,7 @@ const App: React.FC = () => {
                     First Name *
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
                     <input
                       type="text"
                       id="firstName"
@@ -606,7 +610,7 @@ const App: React.FC = () => {
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                       value={guestDetails.firstName}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
-                      placeholder="Ammar Raad"
+                      placeholder="John"
                     />
                   </div>
                 </div>
@@ -616,7 +620,7 @@ const App: React.FC = () => {
                     Last Name *
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
+                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
                     <input
                       type="text"
                       id="lastName"
@@ -624,7 +628,7 @@ const App: React.FC = () => {
                       className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                       value={guestDetails.lastName}
                       onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
-                      placeholder="Mohammed AL-Rubaye"
+                      placeholder="Doe"
                     />
                   </div>
                 </div>
@@ -635,7 +639,7 @@ const App: React.FC = () => {
                   Email Address *
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
                   <input
                     type="email"
                     id="email"
@@ -643,7 +647,7 @@ const App: React.FC = () => {
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     value={guestDetails.email}
                     onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="ammar.rubaye1992@gmail.com"
+                    placeholder="name@example.com"
                   />
                 </div>
               </div>
@@ -653,14 +657,14 @@ const App: React.FC = () => {
                   Phone Number (Optional)
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
+                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
                   <input
                     type="tel"
                     id="phone"
                     className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
                     value={guestDetails.phone}
                     onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="3204764555"
+                    placeholder="Phone number"
                   />
                 </div>
               </div>
@@ -669,13 +673,13 @@ const App: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => { setShowBookingForm(false); setHasSearched(false); setAvailability([]); }}
-                  className="order-2 sm:order-1 flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
+                  className="order-2 sm:order-1 flex-1 bg-gray-100 border border-gray-300 text-gray-800 py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center"
                 >
                   Back to Search
                 </button>
                 <button
                   type="submit"
-                  className="order-1 sm:order-2 flex-1 bg-gradient-to-r from-orange-400 to-amber-500 text-white py-4 px-6 rounded-xl font-semibold hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-lg"
+                  className="order-1 sm:order-2 flex-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-4 px-6 rounded-xl font-semibold hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-lg"
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
                   Continue to Payment
