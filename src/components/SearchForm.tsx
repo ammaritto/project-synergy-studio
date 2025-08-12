@@ -140,32 +140,6 @@ const toLocalISO = (d: Date) => {
               </div>
             </div>
 
-            {/* Studio Type Filter - Only show if not using route-based filtering */}
-            {!hideFilter && (
-              <div>
-                <label htmlFor="studioType" className="block text-sm font-medium text-foreground mb-2">
-                  Studio type
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <Button
-                    type="button"
-                    variant={inventoryFilter === 'Studio' ? 'default' : 'outline'}
-                    className="w-full"
-                    onClick={() => setInventoryFilter(prev => (prev === 'Studio' ? 'ALL' : 'Studio'))}
-                  >
-                    Studio
-                  </Button>
-                  <Button
-                    type="button"
-                    variant={inventoryFilter === 'Studio Plus' ? 'default' : 'outline'}
-                    className="w-full"
-                    onClick={() => setInventoryFilter(prev => (prev === 'Studio Plus' ? 'ALL' : 'Studio Plus'))}
-                  >
-                    Studio Plus
-                  </Button>
-                </div>
-              </div>
-            )}
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">&nbsp;</label>

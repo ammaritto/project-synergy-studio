@@ -7,7 +7,7 @@ const App: React.FC = () => {
   
   // Extract studio filter from pathname
   const getStudioFilterFromPath = (pathname: string): 'ALL' | 'Studio Plus' | 'Studio' => {
-    if (pathname === '/Studio%20Plus' || pathname === '/Studio Plus') {
+    if (pathname === '/Studio-Plus') {
       return 'Studio Plus';
     }
     if (pathname === '/Studio') {
@@ -21,7 +21,7 @@ const App: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<BookingApp studioFilter="ALL" />} />
-      <Route path="/Studio Plus" element={<BookingApp studioFilter="Studio Plus" />} />
+      <Route path="/Studio-Plus" element={<BookingApp studioFilter="Studio Plus" />} />
       <Route path="/Studio" element={<BookingApp studioFilter="Studio" />} />
     </Routes>
   );
