@@ -591,7 +591,7 @@ const App: React.FC = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-bold text-gray-800">Total:</span>
                   <div className="text-right">
-                    <div className="text-2xl font-bold text-amber-600">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
+                    <div className="text-2xl font-bold text-black">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
                     <div className="text-xs text-gray-500">VAT included</div>
                   </div>
                 </div>
@@ -683,13 +683,13 @@ const App: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => { setShowBookingForm(false); setHasSearched(false); setAvailability([]); }}
-                  className="order-2 sm:order-1 flex-1 bg-gray-100 border border-gray-300 text-gray-800 py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center"
+                  className="order-2 sm:order-1 flex-1 bg-gray-100 border border-gray-300 text-black py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center"
                 >
                   Back to Search
                 </button>
                 <button
                   type="submit"
-                  className="order-1 sm:order-2 flex-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-white py-4 px-6 rounded-xl font-semibold hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-lg"
+                  className="order-1 sm:order-2 flex-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-black py-4 px-6 rounded-xl font-semibold hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-lg"
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
                   Continue to Payment
