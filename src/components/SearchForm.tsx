@@ -57,12 +57,6 @@ const toLocalISO = (d: Date) => {
   return (
     <div className="py-16 md:py-20 bg-white" id="search-section">
       <div className="container-modern">
-        <div className="text-center mb-12 animate-fade-in">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
-            Available Studios
-          </h2>
-        </div>
-
         <div className="bg-white rounded-2xl shadow-lg p-8 animate-slide-up max-w-5xl mx-auto border border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">

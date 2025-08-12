@@ -2,8 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
-import PropertyCard from './components/PropertyCard';
-
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
@@ -81,12 +79,6 @@ const App: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
   const [inventoryFilter, setInventoryFilter] = useState<'ALL' | 'Studio Plus' | 'Studio'>('ALL');
-
-  const filteredAvailability = React.useMemo(() => {
-    if (inventoryFilter === 'ALL') return availability;
-    return availability.filter(u => u.inventoryTypeName === inventoryFilter);
-  }, [availability, inventoryFilter]);
-
 
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
@@ -548,7 +540,7 @@ const App: React.FC = () => {
             <div className="flex items-center justify-between mb-8">
               <h2 className="text-3xl font-bold text-gray-800">Guest Details</h2>
               <button
-                onClick={() => setShowBookingForm(false)}
+                onClick={() => { setShowBookingForm(false); setHasSearched(false); setAvailability([]); }}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
               >
                 ✕
@@ -676,7 +668,7 @@ const App: React.FC = () => {
               <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6">
                 <button
                   type="button"
-                  onClick={() => setShowBookingForm(false)}
+                  onClick={() => { setShowBookingForm(false); setHasSearched(false); setAvailability([]); }}
                   className="order-2 sm:order-1 flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
                 >
                   Back to Search
@@ -717,37 +709,6 @@ const App: React.FC = () => {
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-start">
             <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
             <span>{error}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Search Results */}
-      {hasSearched && availability.length > 0 && lastSearchParams && (
-        <div ref={resultsSectionRef} className="section-spacing bg-white">
-          <div className="container-modern">
-            <div className="text-center mb-8 md:mb-16 animate-fade-in-up">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">Your Matches</h2>
-              <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto px-4">
-                We found {filteredAvailability.length} studio type{filteredAvailability.length === 1 ? '' : 's'} for your dates in Stockholm
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-10 px-4">
-              {filteredAvailability.map((unit, index) => (
-                <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} 
-                     className="animate-fade-in-up" 
-                     style={{animationDelay: `${index * 0.15}s`}}>
-                  <PropertyCard
-                    unit={unit}
-                    lastSearchParams={lastSearchParams}
-                    onSelectUnit={selectUnit}
-                    getPropertyImage={getPropertyImage}
-                    formatCurrency={formatCurrency}
-                    formatDateWithWeekday={formatDateWithWeekday}
-                  />
-                </div>
-              ))}
-            </div>
           </div>
         </div>
       )}
