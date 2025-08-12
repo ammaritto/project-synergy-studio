@@ -322,7 +322,19 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       <CreditCard className="w-8 h-8 text-white" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Complete Your Booking?</h2>
-                    <p className="text-gray-600">Click below to proceed with secure payment</p>
+                    <p className="text-gray-600 mb-3">Click below to proceed with secure payment</p>
+                    <p className="text-xs text-gray-500">
+                      By proceeding with the payment I agree with the{' '}
+                      <a 
+                        href="https://www.allihoopliving.com/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                      >
+                        terms and conditions
+                      </a>
+                      {' '}of agreement with Allhoop
+                    </p>
                   </div>
 
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
