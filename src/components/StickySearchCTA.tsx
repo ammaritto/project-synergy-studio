@@ -95,10 +95,10 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
   };
 
   return (
-    <>
+    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-50">
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-50 transition-all duration-500 ease-out">
+        <div className="transition-all duration-500 ease-out">
           <div className="container-modern py-4">
             
             {/* No Results Message */}
@@ -193,38 +193,34 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
                 </div>
               </div>
             </div>
-
-            <Button
-              onClick={handleSearchClick}
-              disabled={loading}
-              className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md"
-            >
-              {loading ? (
-                <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
-              ) : (
-                <>
-                  <Search className="w-4 h-4 mr-2" />
-                  Find your Studio
-                </>
-              )}
-            </Button>
           </div>
         </div>
       )}
       
-      {/* Compact Button - Only when not expanded */}
-      {!isExpanded && (
-        <div className="inline-block">
-          <Button
-            onClick={handleApplyClick}
-            disabled={loading}
-            className="bg-blue-600 text-white px-8 py-2 rounded-full text-sm font-medium hover:bg-blue-700 transition-colors"
-          >
-            Apply
-          </Button>
-        </div>
-      )}
-    </>
+      {/* Compact Button */}
+      <div className="px-4 py-2">
+        <Button
+          onClick={isExpanded ? handleSearchClick : handleApplyClick}
+          disabled={loading}
+          className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md transform hover:scale-[1.02]"
+        >
+          {loading ? (
+            <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+          ) : (
+            <>
+              {isExpanded ? (
+                <>
+                  <Search className="w-4 h-4 mr-2" />
+                  Find your Studio
+                </>
+              ) : (
+                'Apply'
+              )}
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 };
 
