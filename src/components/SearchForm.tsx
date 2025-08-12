@@ -59,7 +59,7 @@ const toLocalISO = (d: Date) => {
   return (
     <div className="py-6 bg-white" id="search-section">
       <div className="container-modern">
-        <div className="bg-white rounded-2xl shadow-lg p-6 animate-slide-up max-w-5xl mx-auto border border-gray-100">
+        <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
               <label htmlFor="dateRange" className="block text-sm font-medium text-foreground mb-2">

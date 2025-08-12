@@ -78,9 +78,9 @@ const InlineGuestDetailsForm: React.FC<InlineGuestDetailsFormProps> = ({
   };
 
   return (
-    <div className="bg-gray-50 py-4 px-4">
+    <div className="py-4 px-4">
       <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="p-6">
           <h1 className="text-2xl font-bold text-gray-800 mb-6">Guest Details</h1>
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
