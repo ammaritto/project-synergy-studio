@@ -3,7 +3,6 @@ import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCi
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
 import PropertyCard from './components/PropertyCard';
-import LocationInfo from './components/LocationInfo';
 
 // TypeScript interfaces
 interface SearchParams {
@@ -81,6 +80,12 @@ const App: React.FC = () => {
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
+  const [inventoryFilter, setInventoryFilter] = useState<'ALL' | 'Studio Plus' | 'Studio'>('ALL');
+
+  const filteredAvailability = React.useMemo(() => {
+    if (inventoryFilter === 'ALL') return availability;
+    return availability.filter(u => u.inventoryTypeName === inventoryFilter);
+  }, [availability, inventoryFilter]);
 
 
   // Photo mapping based on inventoryTypeId
