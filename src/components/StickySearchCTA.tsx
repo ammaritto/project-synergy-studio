@@ -118,27 +118,10 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
           {/* No Results Message */}
           {hasSearched && !hasResults && (
             <div className="mb-6 p-6 bg-gray-50 rounded-lg text-center">
-              <div className="mb-4">
-                <div className="w-16 h-16 mx-auto mb-3 text-gray-400">
-                  🔍
-                </div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">No studios match your search</h3>
-                <p className="text-gray-600 text-sm">
-                  Try adjusting your dates or number of guests to find available studios.
-                </p>
-              </div>
-              <Button
-                onClick={() => {
-                  if (onReset) {
-                    onReset();
-                    setIsExpanded(false);
-                  }
-                }}
-                variant="outline"
-                className="bg-white hover:bg-gray-50"
-              >
-                Select other dates
-              </Button>
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">No studios match your search</h3>
+              <p className="text-gray-600 text-sm">
+                Try adjusting your dates or number of guests to find available studios.
+              </p>
             </div>
           )}
 
