@@ -91,8 +91,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
           : 'max-h-0 opacity-0 translate-y-4 overflow-hidden'
       }`}>
         <div className="container-modern py-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground">Quick Search</h3>
+          <div className="flex items-center justify-end mb-4">
             <Button
               variant="ghost"
               size="sm"
@@ -103,7 +102,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
                 Pick dates
@@ -201,7 +200,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
               {isExpanded ? (
                 <>
                   <Search className="w-4 h-4 mr-2" />
-                  Search Studios
+                  Find your Studio
                 </>
               ) : (
                 'Apply'
