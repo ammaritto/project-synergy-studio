@@ -265,12 +265,12 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                 </div>
 
                 <div className="grid grid-cols-1 gap-4 text-sm">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="flex justify-between items-start">
                     <div>
                       <div className="font-medium text-gray-700 mb-1">Guest</div>
                       <div className="text-gray-600">{bookingDetails.guestName}</div>
                     </div>
-                    <div>
+                    <div className="text-right">
                       <div className="font-medium text-gray-700 mb-1">Duration</div>
                       <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
                     </div>
