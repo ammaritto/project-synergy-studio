@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { Calendar as CalendarIcon, Users, Search, ChevronUp } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface SearchParams {
   startDate: string;
@@ -22,6 +25,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
   loading
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Format date for display (dd/mm/yyyy)
   const formatDateForDisplay = (dateString: string): string => {
@@ -32,6 +36,21 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
     const year = date.getFullYear();
     return `${day}/${month}/${year}`;
   };
+
+  // Convert date to local ISO format
+  const toLocalISO = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
+  };
+
+  // Create date range for calendar
+  const selectedRange = React.useMemo(() => {
+    const from = searchParams.startDate ? new Date(searchParams.startDate) : undefined;
+    const to = searchParams.endDate ? new Date(searchParams.endDate) : undefined;
+    return from || to ? { from, to } : undefined;
+  }, [searchParams.startDate, searchParams.endDate]);
 
   const handleApplyClick = () => {
     setIsExpanded(true);
@@ -66,7 +85,11 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-50">
-      <div className={`transition-all duration-300 ease-out ${isExpanded ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
+      <div className={`transition-all duration-500 ease-out transform ${
+        isExpanded 
+          ? 'max-h-96 opacity-100 translate-y-0' 
+          : 'max-h-0 opacity-0 translate-y-4 overflow-hidden'
+      }`}>
         <div className="container-modern py-4">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-semibold text-foreground">Quick Search</h3>
@@ -80,37 +103,68 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
             </Button>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">
-                Check-in
+                Pick dates
               </label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary" />
-                <input
-                  type="date"
-                  className="w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-                  value={searchParams.startDate}
-                  min={getTodayDate()}
-                  onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
-                />
-              </div>
-            </div>
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-left font-normal border-border"
+                    onClick={() => setCalendarOpen(true)}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
+                    {selectedRange?.from && selectedRange?.to
+                      ? `${formatDateForDisplay(toLocalISO(selectedRange.from!))} - ${formatDateForDisplay(toLocalISO(selectedRange.to!))}`
+                      : "Pick a date range"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <div className="p-2">
+                    <Calendar
+                      mode="range"
+                      selected={selectedRange as any}
+                      onSelect={(range) => {
+                        const r = range as { from?: Date; to?: Date } | undefined;
+                        let from = r?.from;
+                        let to = r?.to;
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Check-out
-              </label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary" />
-                <input
-                  type="date"
-                  className="w-full pl-10 pr-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-foreground"
-                  value={searchParams.endDate}
-                  min={getMinEndDate()}
-                  onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
-                />
-              </div>
+                        if (from && to) {
+                          const diffMs = to.getTime() - from.getTime();
+                          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                          if (diffDays < 3) {
+                            const forced = new Date(from);
+                            forced.setDate(forced.getDate() + 3);
+                            to = forced;
+                          }
+                        }
+
+                        const newStart = from ? toLocalISO(from) : '';
+                        const newEnd = to ? toLocalISO(to) : '';
+                        setSearchParams(prev => ({ ...prev, startDate: newStart, endDate: newEnd }));
+                        if (from && (to || newEnd)) {
+                          setCalendarOpen(false);
+                        }
+                      }}
+                      numberOfMonths={2}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                      disabled={{ before: new Date() }}
+                    />
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-xs text-muted-foreground">Min 3 nights</span>
+                      <Button variant="ghost" size="sm" onClick={() => { 
+                        setSearchParams(prev => ({ ...prev, startDate: '', endDate: '' })); 
+                        setCalendarOpen(false); 
+                      }}>
+                        Clear dates
+                      </Button>
+                    </div>
+                  </div>
+                </PopoverContent>
+              </Popover>
             </div>
 
             <div>
@@ -138,7 +192,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
         <Button
           onClick={isExpanded ? handleSearchClick : handleApplyClick}
           disabled={loading}
-          className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md"
+          className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md transform hover:scale-[1.02]"
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
