@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './StripePaymentForm';
-import StickySearchCTA from './StickySearchCTA';
+import SearchForm from './SearchForm';
 import GuestDetailsForm from './GuestDetailsForm';
 
 // TypeScript interfaces
@@ -408,31 +408,10 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
     setError('');
   };
 
-  // Reset search function for no results
-  const resetSearch = (): void => {
-    setHasSearched(false);
-    setAvailability([]);
-    setError('');
-    setLastSearchParams(null);
-    // Reset to default dates
-    const today = new Date();
-    const start = new Date(today);
-    start.setDate(start.getDate() + 1);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 3);
-    
-    setSearchParams({
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0],
-      guests: 1,
-      communities: []
-    });
-  };
-
   // Booking confirmation screen
   if (bookingComplete) {
     return (
-      <div className="bg-transparent p-4">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 section-spacing">
         <div className="container-modern">
           <div className="max-w-2xl mx-auto">
             <div className="card-glass p-12 text-center animate-bounce-in">
@@ -558,8 +537,18 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
 
   // Main interface
   return (
-    <div className="bg-transparent">
-      {/* Minimal interface - just the sticky CTA */}
+    <div className="min-h-screen bg-white">
+      {/* Search Section */}
+      <SearchForm
+        searchParams={searchParams}
+        setSearchParams={setSearchParams}
+        onSearch={searchAvailability}
+        loading={loading}
+        getMinEndDate={getMinEndDate}
+        inventoryFilter={inventoryFilter}
+        setInventoryFilter={setInventoryFilter}
+        hideFilter={studioFilter !== 'ALL'} // Hide filter buttons when using route-based filtering
+      />
 
       {/* Error Message (hidden on no-results to show screenshot only) */}
       {error && !(hasSearched && !loading && availability.length === 0) && (
@@ -571,6 +560,20 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
         </div>
       )}
 
+      {hasSearched && !loading && availability.length === 0 && (
+        <div ref={resultsSectionRef} className="section-spacing">
+          <div className="container-modern">
+            <div className="flex items-center justify-center">
+              <img
+                src="/lovable-uploads/8dd47ad5-4115-46fc-ba06-6573f685d2da.png"
+                alt="No studios match your search - try different dates or guests"
+                className="max-w-full h-auto"
+                loading="lazy"
+              />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Guest Details Dialog */}
       {selectedUnit && lastSearchParams && (
@@ -615,17 +618,6 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
           }}
         />
       )}
-
-      {/* Sticky Search CTA */}
-      <StickySearchCTA
-        searchParams={searchParams}
-        setSearchParams={setSearchParams}
-        onSearch={searchAvailability}
-        loading={loading}
-        hasSearched={hasSearched}
-        hasResults={availability.length > 0}
-        onReset={resetSearch}
-      />
     </div>
   );
 };
