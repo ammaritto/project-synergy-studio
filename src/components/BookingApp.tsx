@@ -432,7 +432,7 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
   // Booking confirmation screen
   if (bookingComplete) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 section-spacing">
+      <div className="bg-transparent p-4">
         <div className="container-modern">
           <div className="max-w-2xl mx-auto">
             <div className="card-glass p-12 text-center animate-bounce-in">
@@ -558,7 +558,7 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
 
   // Main interface
   return (
-    <div className="min-h-screen bg-white">
+    <div className="bg-transparent">
       {/* Minimal interface - just the sticky CTA */}
 
       {/* Error Message (hidden on no-results to show screenshot only) */}
