@@ -198,7 +198,7 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
       )}
       
       {/* Compact Button */}
-      <div className="container-modern py-3">
+      <div className="px-4 py-2">
         <Button
           onClick={isExpanded ? handleSearchClick : handleApplyClick}
           disabled={loading}
