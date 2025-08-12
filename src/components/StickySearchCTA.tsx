@@ -95,7 +95,12 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
   };
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-50">
+    <div className={cn(
+      "transition-all duration-300",
+      isExpanded 
+        ? "fixed bottom-0 left-0 right-0 bg-white border-t border-border shadow-lg z-50" 
+        : "inline-block"
+    )}>
       {/* Expanded Content */}
       {isExpanded && (
         <div className="transition-all duration-500 ease-out">
@@ -198,11 +203,16 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
       )}
       
       {/* Compact Button */}
-      <div className="px-4 py-2">
+      <div className={cn(isExpanded ? "px-4 py-2" : "p-0")}>
         <Button
           onClick={isExpanded ? handleSearchClick : handleApplyClick}
           disabled={loading}
-          className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md transform hover:scale-[1.02]"
+          className={cn(
+            "font-semibold transition-all duration-300 flex items-center justify-center",
+            isExpanded 
+              ? "w-full py-3 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 shadow-md transform hover:scale-[1.02]"
+              : "px-4 py-2 bg-primary text-primary-foreground rounded hover:bg-primary/90"
+          )}
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
