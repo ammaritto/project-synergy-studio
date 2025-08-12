@@ -62,6 +62,13 @@ const StickySearchCTA: React.FC<StickySearchCTAProps> = ({
     setIsExpanded(true);
   };
 
+  // Auto-expand when no results found
+  React.useEffect(() => {
+    if (hasSearched && !hasResults) {
+      setIsExpanded(true);
+    }
+  }, [hasSearched, hasResults]);
+
   const handleCollapseClick = () => {
     setIsExpanded(false);
   };
