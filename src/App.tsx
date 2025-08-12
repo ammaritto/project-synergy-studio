@@ -689,8 +689,6 @@ const App: React.FC = () => {
   // Main interface
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-      {/* Location Information */}
-      <LocationInfo />
 
       {/* Search Section */}
       <SearchForm
@@ -720,12 +718,12 @@ const App: React.FC = () => {
                 <span className="text-orange-600">Your</span> Matches
               </h2>
               <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto px-4">
-                We found {availability.length} studio type{availability.length === 1 ? '' : 's'} for your dates in Stockholm
+                We found {filteredAvailability.length} studio type{filteredAvailability.length === 1 ? '' : 's'} for your dates in Stockholm
               </p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-10 px-4">
-              {availability.map((unit, index) => (
+              {filteredAvailability.map((unit, index) => (
                 <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} 
                      className="animate-fade-in-up" 
                      style={{animationDelay: `${index * 0.15}s`}}>
