@@ -89,11 +89,11 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
               <div className="space-y-2 mb-3">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Price (excl. VAT):</span>
-                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice / 1.12)}</span>
+                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.88)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">VAT (12%):</span>
-                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice - (selectedUnit.selectedRate.totalPrice / 1.12))}</span>
+                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.12)}</span>
                 </div>
               </div>
               <div className="flex justify-between items-center border-t border-gray-200 pt-2">
