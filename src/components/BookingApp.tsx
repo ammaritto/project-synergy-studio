@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './StripePaymentForm';
 import SearchForm from './SearchForm';
+import StickySearchCTA from './StickySearchCTA';
 import GuestDetailsForm from './GuestDetailsForm';
 
 // TypeScript interfaces
@@ -618,6 +619,14 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
           }}
         />
       )}
+
+      {/* Sticky Search CTA */}
+      <StickySearchCTA
+        searchParams={searchParams}
+        setSearchParams={setSearchParams}
+        onSearch={searchAvailability}
+        loading={loading}
+      />
     </div>
   );
 };
