@@ -78,6 +78,10 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
                 <span className="text-gray-600">Duration:</span>
                 <span className="font-medium text-gray-700">({calculateNights()} nights)</span>
               </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Guests:</span>
+                <span className="font-medium text-gray-700">{confirmedSearchParams.guests}</span>
+              </div>
             </div>
 
             {/* VAT Breakdown */}
