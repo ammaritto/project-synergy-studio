@@ -408,6 +408,27 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
     setError('');
   };
 
+  // Reset search function for no results
+  const resetSearch = (): void => {
+    setHasSearched(false);
+    setAvailability([]);
+    setError('');
+    setLastSearchParams(null);
+    // Reset to default dates
+    const today = new Date();
+    const start = new Date(today);
+    start.setDate(start.getDate() + 1);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 3);
+    
+    setSearchParams({
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
+      guests: 1,
+      communities: []
+    });
+  };
+
   // Booking confirmation screen
   if (bookingComplete) {
     return (
@@ -550,20 +571,6 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
         </div>
       )}
 
-      {hasSearched && !loading && availability.length === 0 && (
-        <div ref={resultsSectionRef} className="section-spacing">
-          <div className="container-modern">
-            <div className="flex items-center justify-center">
-              <img
-                src="/lovable-uploads/8dd47ad5-4115-46fc-ba06-6573f685d2da.png"
-                alt="No studios match your search - try different dates or guests"
-                className="max-w-full h-auto"
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Guest Details Dialog */}
       {selectedUnit && lastSearchParams && (
@@ -615,6 +622,9 @@ const BookingApp: React.FC<BookingAppProps> = ({ studioFilter = 'ALL' }) => {
         setSearchParams={setSearchParams}
         onSearch={searchAvailability}
         loading={loading}
+        hasSearched={hasSearched}
+        hasResults={availability.length > 0}
+        onReset={resetSearch}
       />
     </div>
   );
