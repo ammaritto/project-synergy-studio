@@ -104,14 +104,14 @@ const App: React.FC = () => {
   // Set default dates
   useEffect(() => {
     const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayAfter = new Date(today);
-    dayAfter.setDate(dayAfter.getDate() + 3);
+    const start = new Date(today);
+    start.setDate(start.getDate() + 1);
+    const end = new Date(start);
+    end.setDate(end.getDate() + 3); // minimum 3 nights
     
     setSearchParams({
-      startDate: tomorrow.toISOString().split('T')[0],
-      endDate: dayAfter.toISOString().split('T')[0],
+      startDate: start.toISOString().split('T')[0],
+      endDate: end.toISOString().split('T')[0],
       guests: 1
     });
   }, []);
@@ -163,11 +163,11 @@ const App: React.FC = () => {
     }
   };
 
-  // Get minimum end date (always 1 day after check-in)
+  // Get minimum end date (always 3 nights minimum)
   const getMinEndDate = (): string => {
     if (!searchParams.startDate) return '';
     const minDate = new Date(searchParams.startDate);
-    minDate.setDate(minDate.getDate() + 1);
+    minDate.setDate(minDate.getDate() + 3);
     return minDate.toISOString().split('T')[0];
   };
 
@@ -179,7 +179,7 @@ const App: React.FC = () => {
       
       if (!searchParams.endDate || checkOut <= checkIn) {
         const newCheckOut = new Date(checkIn);
-        newCheckOut.setDate(newCheckOut.getDate() + 1);
+        newCheckOut.setDate(newCheckOut.getDate() + 3);
         setSearchParams(prev => ({
           ...prev,
           endDate: newCheckOut.toISOString().split('T')[0]
@@ -244,13 +244,23 @@ const App: React.FC = () => {
         setLastSearchParams({ ...searchParams });
         setHasSearched(true);
         
-        // Scroll to results section after search completes
-        setTimeout(() => {
-          resultsSectionRef.current?.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 100);
+        // If we have results, go straight to Guest Details by auto-selecting a unit
+        const listForSelection =
+          inventoryFilter === 'ALL'
+            ? transformedData
+            : transformedData.filter((u: any) => u.inventoryTypeName === inventoryFilter);
+
+        if (listForSelection.length > 0) {
+          const unit = listForSelection[0];
+          const rate = unit.rates?.[0];
+          if (rate) {
+            setSelectedUnit({ ...unit, selectedRate: rate });
+            setShowBookingForm(true);
+          }
+        } else {
+          // No results after filtering, show "not found" section
+          setAvailability([]);
+        }
       } else {
         setError(data.message || 'No availability found');
         setAvailability([]);
@@ -713,12 +723,10 @@ const App: React.FC = () => {
 
       {/* Search Results */}
       {hasSearched && availability.length > 0 && lastSearchParams && (
-        <div ref={resultsSectionRef} className="section-spacing bg-gradient-to-br from-white via-orange-50/20 to-amber-50">
+        <div ref={resultsSectionRef} className="section-spacing bg-white">
           <div className="container-modern">
             <div className="text-center mb-8 md:mb-16 animate-fade-in-up">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
-                <span className="text-orange-600">Your</span> Matches
-              </h2>
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">Your Matches</h2>
               <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto px-4">
                 We found {filteredAvailability.length} studio type{filteredAvailability.length === 1 ? '' : 's'} for your dates in Stockholm
               </p>

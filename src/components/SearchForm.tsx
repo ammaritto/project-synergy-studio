@@ -89,10 +89,23 @@ const toLocalISO = (d: Date) => {
                       selected={selectedRange as any}
                       onSelect={(range) => {
                         const r = range as { from?: Date; to?: Date } | undefined;
-                        const newStart = r?.from ? toLocalISO(r.from) : '';
-                        const newEnd = r?.to ? toLocalISO(r.to) : '';
+                        let from = r?.from;
+                        let to = r?.to;
+
+                        if (from && to) {
+                          const diffMs = to.getTime() - from.getTime();
+                          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+                          if (diffDays < 3) {
+                            const forced = new Date(from);
+                            forced.setDate(forced.getDate() + 3);
+                            to = forced;
+                          }
+                        }
+
+                        const newStart = from ? toLocalISO(from) : '';
+                        const newEnd = to ? toLocalISO(to) : '';
                         setSearchParams(prev => ({ ...prev, startDate: newStart, endDate: newEnd }));
-                        if (r?.from && r?.to) {
+                        if (from && (to || newEnd)) {
                           setOpen(false);
                         }
                       }}
@@ -100,7 +113,6 @@ const toLocalISO = (d: Date) => {
                       initialFocus
                       className="p-3 pointer-events-auto"
                       disabled={{ before: new Date() }}
-                      min={4}
                     />
                     <div className="flex justify-between items-center pt-2">
                       <span className="text-xs text-muted-foreground">Min 3 nights</span>
@@ -129,6 +141,30 @@ const toLocalISO = (d: Date) => {
                     <option key={num} value={num}>{num} Guest{num !== 1 ? 's' : ''}</option>
                   ))}
                 </select>
+              </div>
+            </div>
+
+            <div>
+              <label htmlFor="studioType" className="block text-sm font-medium text-foreground mb-2">
+                Studio type
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={inventoryFilter === 'Studio' ? 'default' : 'outline'}
+                  className="w-full"
+                  onClick={() => setInventoryFilter(prev => (prev === 'Studio' ? 'ALL' : 'Studio'))}
+                >
+                  Studio
+                </Button>
+                <Button
+                  type="button"
+                  variant={inventoryFilter === 'Studio Plus' ? 'default' : 'outline'}
+                  className="w-full"
+                  onClick={() => setInventoryFilter(prev => (prev === 'Studio Plus' ? 'ALL' : 'Studio Plus'))}
+                >
+                  Studio Plus
+                </Button>
               </div>
             </div>
 
