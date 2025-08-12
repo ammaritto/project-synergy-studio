@@ -17,12 +17,12 @@ export const useSearchLogic = (
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayAfter = new Date(today);
-    dayAfter.setDate(dayAfter.getDate() + 3);
+    const minStayEnd = new Date(tomorrow);
+    minStayEnd.setDate(minStayEnd.getDate() + 3);
     
     setSearchFormParams({
       startDate: tomorrow.toISOString().split('T')[0],
-      endDate: dayAfter.toISOString().split('T')[0],
+      endDate: minStayEnd.toISOString().split('T')[0],
       guests: 1,
       communities: []
     });
@@ -36,7 +36,7 @@ export const useSearchLogic = (
       
       if (!searchFormParams.endDate || checkOut <= checkIn) {
         const newCheckOut = new Date(checkIn);
-        newCheckOut.setDate(newCheckOut.getDate() + 1);
+        newCheckOut.setDate(newCheckOut.getDate() + 3);
         setSearchFormParams(prev => ({
           ...prev,
           endDate: newCheckOut.toISOString().split('T')[0]
@@ -55,7 +55,7 @@ export const useSearchLogic = (
   const getMinEndDate = (): string => {
     if (!searchFormParams.startDate) return '';
     const minDate = new Date(searchFormParams.startDate);
-    minDate.setDate(minDate.getDate() + 1);
+    minDate.setDate(minDate.getDate() + 3);
     return minDate.toISOString().split('T')[0];
   };
 

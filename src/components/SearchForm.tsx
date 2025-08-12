@@ -74,21 +74,30 @@ const toISODate = (d: Date) => d.toISOString().split('T')[0];
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="range"
-                    selected={selectedRange as any}
-                    onSelect={(range) => {
-                      const r = range as { from?: Date; to?: Date } | undefined;
-                      setSearchParams(prev => ({
-                        ...prev,
-                        startDate: r?.from ? toISODate(r.from) : '',
-                        endDate: r?.to ? toISODate(r.to) : '',
-                      }));
-                    }}
-                    numberOfMonths={2}
-                    initialFocus
-                    className="p-3 pointer-events-auto"
-                  />
+                  <div className="p-2">
+                    <Calendar
+                      mode="range"
+                      selected={selectedRange as any}
+                      onSelect={(range) => {
+                        const r = range as { from?: Date; to?: Date } | undefined;
+                        setSearchParams(prev => ({
+                          ...prev,
+                          startDate: r?.from ? toISODate(r.from) : '',
+                          endDate: r?.to ? toISODate(r.to) : '',
+                        }));
+                      }}
+                      numberOfMonths={2}
+                      initialFocus
+                      className="p-3 pointer-events-auto"
+                      disabled={{ before: new Date() }}
+                      min={4}
+                    />
+                    <div className="flex justify-end pt-2">
+                      <Button variant="ghost" size="sm" onClick={() => setSearchParams(prev => ({ ...prev, startDate: '', endDate: '' }))}>
+                        Clear dates
+                      </Button>
+                    </div>
+                  </div>
                 </PopoverContent>
               </Popover>
             </div>
