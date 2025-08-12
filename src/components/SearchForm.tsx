@@ -57,8 +57,8 @@ const toLocalISO = (d: Date) => {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div className="py-6 bg-white" id="search-section">
-      <div className="container-modern">
+    <div className="min-h-screen flex items-center justify-center" id="search-section">
+      <div className="w-full px-4">
         <div className="max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="md:col-span-2">
