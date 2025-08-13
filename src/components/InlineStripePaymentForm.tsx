@@ -88,39 +88,16 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-blue-100 py-8 px-4">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply animate-float opacity-20"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply animate-float opacity-20" style={{animationDelay: '2s'}}></div>
-        <div className="absolute -bottom-32 left-20 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply animate-float opacity-20" style={{animationDelay: '4s'}}></div>
-      </div>
-
-      <div className="relative z-10 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-3 rounded-2xl">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
-          <p className="text-gray-600">Complete your booking with confidence</p>
-        </div>
-
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-4xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Booking Summary */}
           <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up">
-              <div className="flex items-center mb-6">
-                <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-2xl font-bold text-gray-900">Booking Summary</h2>
-              </div>
-              
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
               <div className="space-y-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
-                  <div className="font-semibold text-gray-800 mb-2">{bookingDetails.propertyName}</div>
-                  <div className="text-sm text-gray-600">
+                <div className="border-b border-gray-100 pb-4">
+                  <div className="font-semibold text-gray-800 text-lg mb-1">{bookingDetails.propertyName}</div>
+                  <div className="text-sm text-gray-500">
                     Premium short-stay accommodation in Stockholm
                   </div>
                 </div>
@@ -146,26 +123,16 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                     <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
                   </div>
                 </div>
-                
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">Total Amount</span>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
-                      <div className="text-xs text-gray-500">VAT included</div>
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
 
           {/* Payment Form */}
           <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="bg-white rounded-2xl p-6 shadow-sm">
+              <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Payment Element Container */}
-                <div className="card-elegant p-6">
+                <div>
                   <div className="flex items-center mb-4">
                     <CreditCard className="w-5 h-5 text-blue-600 mr-2" />
                     <h3 className="text-lg font-semibold text-gray-800">Payment Information</h3>
@@ -181,22 +148,34 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                         }
                       }
                     }}
-                    className="mb-4"
                   />
                 </div>
 
                 {/* Security Notice */}
-                <div className="flex items-center text-sm text-gray-600 bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-                  <Shield className="w-5 h-5 mr-3 text-green-600 flex-shrink-0" />
+                <div className="flex items-center text-sm text-gray-600 bg-green-50 p-3 rounded-lg border border-green-200">
+                  <Shield className="w-4 h-4 mr-2 text-green-600 flex-shrink-0" />
                   <div>
                     <div className="font-medium text-green-800">Secure Payment</div>
                     <div className="text-green-600 text-xs">Your payment is protected by 256-bit SSL encryption and Stripe security</div>
                   </div>
                 </div>
+
+                {/* Terms and Conditions */}
+                <div className="text-xs text-gray-500">
+                  By proceeding with the payment I'm accepting{' '}
+                  <a 
+                    href="https://www.allihoopliving.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:underline"
+                  >
+                    terms and conditions of agreement with Allihoop
+                  </a>
+                </div>
                 
                 {errorMessage && (
-                  <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-start animate-fade-in">
-                    <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg flex items-start">
+                    <AlertCircle className="w-4 h-4 mr-2 flex-shrink-0 mt-0.5" />
                     <div>
                       <div className="font-medium">Payment Error</div>
                       <div className="text-sm mt-1">{errorMessage}</div>
@@ -205,29 +184,29 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={onBack}
                     disabled={isLoading}
-                    className="order-2 sm:order-1 w-full sm:flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-8 rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
+                    className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                   >
-                    <ArrowLeft className="w-5 h-5 mr-2" />
+                    <ArrowLeft className="w-4 h-4 mr-2" />
                     Back to Details
                   </button>
                   <button
                     type="submit"
                     disabled={!stripe || isLoading}
-                    className="order-1 sm:order-2 w-full sm:flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black py-4 px-8 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center group shadow-lg hover:shadow-xl"
+                    className="flex-1 flex items-center justify-center px-6 py-3 bg-yellow-500 text-black rounded-lg font-semibold hover:bg-yellow-600 transition-colors"
                   >
                     {isLoading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-3"></div>
+                      <div className="flex items-center">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
                         Processing Payment...
                       </div>
                     ) : (
                       <>
-                        <Lock className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
+                        <Lock className="w-4 h-4 mr-2" />
                         Complete Payment {formatCurrency(totalAmount)}
                       </>
                     )}
@@ -250,9 +229,8 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
   bookingDetails
 }) => {
   const [clientSecret, setClientSecret] = useState<string>('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -271,41 +249,40 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
     });
   };
 
-  const handleInitiatePayment = async () => {
-    try {
-      setLoading(true);
-      setError('');
-
-      const response = await fetch('https://short-stay-backend.vercel.app/api/payment/create-intent', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          amount: totalAmount,
-          currency: currency,
-          bookingDetails: bookingDetails
-        }),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setClientSecret(data.clientSecret);
-        setShowPaymentForm(true);
-      } else {
-        setError(data.error || 'Failed to initiate payment');
-      }
-    } catch (err) {
-      console.error('Payment initiation error:', err);
-      setError('Failed to initiate payment. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    handleInitiatePayment();
+    const initializePayment = async () => {
+      try {
+        setLoading(true);
+        setError('');
+
+        const response = await fetch('https://short-stay-backend.vercel.app/api/payment/create-intent', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount: totalAmount,
+            currency: currency,
+            bookingDetails: bookingDetails
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          setClientSecret(data.clientSecret);
+        } else {
+          setError(data.error || 'Failed to initiate payment');
+        }
+      } catch (err) {
+        console.error('Payment initiation error:', err);
+        setError('Failed to initiate payment. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initializePayment();
   }, [totalAmount, currency]);
 
   const options = clientSecret ? {
@@ -340,7 +317,7 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
     );
   }
 
-  if (error && !showPaymentForm) {
+  if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-blue-100 py-8 px-4">
         <div className="max-w-4xl mx-auto">
@@ -365,7 +342,7 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
             </div>
 
             <button
-              onClick={handleInitiatePayment}
+              onClick={() => window.location.reload()}
               className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-6 py-3 rounded-2xl font-bold hover:scale-105 transition-all duration-300"
             >
               Try Again
@@ -376,7 +353,7 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
     );
   }
 
-  if (clientSecret && showPaymentForm && options) {
+  if (clientSecret && options) {
     return (
       <Elements options={options} stripe={stripePromise}>
         <CheckoutForm 
@@ -390,144 +367,7 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-blue-100 py-8 px-4">
-      {/* Animated Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-20 w-72 h-72 bg-blue-300 rounded-full mix-blend-multiply animate-float opacity-20"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply animate-float opacity-20" style={{animationDelay: '2s'}}></div>
-        <div className="absolute -bottom-32 left-20 w-72 h-72 bg-indigo-300 rounded-full mix-blend-multiply animate-float opacity-20" style={{animationDelay: '4s'}}></div>
-      </div>
-
-      <div className="relative z-10 max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-3 rounded-2xl">
-              <Lock className="w-8 h-8 text-white" />
-            </div>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
-          <p className="text-gray-600">Complete your booking with confidence</p>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Booking Summary */}
-          <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up">
-              <div className="flex items-center mb-6">
-                <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-2xl font-bold text-gray-900">Booking Summary</h2>
-              </div>
-              
-              <div className="space-y-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
-                  <div className="font-semibold text-gray-800 mb-2">{bookingDetails.propertyName}</div>
-                  <div className="text-sm text-gray-600">
-                    Premium short-stay accommodation in Stockholm
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="font-medium text-gray-700 mb-1">Guest</div>
-                    <div className="text-gray-600">{bookingDetails.guestName}</div>
-                  </div>
-                  <div>
-                    <div className="font-medium text-gray-700 mb-1">Duration</div>
-                    <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
-                  </div>
-                </div>
-                
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Check-in:</span>
-                    <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="font-medium text-gray-700">Check-out:</span>
-                    <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">Total Amount</span>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
-                      <div className="text-xs text-gray-500">VAT included</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Payment Form */}
-          <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
-                  <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Payment Error</div>
-                    <div className="text-sm mt-1">{error}</div>
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-6">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                    <CreditCard className="w-8 h-8 text-white" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Complete Your Booking?</h2>
-                  <p className="text-gray-600">Click below to proceed with secure payment</p>
-                </div>
-
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
-                  <div className="flex items-center">
-                    <Lock className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                    <div className="text-sm">
-                      <div className="font-medium text-green-800">Secure Payment by Stripe</div>
-                      <div className="text-green-600">Your payment information is encrypted and secure</div>
-                    </div>
-                  </div>
-                </div>
-                
-                <button
-                  onClick={handleInitiatePayment}
-                  disabled={loading}
-                  className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black py-4 px-8 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center group shadow-lg hover:shadow-xl"
-                >
-                  {loading ? (
-                    <div className="flex items-center justify-center">
-                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
-                      Initializing Payment...
-                    </div>
-                  ) : (
-                    <>
-                      <Lock className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                      Proceed to Payment - {formatCurrency(totalAmount)}
-                    </>
-                  )}
-                </button>
-
-                <button
-                  onClick={onBack}
-                  disabled={loading}
-                  className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-8 rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center mt-4"
-                >
-                  <ArrowLeft className="w-5 h-5 mr-2" />
-                  Back to Guest Details
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+  return null;
 };
 
 export default InlineStripePaymentForm;
