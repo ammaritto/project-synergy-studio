@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { loadStripe } from '@stripe/stripe-js';
 import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { AlertCircle, Lock, ArrowLeft, Shield, CreditCard, Sparkles } from 'lucide-react';
+import { AlertCircle, Lock, ArrowLeft, Shield, CreditCard } from 'lucide-react';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_51OyOlKHPQLrJ23OdgYVKEVQEfNbllzaDKaQ9BvuRDmqg1bEMcYElVTPvXA5pA7jMGQMNAAMfMdB2U9SX5oXdaLTk00z3yJ2Dzv');
 
@@ -154,7 +154,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 </div>
 
                 {/* Security Notice */}
-                <div className="flex items-center text-sm text-gray-600 bg-green-50 p-3 rounded-lg border border-green-200">
+                <div className="flex items-center text-sm text-gray-600 bg-green-50 p-4 rounded-lg border border-green-200">
                   <Shield className="w-4 h-4 mr-2 text-green-600 flex-shrink-0" />
                   <div>
                     <div className="font-medium text-green-800">Secure Payment</div>
@@ -163,7 +163,7 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 </div>
 
                 {/* Terms and Conditions */}
-                <div className="text-xs text-gray-500">
+                <div className="text-sm text-gray-500">
                   By proceeding with the payment I'm accepting{' '}
                   <a 
                     href="https://www.allihoopliving.com/" 
@@ -186,29 +186,29 @@ const CheckoutForm: React.FC<CheckoutFormProps> = ({
                 )}
 
                 {/* Action Buttons */}
-                <div className="flex gap-3">
+                <div className="flex gap-4">
                   <button
                     type="button"
                     onClick={onBack}
                     disabled={isLoading}
-                    className="flex items-center justify-center px-6 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                    className="flex items-center justify-center px-8 py-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors text-lg"
                   >
-                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    <ArrowLeft className="w-5 h-5 mr-2" />
                     Back to Details
                   </button>
                   <button
                     type="submit"
                     disabled={!stripe || isLoading}
-                    className="flex-1 flex items-center justify-center px-6 py-3 bg-yellow-500 text-black rounded-lg font-semibold hover:bg-yellow-600 transition-colors"
+                    className="flex-1 flex items-center justify-center px-8 py-4 bg-yellow-500 text-black rounded-lg font-semibold hover:bg-yellow-600 transition-colors text-lg"
                   >
                     {isLoading ? (
                       <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-black mr-2"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
                         Processing Payment...
                       </div>
                     ) : (
                       <>
-                        <Lock className="w-4 h-4 mr-2" />
+                        <Lock className="w-5 h-5 mr-2" />
                         Complete Payment {formatCurrency(totalAmount)}
                       </>
                     )}
@@ -233,23 +233,6 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
   const [clientSecret, setClientSecret] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string>('');
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-    }).format(amount);
-  };
-
-  const formatDateWithWeekday = (dateString: string): string => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      weekday: 'short',
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
 
   useEffect(() => {
     const initializePayment = async () => {
@@ -306,9 +289,9 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-blue-100 py-8 px-4">
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="card-elegant p-8">
+          <div className="bg-white rounded-2xl p-8 shadow-sm">
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
               <span className="ml-3 text-lg text-gray-600">Preparing payment...</span>
@@ -321,9 +304,9 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-50 to-blue-100 py-8 px-4">
+      <div className="min-h-screen bg-gray-50 py-8 px-4">
         <div className="max-w-4xl mx-auto">
-          <div className="card-elegant p-8">
+          <div className="bg-white rounded-2xl p-8 shadow-sm">
             <div className="flex items-center mb-8">
               <button
                 onClick={onBack}
@@ -335,7 +318,7 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
               <h1 className="text-3xl font-bold text-gray-800">Payment Error</h1>
             </div>
 
-            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start">
               <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
               <div>
                 <div className="font-medium">Payment Error</div>
@@ -345,7 +328,7 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
 
             <button
               onClick={() => window.location.reload()}
-              className="bg-gradient-to-r from-yellow-400 to-yellow-500 text-black px-6 py-3 rounded-2xl font-bold hover:scale-105 transition-all duration-300"
+              className="bg-yellow-500 text-black px-6 py-3 rounded-2xl font-bold hover:bg-yellow-600 transition-colors"
             >
               Try Again
             </button>
