@@ -246,15 +246,15 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
       setLoading(true);
       setError('');
 
-      const response = await fetch('https://short-stay-backend.vercel.app/api/payment/create-payment-intent', {
+      const response = await fetch('https://short-stay-backend.vercel.app/api/payment/create-intent', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount: Math.round(totalAmount * 100), // Convert to cents
-          currency: currency.toLowerCase(),
-          description: `Booking for ${bookingDetails.propertyName}`
+          amount: totalAmount,
+          currency: currency,
+          bookingDetails: bookingDetails
         }),
       });
 
@@ -264,7 +264,7 @@ const InlineStripePaymentForm: React.FC<InlineStripePaymentFormProps> = ({
         setClientSecret(data.clientSecret);
         setShowPaymentForm(true);
       } else {
-        setError(data.message || 'Failed to initiate payment');
+        setError(data.error || 'Failed to initiate payment');
       }
     } catch (err) {
       console.error('Payment initiation error:', err);
