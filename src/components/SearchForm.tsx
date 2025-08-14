@@ -18,7 +18,6 @@ interface SearchFormProps {
   getMinEndDate: () => string;
   inventoryFilter: 'ALL' | 'Studio Plus' | 'Studio';
   setInventoryFilter: React.Dispatch<React.SetStateAction<'ALL' | 'Studio Plus' | 'Studio'>>;
-  hideFilter?: boolean;
 }
 
 const SearchForm: React.FC<SearchFormProps> = ({
@@ -28,8 +27,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
   loading,
   getMinEndDate,
   inventoryFilter,
-  setInventoryFilter,
-  hideFilter = false
+  setInventoryFilter
 }) => {
   // Format date for display (dd/mm/yyyy)
   const formatDateForDisplay = (dateString: string): string => {
@@ -57,10 +55,10 @@ const toLocalISO = (d: Date) => {
   const [open, setOpen] = React.useState(false);
 
   return (
-    <div className="min-h-screen flex items-center justify-center" id="search-section">
-      <div className="w-full px-4">
-        <div className="max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="py-16 md:py-20 bg-white" id="search-section">
+      <div className="container-modern">
+        <div className="bg-white rounded-2xl shadow-lg p-8 animate-slide-up max-w-5xl mx-auto border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
               <label htmlFor="dateRange" className="block text-sm font-medium text-foreground mb-2">
                 Pick a date range
@@ -140,6 +138,29 @@ const toLocalISO = (d: Date) => {
               </div>
             </div>
 
+            <div>
+              <label htmlFor="studioType" className="block text-sm font-medium text-foreground mb-2">
+                Studio type
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <Button
+                  type="button"
+                  variant={inventoryFilter === 'Studio' ? 'default' : 'outline'}
+                  className="w-full"
+                  onClick={() => setInventoryFilter(prev => (prev === 'Studio' ? 'ALL' : 'Studio'))}
+                >
+                  Studio
+                </Button>
+                <Button
+                  type="button"
+                  variant={inventoryFilter === 'Studio Plus' ? 'default' : 'outline'}
+                  className="w-full"
+                  onClick={() => setInventoryFilter(prev => (prev === 'Studio Plus' ? 'ALL' : 'Studio Plus'))}
+                >
+                  Studio Plus
+                </Button>
+              </div>
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2">&nbsp;</label>

@@ -1,7 +1,6 @@
 import React from 'react';
 import { User, Mail, Phone, CreditCard } from 'lucide-react';
 import { GuestDetails, SelectedUnit, SearchParams } from '../hooks/useBookingState';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 
 interface GuestDetailsFormProps {
   selectedUnit: SelectedUnit;
@@ -12,8 +11,6 @@ interface GuestDetailsFormProps {
   onBack: () => void;
   error: string;
   calculateNights: () => number;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
 }
 
 const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
@@ -24,9 +21,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   onSubmit,
   onBack,
   error,
-  calculateNights,
-  open,
-  onOpenChange
+  calculateNights
 }) => {
   const formatCurrency = (amount: number): string => {
     try {
@@ -53,157 +48,139 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-gray-800">Guest Details</DialogTitle>
-        </DialogHeader>
-        
-        <div className="space-y-6">
-          {/* Booking Summary */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-gray-800 mb-3">Booking Summary</h3>
-            <p className="text-sm text-gray-600 mb-3">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
-            
-            <div className="space-y-2 mb-3">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">From:</span>
-                <span className="font-medium text-gray-700">{formatDateWithWeekday(confirmedSearchParams.startDate)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">To:</span>
-                <span className="font-medium text-gray-700">{formatDateWithWeekday(confirmedSearchParams.endDate)}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Duration:</span>
-                <span className="font-medium text-gray-700">({calculateNights()} nights)</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Guests:</span>
-                <span className="font-medium text-gray-700">{confirmedSearchParams.guests}</span>
-              </div>
-            </div>
-
-            {/* VAT Breakdown */}
-            <div className="border-t border-gray-200 pt-3 mt-3">
-              <div className="space-y-2 mb-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Price (excl. VAT):</span>
-                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.88)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">VAT (12%):</span>
-                  <span className="text-gray-700">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.12)}</span>
-                </div>
-              </div>
-              <div className="flex justify-between items-center border-t border-gray-200 pt-2">
-                <span className="font-semibold text-gray-800">Total Amount:</span>
-                <div className="text-right">
-                  <div className="text-lg font-bold text-gray-900">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
-                  <div className="text-xs text-gray-500">(VAT incl.)</div>
-                </div>
-              </div>
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Background content (blurred) */}
+      <div className="filter blur-sm opacity-50">
+        <div className="bg-white shadow-sm">
+          <div className="max-w-7xl mx-auto px-4 py-6">
+            <h1 className="text-3xl font-bold text-gray-900">Short Stay Booking</h1>
+            <p className="text-gray-600 mt-2">Find and book your perfect short-term accommodation</p>
           </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={onSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
-                First Name *
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  id="firstName"
-                  required
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={guestDetails.firstName}
-                  onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
-                  placeholder="John"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
-                Last Name *
-              </label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  type="text"
-                  id="lastName"
-                  required
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={guestDetails.lastName}
-                  onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
-                  placeholder="Doe"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-                Email Address *
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  type="email"
-                  id="email"
-                  required
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={guestDetails.email}
-                  onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                  placeholder="john@example.com"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                Phone Number
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <input
-                  type="tel"
-                  id="phone"
-                  className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  value={guestDetails.phone}
-                  onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                  placeholder="+46 70 123 4567"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-6">
-              <button
-                type="button"
-                onClick={onBack}
-                className="px-6 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-200"
-              >
-                Back
-              </button>
-              <button
-                type="submit"
-                className="flex-1 px-6 py-2.5 text-sm font-semibold text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <CreditCard className="w-4 h-4" />
-                Continue to Payment
-              </button>
-            </div>
-          </form>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      {/* Popup Modal */}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Guest Details</h2>
+            
+            {/* Booking Summary */}
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
+              <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">From:</span> {formatDateWithWeekday(confirmedSearchParams.startDate)}
+              </p>
+              <p className="text-sm text-gray-600">
+                <span className="font-medium">To:</span> {formatDateWithWeekday(confirmedSearchParams.endDate)}
+              </p>
+              <p className="text-sm text-gray-600">({calculateNights()} nights)</p>
+              <p className="text-sm font-semibold text-gray-800 mt-2">
+                <span className="font-medium">Total Amount:</span> {formatCurrency(selectedUnit.selectedRate.totalPrice)}
+              </p>
+              <p className="text-xs text-gray-500">(VAT incl.)</p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={onSubmit} className="space-y-4">
+              <div>
+                <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
+                  First Name *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    id="firstName"
+                    required
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={guestDetails.firstName}
+                    onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
+                    placeholder="John"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
+                  Last Name *
+                </label>
+                <div className="relative">
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <input
+                    type="text"
+                    id="lastName"
+                    required
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={guestDetails.lastName}
+                    onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
+                    placeholder="Doe"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  Email Address *
+                </label>
+                <div className="relative">
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={guestDetails.email}
+                    onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
+                    placeholder="john@example.com"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <input
+                    type="tel"
+                    id="phone"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={guestDetails.phone}
+                    onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="+46 70 123 4567"
+                  />
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <button
+                  type="button"
+                  onClick={onBack}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
+                >
+                  Back
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Continue to Payment
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };
 

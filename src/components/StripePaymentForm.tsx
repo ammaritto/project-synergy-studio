@@ -7,7 +7,6 @@ import {
 } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { AlertCircle, Lock, ArrowLeft, Shield, CreditCard, Sparkles } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from './ui/dialog';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
@@ -17,8 +16,6 @@ interface StripePaymentFormProps {
   currency: string;
   onPaymentSuccess: (paymentIntentId: string) => void;
   onBack: () => void;
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   bookingDetails: {
     guestName: string;
     checkIn: string;
@@ -155,8 +152,6 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   currency,
   onPaymentSuccess,
   onBack,
-  open,
-  onOpenChange,
   bookingDetails
 }) => {
   const [clientSecret, setClientSecret] = useState('');
@@ -234,21 +229,30 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   } : undefined;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-2xl font-bold text-gray-900 text-center">Secure Payment</DialogTitle>
-        </DialogHeader>
-        
+    <div className="min-h-screen bg-white py-8 px-4">
+
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="flex items-center justify-center mb-4">
+            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-3 rounded-2xl">
+              <Lock className="w-8 h-8 text-white" />
+            </div>
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
+          <p className="text-gray-600">Complete your booking with confidence</p>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Booking Summary */}
           <div className="space-y-6">
-            <div className="p-6 border rounded-lg">
+            <div className="card-elegant p-8 animate-slide-up">
               <div className="flex items-center mb-6">
                 <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-xl font-bold text-gray-900">Booking Summary</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Booking Summary</h2>
               </div>
               
+
               <div className="space-y-4">
                 <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
                   <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
@@ -289,13 +293,14 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                 </div>
               </div>
             </div>
+
           </div>
 
           {/* Payment Form */}
           <div className="space-y-6">
-            <div className="p-6 border rounded-lg">
+            <div className="card-elegant p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
               {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start">
+                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
                   <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-medium">Payment Error</div>
@@ -378,8 +383,8 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             </div>
           </div>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
   );
 };
 
