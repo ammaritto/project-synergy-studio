@@ -1,16 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import {
-  PaymentElement,
-  Elements,
-  useStripe,
-  useElements
-} from '@stripe/react-stripe-js';
+import { PaymentElement, Elements, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { AlertCircle, Lock, ArrowLeft, Shield, CreditCard, Sparkles } from 'lucide-react';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
-
 interface StripePaymentFormProps {
   totalAmount: number;
   currency: string;
@@ -24,36 +18,38 @@ interface StripePaymentFormProps {
     nights: number;
   };
 }
-
 const CheckoutForm: React.FC<{
   onPaymentSuccess: (paymentIntentId: string) => void;
   onBack: () => void;
   totalAmount: number;
   currency: string;
-}> = ({ onPaymentSuccess, onBack, totalAmount, currency }) => {
+}> = ({
+  onPaymentSuccess,
+  onBack,
+  totalAmount,
+  currency
+}) => {
   const stripe = useStripe();
   const elements = useElements();
   const [error, setError] = useState<string>('');
   const [processing, setProcessing] = useState(false);
-
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
-
     if (!stripe || !elements) {
       return;
     }
-
     setProcessing(true);
     setError('');
-
-    const { error: submitError, paymentIntent } = await stripe.confirmPayment({
+    const {
+      error: submitError,
+      paymentIntent
+    } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        return_url: window.location.origin + '/booking-complete',
+        return_url: window.location.origin + '/booking-complete'
       },
-      redirect: 'if_required',
+      redirect: 'if_required'
     });
-
     if (submitError) {
       setError(submitError.message || 'Payment failed');
       setProcessing(false);
@@ -64,16 +60,13 @@ const CheckoutForm: React.FC<{
       setProcessing(false);
     }
   };
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
+      currency: currency
     }).format(amount);
   };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-8">
+  return <form onSubmit={handleSubmit} className="space-y-8">
       {/* Payment Element Container */}
       <div className="card-elegant p-6">
         <div className="flex items-center mb-4">
@@ -81,18 +74,15 @@ const CheckoutForm: React.FC<{
           <h3 className="text-lg font-semibold text-gray-800">Payment Information</h3>
         </div>
         
-        <PaymentElement 
-          options={{
-            layout: 'tabs',
-            defaultValues: {
-              billingDetails: {
-                email: '',
-                phone: '',
-              }
-            }
-          }}
-          className="mb-4"
-        />
+        <PaymentElement options={{
+        layout: 'tabs',
+        defaultValues: {
+          billingDetails: {
+            email: '',
+            phone: ''
+          }
+        }
+      }} className="mb-4" />
       </div>
 
       {/* Security Notice */}
@@ -104,49 +94,34 @@ const CheckoutForm: React.FC<{
         </div>
       </div>
       
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-start animate-fade-in">
+      {error && <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-start animate-fade-in">
           <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
           <div>
             <div className="font-medium">Payment Error</div>
             <div className="text-sm mt-1">{error}</div>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* Action Buttons */}
       <div className="flex flex-col gap-3">
-        <button
-          type="submit"
-          disabled={!stripe || processing}
-          className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center"
-          style={{ backgroundColor: '#1461E2', color: 'white' }}
-        >
-          {processing ? (
-            <div className="flex items-center justify-center">
+        <button type="submit" disabled={!stripe || processing} className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center" style={{
+        backgroundColor: '#1461E2',
+        color: 'white'
+      }}>
+          {processing ? <div className="flex items-center justify-center">
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
               Processing...
-            </div>
-          ) : (
-            <>
+            </div> : <>
               Complete Payment
-            </>
-          )}
+            </>}
         </button>
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={processing}
-          className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
-        >
+        <button type="button" onClick={onBack} disabled={processing} className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center">
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
         </button>
       </div>
-    </form>
-  );
+    </form>;
 };
-
 const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   totalAmount,
   currency,
@@ -158,16 +133,13 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
-
   const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
-
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: currency,
+      currency: currency
     }).format(amount);
   };
-
   const formatDateWithWeekday = (dateString: string): string => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', {
@@ -177,26 +149,22 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       day: 'numeric'
     });
   };
-
   const handleInitiatePayment = async () => {
     try {
       setLoading(true);
       setError('');
-      
       const response = await fetch(`${API_BASE_URL}/payment/create-intent`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           amount: totalAmount,
           currency: currency,
           bookingDetails: bookingDetails
-        }),
+        })
       });
-
       const data = await response.json();
-      
       if (data.success) {
         setClientSecret(data.clientSecret);
         setShowPaymentForm(true);
@@ -210,7 +178,6 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       setLoading(false);
     }
   };
-
   const options = clientSecret ? {
     clientSecret,
     appearance: {
@@ -223,13 +190,11 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         fontFamily: 'Inter, system-ui, sans-serif',
         spacingUnit: '6px',
         borderRadius: '12px',
-        focusBoxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)',
-      },
-    },
+        focusBoxShadow: '0 0 0 3px rgba(59, 130, 246, 0.1)'
+      }
+    }
   } : undefined;
-
-  return (
-    <div className="min-h-screen bg-white py-8 px-4">
+  return <div className="min-h-screen bg-white py-8 px-4">
 
       <div className="max-w-4xl mx-auto">
         {/* Header */}
@@ -240,7 +205,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             </div>
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
-          <p className="text-gray-600">Complete your booking with confidence</p>
+          
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -298,19 +263,18 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
           {/* Payment Form */}
           <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
+            <div className="card-elegant p-8 animate-slide-up" style={{
+            animationDelay: '0.1s'
+          }}>
+              {error && <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
                   <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
                     <div className="font-medium">Payment Error</div>
                     <div className="text-sm mt-1">{error}</div>
                   </div>
-                </div>
-              )}
+                </div>}
 
-              {!showPaymentForm ? (
-                <div className="space-y-6">
+              {!showPaymentForm ? <div className="space-y-6">
                   <div className="text-center">
                     <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
                       <CreditCard className="w-8 h-8 text-white" />
@@ -331,64 +295,37 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
                   <p className="text-xs text-gray-500 text-center mb-4">
                     By proceeding with the payment, I accept the{' '}
-                    <a 
-                      href="https://www.allihoopliving.com/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline hover:text-blue-800 transition-colors"
-                    >
+                    <a href="https://www.allihoopliving.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 transition-colors">
                       Allihoop Terms & Conditions
                     </a>
                   </p>
                   
                   <div className="flex flex-col gap-3">
-                    <button
-                      onClick={handleInitiatePayment}
-                      disabled={loading}
-                      className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center"
-                      style={{ backgroundColor: '#1461E2', color: 'white' }}
-                    >
-                      {loading ? (
-                        <div className="flex items-center justify-center">
+                    <button onClick={handleInitiatePayment} disabled={loading} className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center" style={{
+                  backgroundColor: '#1461E2',
+                  color: 'white'
+                }}>
+                      {loading ? <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                           Processing...
-                        </div>
-                      ) : (
-                        <>
+                        </div> : <>
                           Complete Payment
-                        </>
-                      )}
+                        </>}
                     </button>
 
-                    <button
-                      onClick={onBack}
-                      disabled={loading}
-                      className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
-                    >
+                    <button onClick={onBack} disabled={loading} className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center">
                       <ArrowLeft className="w-5 h-5 mr-2" />
                       Back
                     </button>
                   </div>
 
-                </div>
-              ) : (
-                clientSecret && options && (
-                  <Elements stripe={stripePromise} options={options}>
-                    <CheckoutForm 
-                      onPaymentSuccess={onPaymentSuccess}
-                      onBack={onBack}
-                      totalAmount={totalAmount}
-                      currency={currency}
-                    />
-                  </Elements>
-                )
-              )}
+                </div> : clientSecret && options && <Elements stripe={stripePromise} options={options}>
+                    <CheckoutForm onPaymentSuccess={onPaymentSuccess} onBack={onBack} totalAmount={totalAmount} currency={currency} />
+                  </Elements>}
             </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default StripePaymentForm;
