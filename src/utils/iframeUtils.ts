@@ -9,8 +9,13 @@ export interface IframeMessage {
 // Check if running inside an iframe
 export const isInIframe = (): boolean => {
   try {
-    return window.self !== window.top;
+    const inIframe = window.self !== window.top;
+    console.log('[IFRAME DEBUG] Is in iframe:', inIframe);
+    console.log('[IFRAME DEBUG] window.self:', window.self);
+    console.log('[IFRAME DEBUG] window.top:', window.top);
+    return inIframe;
   } catch (e) {
+    console.log('[IFRAME DEBUG] Error checking iframe, assuming true:', e);
     return true;
   }
 };
@@ -18,7 +23,10 @@ export const isInIframe = (): boolean => {
 // Send message to parent window
 export const sendMessageToParent = (message: IframeMessage): void => {
   if (isInIframe() && window.parent) {
+    console.log('[IFRAME DEBUG] Sending message to parent:', message);
     window.parent.postMessage(message, '*');
+  } else {
+    console.log('[IFRAME DEBUG] Not in iframe or no parent, skipping message:', message);
   }
 };
 

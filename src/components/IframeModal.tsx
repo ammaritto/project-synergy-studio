@@ -17,31 +17,55 @@ const IframeModal: React.FC<IframeModalProps> = ({
   data
 }) => {
   useEffect(() => {
+    console.log('[IFRAME MODAL] useEffect triggered:', { isOpen, isInIframe: isInIframe(), modalType });
+    
     if (isOpen && isInIframe()) {
+      console.log('[IFRAME MODAL] Sending message to parent:', modalType, data);
       // Send message to parent to open modal
       sendMessageToParent({
         type: modalType,
         data
       });
       
-      // Close the local modal since parent will handle it
-      onClose();
+      // Don't close immediately - let the parent handle it
+      // The modal will remain open in iframe as fallback
     }
-  }, [isOpen, modalType, data, onClose]);
+  }, [isOpen, modalType, data]);
 
-  // If in iframe and modal should be open, don't render anything
-  // The parent will handle the modal
-  if (isInIframe() && isOpen) {
-    return null;
-  }
-
-  // If not in iframe or modal is closed, render normally
+  // Always render the modal - if in iframe, both will show but parent should overlay
   if (!isOpen) {
     return null;
   }
 
+  // Add styling to hide the iframe modal when parent takes over
+  const containerStyle = isInIframe() ? {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 50,
+    padding: '16px'
+  } : {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 50,
+    padding: '16px'
+  };
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div style={containerStyle}>
       {children}
     </div>
   );

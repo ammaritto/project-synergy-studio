@@ -304,9 +304,24 @@
 
   // Send message to iframe
   function sendMessageToIframe(message) {
-    const iframe = document.querySelector('iframe'); // Update selector as needed
+    console.log('[WEBFLOW DEBUG] Sending message to iframe:', message);
+    // Try multiple selectors to find the iframe
+    const selectors = ['iframe', '[src*="lovable"]', '[src*="vercel"]', '#booking-iframe', '.booking-iframe'];
+    let iframe = null;
+    
+    for (const selector of selectors) {
+      iframe = document.querySelector(selector);
+      if (iframe) {
+        console.log('[WEBFLOW DEBUG] Found iframe with selector:', selector);
+        break;
+      }
+    }
+    
     if (iframe && iframe.contentWindow) {
       iframe.contentWindow.postMessage(message, '*');
+      console.log('[WEBFLOW DEBUG] Message sent successfully');
+    } else {
+      console.log('[WEBFLOW DEBUG] No iframe found with any selector');
     }
   }
 
@@ -329,21 +344,35 @@
 
   // Listen for messages from iframe
   window.addEventListener('message', function(event) {
+    console.log('[WEBFLOW DEBUG] Received message:', event.data, 'from origin:', event.origin);
+    
     // Add origin validation in production
-    // if (event.origin !== IFRAME_ORIGIN) return;
+    // if (event.origin !== IFRAME_ORIGIN) {
+    //   console.log('[WEBFLOW DEBUG] Origin mismatch, ignoring message');
+    //   return;
+    // }
     
     const message = event.data;
-    if (!message || !message.type) return;
+    if (!message || !message.type) {
+      console.log('[WEBFLOW DEBUG] Invalid message format');
+      return;
+    }
+
+    console.log('[WEBFLOW DEBUG] Processing message type:', message.type);
 
     switch(message.type) {
       case 'OPEN_GUEST_MODAL':
       case 'OPEN_PAYMENT_MODAL':
       case 'OPEN_CONFIRMATION_MODAL':
+        console.log('[WEBFLOW DEBUG] Opening modal:', message.type);
         openModal(message.type, message.data);
         break;
       case 'CLOSE_MODAL':
+        console.log('[WEBFLOW DEBUG] Closing modal');
         closeModal();
         break;
+      default:
+        console.log('[WEBFLOW DEBUG] Unknown message type:', message.type);
     }
   });
 
@@ -354,5 +383,10 @@
     }
   });
 
-  console.log('Iframe modal integration loaded');
+  console.log('[WEBFLOW DEBUG] Iframe modal integration loaded');
+  console.log('[WEBFLOW DEBUG] Looking for iframes on page...');
+  
+  // Debug: list all iframes found
+  const allIframes = document.querySelectorAll('iframe');
+  console.log('[WEBFLOW DEBUG] Found', allIframes.length, 'iframes:', allIframes);
 })();
