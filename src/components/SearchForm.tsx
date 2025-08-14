@@ -94,11 +94,15 @@ const SearchForm: React.FC<SearchFormProps> = ({
       // Start new selection
       setDateRange({ from: date, to: null });
     } else {
-      // Complete the range
+      // Complete the range - enforce 3-night minimum
       if (date < dateRange.from) {
         setDateRange({ from: date, to: dateRange.from });
       } else {
-        setDateRange({ from: dateRange.from, to: date });
+        const daysDiff = Math.floor((date.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+        if (daysDiff >= 3) {
+          setDateRange({ from: dateRange.from, to: date });
+        }
+        // If less than 3 days, don't complete the selection
       }
     }
   };
@@ -152,6 +156,12 @@ const SearchForm: React.FC<SearchFormProps> = ({
     return date < today;
   };
 
+  const isInvalidEndDate = (date: Date | null) => {
+    if (!date || !dateRange.from || dateRange.to) return false;
+    const daysDiff = Math.floor((date.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
+    return date > dateRange.from && daysDiff < 3;
+  };
+
   const formatDateRange = () => {
     const formatDate = (date: Date) => {
       return date.toLocaleDateString('en-US', { 
@@ -190,6 +200,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
     
     if (isPastDate(date)) {
       classes += 'text-gray-300 cursor-not-allowed hover:bg-transparent ';
+    } else if (isInvalidEndDate(date)) {
+      // Invalid end dates (less than 3 nights from start) - grayed out and not clickable
+      classes += 'text-red-300 cursor-not-allowed hover:bg-transparent ';
     } else if (isSelected(date)) {
       // Selected dates - using the blue theme color with reduced padding
       classes += 'bg-[#1461E2] text-white font-semibold hover:bg-[#1252CC] shadow-md ';
@@ -287,7 +300,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                               {date ? (
                                 <div
                                   className={getDayClassName(date)}
-                                  onClick={() => !isPastDate(date) && handleDateClick(date)}
+                                   onClick={() => !isPastDate(date) && !isInvalidEndDate(date) && handleDateClick(date)}
                                   onMouseEnter={() => setHoveredDate(date)}
                                   onMouseLeave={() => setHoveredDate(null)}
                                 >
@@ -330,7 +343,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                               {date ? (
                                 <div
                                   className={getDayClassName(date)}
-                                  onClick={() => !isPastDate(date) && handleDateClick(date)}
+                                  onClick={() => !isPastDate(date) && !isInvalidEndDate(date) && handleDateClick(date)}
                                   onMouseEnter={() => setHoveredDate(date)}
                                   onMouseLeave={() => setHoveredDate(null)}
                                 >
