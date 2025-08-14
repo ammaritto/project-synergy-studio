@@ -328,6 +328,18 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       </div>
                     </div>
                   </div>
+
+                  <p className="text-xs text-gray-500 text-center mb-4">
+                    By proceeding with the payment, I accept the{' '}
+                    <a 
+                      href="https://www.allihoopliving.com/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                    >
+                      Allihoop Terms & Conditions
+                    </a>
+                  </p>
                   
                   <div className="flex flex-col gap-3">
                     <button
@@ -358,17 +370,6 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                     </button>
                   </div>
 
-                  <p className="text-xs text-gray-500 text-center mt-4">
-                    By proceeding with the payment, I accept the{' '}
-                    <a 
-                      href="https://www.allihoopliving.com/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline hover:text-blue-800 transition-colors"
-                    >
-                      Allihoop Terms & Conditions
-                    </a>
-                  </p>
                 </div>
               ) : (
                 clientSecret && options && (
