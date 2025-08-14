@@ -1,8 +1,7 @@
 import React from 'react';
-import { Search, Calendar as CalendarIcon, Users } from 'lucide-react';
+import { Search, Users } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { DateRangeFilter } from '@/components/DateRangeFilter';
 
 interface SearchParams {
   startDate: string;
@@ -29,30 +28,41 @@ const SearchForm: React.FC<SearchFormProps> = ({
   inventoryFilter,
   setInventoryFilter
 }) => {
-  // Format date for display (dd/mm/yyyy)
-  const formatDateForDisplay = (dateString: string): string => {
-    if (!dateString) return '';
-    const date = new Date(dateString);
-    const day = date.getDate().toString().padStart(2, '0');
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}/${month}/${year}`;
+  // Convert string dates to Date objects for the DateRangeFilter
+  const dateRange = React.useMemo(() => ({
+    from: searchParams.startDate ? new Date(searchParams.startDate) : undefined,
+    to: searchParams.endDate ? new Date(searchParams.endDate) : undefined,
+  }), [searchParams.startDate, searchParams.endDate]);
+
+  // Convert Date objects back to string format for searchParams
+  const handleDateRangeChange = (range: { from: Date | undefined; to: Date | undefined }) => {
+    const toLocalISO = (date: Date) => {
+      const y = date.getFullYear();
+      const m = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    };
+
+    let from = range.from;
+    let to = range.to;
+
+    // Enforce minimum 3 nights stay
+    if (from && to) {
+      const diffMs = to.getTime() - from.getTime();
+      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+      if (diffDays < 3) {
+        const forced = new Date(from);
+        forced.setDate(forced.getDate() + 3);
+        to = forced;
+      }
+    }
+
+    setSearchParams(prev => ({
+      ...prev,
+      startDate: from ? toLocalISO(from) : '',
+      endDate: to ? toLocalISO(to) : '',
+    }));
   };
-
-const toLocalISO = (d: Date) => {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-};
-
-  const selectedRange = React.useMemo(() => {
-    const from = searchParams.startDate ? new Date(searchParams.startDate) : undefined;
-    const to = searchParams.endDate ? new Date(searchParams.endDate) : undefined;
-    return from || to ? { from, to } : undefined;
-  }, [searchParams.startDate, searchParams.endDate]);
-
-  const [open, setOpen] = React.useState(false);
 
   return (
     <div className="py-16 md:py-20 bg-white" id="search-section">
@@ -60,63 +70,11 @@ const toLocalISO = (d: Date) => {
         <div className="bg-white rounded-2xl shadow-lg p-8 animate-slide-up max-w-5xl mx-auto border border-gray-100">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2">
-              <label htmlFor="dateRange" className="block text-sm font-medium text-foreground mb-2">
-                Pick a date range
-              </label>
-              <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-full justify-start text-left font-normal border-border"
-                    onClick={() => setOpen(true)}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4 text-primary" />
-                    {selectedRange?.from && selectedRange?.to
-                      ? `${formatDateForDisplay(toLocalISO(selectedRange.from!))} - ${formatDateForDisplay(toLocalISO(selectedRange.to!))}`
-                      : "Pick a date range"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <div className="p-2">
-                    <Calendar
-                      mode="range"
-                      selected={selectedRange as any}
-                      onSelect={(range) => {
-                        const r = range as { from?: Date; to?: Date } | undefined;
-                        let from = r?.from;
-                        let to = r?.to;
-
-                        if (from && to) {
-                          const diffMs = to.getTime() - from.getTime();
-                          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-                          if (diffDays < 3) {
-                            const forced = new Date(from);
-                            forced.setDate(forced.getDate() + 3);
-                            to = forced;
-                          }
-                        }
-
-                        const newStart = from ? toLocalISO(from) : '';
-                        const newEnd = to ? toLocalISO(to) : '';
-                        setSearchParams(prev => ({ ...prev, startDate: newStart, endDate: newEnd }));
-                        if (from && (to || newEnd)) {
-                          setOpen(false);
-                        }
-                      }}
-                      numberOfMonths={2}
-                      initialFocus
-                      className="p-3 pointer-events-auto"
-                      disabled={{ before: new Date() }}
-                    />
-                    <div className="flex justify-between items-center pt-2">
-                      <span className="text-xs text-muted-foreground">Min 3 nights</span>
-                      <Button variant="ghost" size="sm" onClick={() => { setSearchParams(prev => ({ ...prev, startDate: '', endDate: '' })); setOpen(false); }}>
-                        Clear dates
-                      </Button>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
+              <DateRangeFilter
+                label="Pick a date range"
+                value={dateRange}
+                onChange={handleDateRangeChange}
+              />
             </div>
 
             <div>
@@ -137,9 +95,11 @@ const toLocalISO = (d: Date) => {
                 </select>
               </div>
             </div>
+          </div>
 
-            <div>
-              <label htmlFor="studioType" className="block text-sm font-medium text-foreground mb-2">
+          {inventoryFilter && (
+            <div className="mt-6">
+              <label className="block text-sm font-medium text-foreground mb-2">
                 Studio type
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -161,24 +121,26 @@ const toLocalISO = (d: Date) => {
                 </Button>
               </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-sm font-medium text-foreground mb-2">&nbsp;</label>
-              <button
-                onClick={onSearch}
-                disabled={loading}
-                className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md group"
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <>
-                    <Search className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
-                    Search
-                  </>
-                )}
-              </button>
-            </div>
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={onSearch}
+              disabled={loading || !searchParams.startDate || !searchParams.endDate}
+              className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Searching...
+                </>
+              ) : (
+                <>
+                  <Search className="mr-2 h-4 w-4" />
+                  Search Available Studios
+                </>
+              )}
+            </Button>
           </div>
         </div>
       </div>
