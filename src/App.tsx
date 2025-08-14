@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
+import GuestDetailsForm from './components/GuestDetailsForm';
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
@@ -493,152 +494,27 @@ const App: React.FC = () => {
       </div>;
   }
 
-  // Guest details form (popup overlay)
+  // Guest details form (full page)
   if (showBookingForm && selectedUnit && lastSearchParams) {
-    return <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={handleModalBackdropClick}>
-        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-bold text-gray-800">Guest Details</h2>
-              <button onClick={() => {
-              setShowBookingForm(false);
-              setHasSearched(false);
-              setAvailability([]);
-            }} className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200">
-                ✕
-              </button>
-            </div>
-            
-            {/* Booking Summary */}
-            <div className="bg-white rounded-xl p-6 mb-8 border border-gray-200 shadow-md">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center">
-                <Sparkles className="w-5 h-5 mr-2 text-gray-900/70" />
-                Booking Summary
-              </h3>
-              
-              <div className="space-y-3 text-sm mb-4 text-right">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Property:</span>
-                  <span className="font-medium text-gray-800">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</span>
-                </div>
-                 <div className="flex justify-between">
-                   <span className="text-gray-600">Arrival Date:</span>
-                   <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.startDate)}</span>
-                 </div>
-                 <div className="flex justify-between">
-                   <span className="text-gray-600 text-left">Departure Date:</span>
-                   <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.endDate)}</span>
-                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Duration:</span>
-                  <span className="font-medium text-gray-800">{selectedUnit.selectedRate.nights} nights</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Guests:</span>
-                  <span className="font-medium text-gray-800">{lastSearchParams.guests}</span>
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t border-gray-200">
-                <div className="space-y-2 mb-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Price (excl. VAT):</span>
-                    <span className="text-gray-800">{formatCurrency(selectedUnit.selectedRate.totalPrice - selectedUnit.selectedRate.totalPrice * 0.12)}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">VAT (12%):</span>
-                    <span className="text-gray-800">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.12)}</span>
-                  </div>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-gray-800">Total:</span>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-black">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
-                    <div className="text-xs text-gray-500">VAT included</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-start">
-                <CheckCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-sm">{error}</span>
-              </div>}
-
-            <form onSubmit={handleGuestDetailsSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name *
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
-                    <input type="text" id="firstName" required className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" value={guestDetails.firstName} onChange={e => setGuestDetails(prev => ({
-                    ...prev,
-                    firstName: e.target.value
-                  }))} placeholder="John" />
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name *
-                  </label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
-                    <input type="text" id="lastName" required className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" value={guestDetails.lastName} onChange={e => setGuestDetails(prev => ({
-                    ...prev,
-                    lastName: e.target.value
-                  }))} placeholder="Doe" />
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
-                  <input type="email" id="email" required className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" value={guestDetails.email} onChange={e => setGuestDetails(prev => ({
-                  ...prev,
-                  email: e.target.value
-                }))} placeholder="name@example.com" />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number (Optional)
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-900/70" />
-                  <input type="tel" id="phone" className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200" value={guestDetails.phone} onChange={e => setGuestDetails(prev => ({
-                  ...prev,
-                  phone: e.target.value
-                }))} placeholder="Phone number" />
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6">
-                <button type="button" onClick={() => {
-                setShowBookingForm(false);
-                setHasSearched(false);
-                setAvailability([]);
-              }} className="order-2 sm:order-1 flex-1 bg-gray-100 border border-gray-300 text-black py-4 px-6 rounded-xl font-medium hover:bg-gray-200 transition-all duration-200 flex items-center justify-center">
-                  Back to Search
-                </button>
-                 <button type="submit" className="order-1 sm:order-2 flex-1 text-white py-4 px-6 rounded-xl font-semibold hover:opacity-90 transition-all duration-200 flex items-center justify-center shadow-lg" style={{
-                backgroundColor: '#1461E2'
-              }}>
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Continue to Payment
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>;
+    const searchParamsWithCommunities = {
+      ...lastSearchParams,
+      communities: []  // Add empty communities array to match interface
+    };
+    
+    return <GuestDetailsForm
+      selectedUnit={selectedUnit}
+      confirmedSearchParams={searchParamsWithCommunities}
+      guestDetails={guestDetails}
+      setGuestDetails={setGuestDetails}
+      onSubmit={handleGuestDetailsSubmit}
+      onBack={() => {
+        setShowBookingForm(false);
+        setHasSearched(false);
+        setAvailability([]);
+      }}
+      error={error}
+      calculateNights={() => selectedUnit.selectedRate.nights}
+    />;
   }
 
   // Main interface
