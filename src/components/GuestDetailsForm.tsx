@@ -1,7 +1,6 @@
 import React from 'react';
 import { User, Mail, Phone, CreditCard } from 'lucide-react';
 import { GuestDetails, SelectedUnit, SearchParams } from '../hooks/useBookingState';
-
 interface GuestDetailsFormProps {
   selectedUnit: SelectedUnit;
   confirmedSearchParams: SearchParams;
@@ -12,7 +11,6 @@ interface GuestDetailsFormProps {
   error: string;
   calculateNights: () => number;
 }
-
 const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   selectedUnit,
   confirmedSearchParams,
@@ -31,7 +29,6 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
       return '0 SEK';
     }
   };
-
   const formatDateWithWeekday = (dateString: string): string => {
     try {
       const date = new Date(dateString);
@@ -46,9 +43,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
       return dateString;
     }
   };
-
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4">
+  return <div className="min-h-screen py-8 px-4 bg-white">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Guest Details</h1>
         
@@ -99,11 +94,9 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
           </div>
         </div>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+        {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             {error}
-          </div>
-        )}
+          </div>}
 
         <form onSubmit={onSubmit} className="space-y-6">
           {/* Name Fields */}
@@ -114,15 +107,10 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  id="firstName"
-                  required
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={guestDetails.firstName}
-                  onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
-                  placeholder="John"
-                />
+                <input type="text" id="firstName" required className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={guestDetails.firstName} onChange={e => setGuestDetails(prev => ({
+                ...prev,
+                firstName: e.target.value
+              }))} placeholder="John" />
               </div>
             </div>
 
@@ -132,15 +120,10 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  id="lastName"
-                  required
-                  className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                  value={guestDetails.lastName}
-                  onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
-                  placeholder="Doe"
-                />
+                <input type="text" id="lastName" required className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={guestDetails.lastName} onChange={e => setGuestDetails(prev => ({
+                ...prev,
+                lastName: e.target.value
+              }))} placeholder="Doe" />
               </div>
             </div>
           </div>
@@ -152,15 +135,10 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type="email"
-                id="email"
-                required
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={guestDetails.email}
-                onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                placeholder="name@example.com"
-              />
+              <input type="email" id="email" required className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={guestDetails.email} onChange={e => setGuestDetails(prev => ({
+              ...prev,
+              email: e.target.value
+            }))} placeholder="name@example.com" />
             </div>
           </div>
 
@@ -171,38 +149,25 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
             </label>
             <div className="relative">
               <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input
-                type="tel"
-                id="phone"
-                className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                value={guestDetails.phone}
-                onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                placeholder="Phone number"
-              />
+              <input type="tel" id="phone" className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={guestDetails.phone} onChange={e => setGuestDetails(prev => ({
+              ...prev,
+              phone: e.target.value
+            }))} placeholder="Phone number" />
             </div>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-4 pt-6">
-            <button
-              type="button"
-              onClick={onBack}
-              className="flex-1 py-3 px-6 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium"
-            >
+            <button type="button" onClick={onBack} className="flex-1 py-3 px-6 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium">
               Back to Search
             </button>
-            <button
-              type="submit"
-              className="flex-1 py-3 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
-            >
+            <button type="submit" className="flex-1 py-3 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center">
               <CreditCard className="w-5 h-5 mr-2" />
               Continue to Payment
             </button>
           </div>
         </form>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default GuestDetailsForm;
