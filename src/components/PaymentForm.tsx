@@ -283,12 +283,12 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               
               <div>
                 <span className="font-medium text-gray-700">Check-in:</span>
-                <span className="ml-2 text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
+                <span className="ml-2 text-gray-600">Arrival Date: {formatDateWithWeekday(bookingDetails.checkIn)}</span>
               </div>
               
               <div>
                 <span className="font-medium text-gray-700">Check-out:</span>
-                <span className="ml-2 text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
+                <span className="ml-2 text-gray-600">Departure Date: {formatDateWithWeekday(bookingDetails.checkOut)}</span>
               </div>
               
               <div>
