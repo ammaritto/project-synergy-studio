@@ -7,6 +7,8 @@ import {
 } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { AlertCircle, Lock, ArrowLeft, Shield, CreditCard, Sparkles } from 'lucide-react';
+import IframeModal from './IframeModal';
+import { isInIframe, setupParentMessageListener } from '../utils/iframeUtils';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
@@ -154,6 +156,23 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   onBack,
   bookingDetails
 }) => {
+  // Setup message listener for parent window responses
+  useEffect(() => {
+    if (isInIframe()) {
+      const cleanup = setupParentMessageListener((message) => {
+        switch(message.type) {
+          case 'GO_BACK_TO_GUEST_DETAILS':
+            onBack();
+            break;
+          case 'MODAL_CLOSED':
+            onBack();
+            break;
+        }
+      });
+      
+      return cleanup;
+    }
+  }, [onBack]);
   const [clientSecret, setClientSecret] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -228,166 +247,289 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     },
   } : undefined;
 
+  // Prepare data for iframe modal
+  const modalData = {
+    propertyName: bookingDetails.propertyName,
+    guestName: bookingDetails.guestName,
+    checkIn: formatDateWithWeekday(bookingDetails.checkIn),
+    checkOut: formatDateWithWeekday(bookingDetails.checkOut),
+    nights: bookingDetails.nights,
+    totalAmount: formatCurrency(totalAmount)
+  };
+
   return (
-    <div className="min-h-screen bg-white py-8 px-4">
-
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-3 rounded-2xl">
-              <Lock className="w-8 h-8 text-white" />
+    <>
+      <IframeModal
+        isOpen={true}
+        onClose={onBack}
+        modalType="OPEN_PAYMENT_MODAL"
+        data={modalData}
+      >
+        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-8">
+            <div className="flex items-center mb-6">
+              <button
+                onClick={onBack}
+                className="mr-4 p-2 text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+              <h2 className="text-2xl font-bold text-gray-800">Secure Payment</h2>
             </div>
-          </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
-          <p className="text-gray-600">Complete your booking with confidence</p>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Booking Summary */}
-          <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up">
-              <div className="flex items-center mb-6">
-                <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-2xl font-bold text-gray-900">Booking Summary</h2>
+            {/* Booking Summary */}
+            <div className="bg-gray-50 p-4 rounded-lg mb-6">
+              <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
+              <p className="text-sm text-gray-600 mb-1">{bookingDetails.propertyName}</p>
+              <p className="text-sm text-gray-600 mb-1">
+                <span className="font-medium">Guest:</span> {bookingDetails.guestName}
+              </p>
+              <p className="text-sm text-gray-600 mb-1">
+                <span className="font-medium">From:</span> {formatDateWithWeekday(bookingDetails.checkIn)}
+              </p>
+              <p className="text-sm text-gray-600 mb-1">
+                <span className="font-medium">To:</span> {formatDateWithWeekday(bookingDetails.checkOut)}
+              </p>
+              <p className="text-sm text-gray-600 mb-2">({bookingDetails.nights} nights)</p>
+              <p className="text-lg font-bold text-gray-800">
+                <span className="font-medium">Total:</span> {formatCurrency(totalAmount)}
+              </p>
+              <p className="text-xs text-gray-500">(VAT incl.)</p>
+            </div>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
               </div>
-              
+            )}
 
-              <div className="space-y-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
-                  <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
+            {!showPaymentForm ? (
+              <div className="text-center space-y-6">
+                <div className="bg-white rounded-xl border-2 border-gray-100 p-6">
+                  <CreditCard className="w-12 h-12 text-blue-600 mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">Ready to Complete Payment</h3>
+                  <p className="text-gray-600 mb-4">
+                    Click below to securely pay {formatCurrency(totalAmount)} and confirm your booking.
+                  </p>
+                  
+                  <div className="flex items-center justify-center space-x-2 text-sm text-gray-500 mb-4">
+                    <Shield className="w-4 h-4" />
+                    <span>Secured by Stripe</span>
+                  </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 text-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium text-gray-700 mb-1">Guest</div>
-                      <div className="text-gray-600">{bookingDetails.guestName}</div>
+                <p className="text-xs text-gray-500 text-center mb-4">
+                  By proceeding with the payment, I accept the{' '}
+                  <a 
+                    href="https://www.allihoopliving.com/" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                  >
+                    Allihoop Terms & Conditions
+                  </a>
+                </p>
+                
+                <div className="flex flex-col gap-3">
+                  <button
+                    onClick={handleInitiatePayment}
+                    disabled={loading}
+                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+                  >
+                    {loading ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                        Setting up payment...
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        Complete Payment
+                      </>
+                    )}
+                  </button>
+                  
+                  <button
+                    onClick={onBack}
+                    className="w-full bg-gray-300 text-gray-700 py-3 px-4 rounded-lg font-medium hover:bg-gray-400 transition-colors"
+                  >
+                    Back to Guest Details
+                  </button>
+                </div>
+              </div>
+            ) : (
+              clientSecret && options && (
+                <Elements stripe={stripePromise} options={options}>
+                  <CheckoutForm
+                    totalAmount={totalAmount}
+                    onPaymentSuccess={onPaymentSuccess}
+                    onBack={onBack}
+                    currency={currency}
+                  />
+                </Elements>
+              )
+            )}
+          </div>
+        </div>
+      </IframeModal>
+
+      {/* Fallback for non-iframe mode */}
+      <div className="min-h-screen bg-white py-8 px-4">
+        <div className="max-w-4xl mx-auto">
+          {/* Header */}
+          <div className="text-center mb-8 animate-fade-in">
+            <div className="flex items-center justify-center mb-4">
+              <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-3 rounded-2xl">
+                <Lock className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
+            <p className="text-gray-600">Complete your booking with confidence</p>
+          </div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* ... keep existing code (booking summary and payment form) */}
+            <div className="space-y-6">
+              <div className="card-elegant p-8 animate-slide-up">
+                <div className="flex items-center mb-6">
+                  <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
+                  <h2 className="text-2xl font-bold text-gray-900">Booking Summary</h2>
+                </div>
+                
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
+                    <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
+                  </div>
+
+                  <div className="grid grid-cols-1 gap-4 text-sm">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-medium text-gray-700 mb-1">Guest</div>
+                        <div className="text-gray-600">{bookingDetails.guestName}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium text-gray-700 mb-1">Duration</div>
+                        <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      <div className="font-medium text-gray-700 mb-1">Duration</div>
-                      <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
+                    
+                    <div className="grid grid-cols-1 gap-2">
+                       <div className="flex justify-between">
+                         <span className="font-medium text-gray-700">Arrival Date:</span>
+                         <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
+                       </div>
+                       <div className="flex justify-between">
+                         <span className="font-medium text-gray-700">Departure Date:</span>
+                         <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
+                       </div>
                     </div>
                   </div>
                   
-                  <div className="grid grid-cols-1 gap-2">
-                     <div className="flex justify-between">
-                       <span className="font-medium text-gray-700">Arrival Date:</span>
-                       <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span className="font-medium text-gray-700">Departure Date:</span>
-                       <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
-                     </div>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">Total Amount</span>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
-                      <div className="text-xs text-gray-500">VAT included</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Payment Form */}
-          <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
-              {error && (
-                <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
-                  <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
-                  <div>
-                    <div className="font-medium">Payment Error</div>
-                    <div className="text-sm mt-1">{error}</div>
-                  </div>
-                </div>
-              )}
-
-              {!showPaymentForm ? (
-                <div className="space-y-6">
-                  <div className="text-center">
-                    <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-                      <CreditCard className="w-8 h-8 text-white" />
-                    </div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Complete Your Booking?</h2>
-                    <p className="text-gray-600 mb-6">Click below to proceed with secure payment</p>
-                  </div>
-
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 mb-6">
-                    <div className="flex items-center">
-                      <Lock className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
-                      <div className="text-sm">
-                        <div className="font-medium text-green-800">Secure Payment by Stripe</div>
-                        <div className="text-green-600">Your payment information is encrypted and secure</div>
+                  <div className="border-t border-gray-200 pt-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-semibold text-gray-900">Total Amount</span>
+                      <div className="text-right">
+                        <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
+                        <div className="text-xs text-gray-500">VAT included</div>
                       </div>
                     </div>
                   </div>
-
-                  <p className="text-xs text-gray-500 text-center mb-4">
-                    By proceeding with the payment, I accept the{' '}
-                    <a 
-                      href="https://www.allihoopliving.com/" 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 underline hover:text-blue-800 transition-colors"
-                    >
-                      Allihoop Terms & Conditions
-                    </a>
-                  </p>
-                  
-                  <div className="flex flex-col gap-3">
-                    <button
-                      onClick={handleInitiatePayment}
-                      disabled={loading}
-                      className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center"
-                      style={{ backgroundColor: '#1461E2', color: 'white' }}
-                    >
-                      {loading ? (
-                        <div className="flex items-center justify-center">
-                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
-                          Processing...
-                        </div>
-                      ) : (
-                        <>
-                          Complete Payment
-                        </>
-                      )}
-                    </button>
-
-                    <button
-                      onClick={onBack}
-                      disabled={loading}
-                      className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
-                    >
-                      <ArrowLeft className="w-5 h-5 mr-2" />
-                      Back
-                    </button>
-                  </div>
-
                 </div>
-              ) : (
-                clientSecret && options && (
-                  <Elements stripe={stripePromise} options={options}>
-                    <CheckoutForm 
-                      onPaymentSuccess={onPaymentSuccess}
-                      onBack={onBack}
-                      totalAmount={totalAmount}
-                      currency={currency}
-                    />
-                  </Elements>
-                )
-              )}
+              </div>
+            </div>
+
+            {/* Payment Form */}
+            <div className="space-y-6">
+              <div className="card-elegant p-8 animate-slide-up" style={{animationDelay: '0.1s'}}>
+                {error && (
+                  <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
+                    <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <div className="font-medium">Payment Error</div>
+                      <div className="text-sm mt-1">{error}</div>
+                    </div>
+                  </div>
+                )}
+
+                {!showPaymentForm ? (
+                  <div className="space-y-6">
+                    <div className="text-center">
+                      <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                        <CreditCard className="w-8 h-8 text-white" />
+                      </div>
+                      <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Complete Your Booking?</h2>
+                      <p className="text-gray-600 mb-6">Click below to proceed with secure payment</p>
+                    </div>
+
+                    <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 mb-6">
+                      <div className="flex items-center">
+                        <Lock className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
+                        <div className="text-sm">
+                          <div className="font-medium text-green-800">Secure Payment by Stripe</div>
+                          <div className="text-green-600">Your payment information is encrypted and secure</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-xs text-gray-500 text-center mb-4">
+                      By proceeding with the payment, I accept the{' '}
+                      <a 
+                        href="https://www.allihoopliving.com/" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                      >
+                        Allihoop Terms & Conditions
+                      </a>
+                    </p>
+                    
+                    <div className="flex flex-col gap-3">
+                      <button
+                        onClick={handleInitiatePayment}
+                        disabled={loading}
+                        className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center"
+                        style={{ backgroundColor: '#1461E2', color: 'white' }}
+                      >
+                        {loading ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                            Processing...
+                          </div>
+                        ) : (
+                          <>
+                            Complete Payment
+                          </>
+                        )}
+                      </button>
+
+                      <button
+                        onClick={onBack}
+                        disabled={loading}
+                        className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
+                      >
+                        <ArrowLeft className="w-5 h-5 mr-2" />
+                        Back
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  clientSecret && options && (
+                    <Elements stripe={stripePromise} options={options}>
+                      <CheckoutForm 
+                        onPaymentSuccess={onPaymentSuccess}
+                        onBack={onBack}
+                        totalAmount={totalAmount}
+                        currency={currency}
+                      />
+                    </Elements>
+                  )
+                )}
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
 
