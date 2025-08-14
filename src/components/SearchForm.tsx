@@ -188,14 +188,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
     if (isPastDate(date)) {
       classes += 'text-gray-300 cursor-not-allowed hover:bg-transparent ';
     } else if (isSelected(date)) {
-      // Selected dates - primary blue color
-      classes += 'bg-blue-500 text-white font-semibold hover:bg-blue-600 ';
+      // Selected dates - dark gray color
+      classes += 'bg-gray-700 text-white font-semibold hover:bg-gray-800 ';
     } else if (isInRange(date)) {
-      // Dates in range - light blue
-      classes += 'bg-blue-100 text-gray-700 hover:bg-blue-200 ';
+      // Dates in range - light gray
+      classes += 'bg-gray-200 text-gray-700 hover:bg-gray-300 ';
     } else if (isToday(date)) {
       // Today - light grey background with border
-      classes += 'bg-gray-100 text-gray-900 font-medium ring-2 ring-gray-300 hover:bg-gray-200 ';
+      classes += 'bg-gray-100 text-gray-900 font-medium ring-2 ring-gray-400 hover:bg-gray-200 ';
     } else {
       // Regular dates
       classes += 'text-gray-700 hover:bg-gray-100 ';
@@ -217,7 +217,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               <div className="relative">
                 <button
                   onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                  className="w-full px-4 py-3 text-left bg-white border-2 border-gray-300 rounded-lg hover:border-gray-400 focus:outline-none focus:border-blue-500 transition-colors duration-200"
+                  className="w-full px-4 py-3 text-left bg-white border-2 border-gray-300 rounded-lg hover:border-gray-500 focus:outline-none focus:border-gray-600 transition-colors duration-200"
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
@@ -342,7 +342,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                       <button
                         onClick={applyDates}
                         disabled={!dateRange.from || !dateRange.to}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
                       >
                         Apply
                       </button>
