@@ -211,8 +211,8 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
 
       {/* Calendar Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 md:right-auto mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 md:p-6 z-50 w-full md:min-w-[640px] lg:min-w-[700px] max-w-[95vw]">
-          <div className="flex flex-col gap-6 md:flex-row md:gap-8">
+        <div className="absolute top-full left-0 right-0 lg:right-auto mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 md:p-6 z-50 w-full lg:min-w-[700px] max-w-[95vw]">
+          <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
             {/* First Month */}
             <div className="flex-1">
               <div className="flex items-center justify-between mb-6">
@@ -227,11 +227,11 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
                 </h3>
                 <button
                   onClick={handleNextMonth}
-                  className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200 md:hidden"
+                  className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200 lg:hidden"
                 >
                   <ChevronRight className="w-5 h-5 text-gray-600" />
                 </button>
-                <div className="w-11 hidden md:block" />
+                <div className="w-11 hidden lg:block" />
               </div>
 
               <div className="grid grid-cols-7 gap-2 mb-4">
@@ -262,8 +262,8 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
                </div>
              </div>
 
-             {/* Second Month - Hidden on mobile */}
-             <div className="flex-1 hidden md:block">
+             {/* Second Month - Hidden on mobile and tablet, only show on large screens */}
+             <div className="flex-1 hidden lg:block">
                <div className="flex items-center justify-between mb-6">
                  <div className="w-11" />
                  <h3 className="text-lg font-semibold text-gray-800">
