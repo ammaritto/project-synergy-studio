@@ -554,7 +554,7 @@ const App: React.FC = () => {
                 Booking Summary
               </h3>
               
-              <div className="space-y-3 text-sm mb-4">
+              <div className="space-y-3 text-sm mb-4 text-right">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Property:</span>
                   <span className="font-medium text-gray-800">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</span>
