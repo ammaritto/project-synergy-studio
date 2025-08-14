@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { User, Mail, Phone, CreditCard } from 'lucide-react';
 import { GuestDetails, SelectedUnit, SearchParams } from '../hooks/useBookingState';
+import { useParentCommunication } from '../hooks/useParentCommunication';
 
 interface GuestDetailsFormProps {
   selectedUnit: SelectedUnit;
@@ -23,6 +24,9 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   error,
   calculateNights
 }) => {
+  const { openFullScreenPopup } = useParentCommunication();
+  const isInIframe = window.parent !== window;
+
   const formatCurrency = (amount: number): string => {
     try {
       const num = parseFloat(amount?.toString() || '0') || 0;
@@ -47,6 +51,67 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
     }
   };
 
+  // Send popup data to parent when component mounts (if in iframe)
+  useEffect(() => {
+    if (isInIframe) {
+      const popupData = {
+        type: 'guest-details-form',
+        selectedUnit,
+        confirmedSearchParams,
+        guestDetails,
+        error,
+        nights: calculateNights(),
+        formattedDates: {
+          startDate: formatDateWithWeekday(confirmedSearchParams.startDate),
+          endDate: formatDateWithWeekday(confirmedSearchParams.endDate)
+        },
+        formattedPrice: formatCurrency(selectedUnit.selectedRate.totalPrice)
+      };
+
+      openFullScreenPopup(popupData);
+    }
+  }, [isInIframe, selectedUnit, confirmedSearchParams, guestDetails, error, calculateNights, openFullScreenPopup]);
+
+  // Listen for messages from parent (form submissions, back actions)
+  useEffect(() => {
+    if (isInIframe) {
+      const handleParentMessage = (event: MessageEvent) => {
+        if (event.data && event.data.source === 'webflow-parent') {
+          switch (event.data.type) {
+            case 'guest-form-submit':
+              if (event.data.formData) {
+                // Update guest details with parent form data
+                setGuestDetails(event.data.formData);
+                // Trigger the original submit
+                const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
+                onSubmit(fakeEvent);
+              }
+              break;
+            case 'guest-form-back':
+              onBack();
+              break;
+          }
+        }
+      };
+
+      window.addEventListener('message', handleParentMessage);
+      return () => window.removeEventListener('message', handleParentMessage);
+    }
+  }, [isInIframe, setGuestDetails, onSubmit, onBack]);
+
+  // If in iframe, render minimal content (the popup is handled by parent)
+  if (isInIframe) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
+          <h2 className="text-xl font-semibold mb-4">Loading Guest Details Form...</h2>
+          <p className="text-gray-600">The form will open in full screen mode.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal popup behavior when not in iframe
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Background content (blurred) */}
