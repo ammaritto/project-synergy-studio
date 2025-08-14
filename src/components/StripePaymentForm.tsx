@@ -271,14 +271,14 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   </div>
                   
                   <div className="grid grid-cols-1 gap-2">
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Check-in:</span>
-                      <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="font-medium text-gray-700">Check-out:</span>
-                      <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
-                    </div>
+                     <div className="flex justify-between">
+                       <span className="font-medium text-gray-700">Arrival Date:</span>
+                       <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
+                     </div>
+                     <div className="flex justify-between">
+                       <span className="font-medium text-gray-700">Departure Date:</span>
+                       <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
+                     </div>
                   </div>
                 </div>
                 
@@ -317,18 +317,17 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Complete Your Booking?</h2>
                     <p className="text-gray-600 mb-3">Click below to proceed with secure payment</p>
-                    <p className="text-xs text-gray-500">
-                      By proceeding with the payment I agree with the{' '}
-                      <a 
-                        href="https://www.allihoopliving.com/" 
-                        target="_blank" 
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline hover:text-blue-800 transition-colors"
-                      >
-                        terms and conditions
-                      </a>
-                      {' '}of agreement with Allhoop
-                    </p>
+                     <p className="text-xs text-gray-500">
+                       By proceeding with the payment, I accept the{' '}
+                       <a 
+                         href="https://www.allihoopliving.com/" 
+                         target="_blank" 
+                         rel="noopener noreferrer"
+                         className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                       >
+                         Allihoop Terms & Conditions
+                       </a>
+                     </p>
                   </div>
 
                   <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">

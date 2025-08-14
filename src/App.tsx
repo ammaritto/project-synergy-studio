@@ -559,14 +559,14 @@ const App: React.FC = () => {
                   <span className="text-gray-600">Property:</span>
                   <span className="font-medium text-gray-800">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Check-in:</span>
-                  <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.startDate)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Check-out:</span>
-                  <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.endDate)}</span>
-                </div>
+                 <div className="flex justify-between">
+                   <span className="text-gray-600">Arrival Date:</span>
+                   <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.startDate)}</span>
+                 </div>
+                 <div className="flex justify-between">
+                   <span className="text-gray-600">Departure Date:</span>
+                   <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.endDate)}</span>
+                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Duration:</span>
                   <span className="font-medium text-gray-800">{selectedUnit.selectedRate.nights} nights</span>
@@ -687,9 +687,10 @@ const App: React.FC = () => {
                 >
                   Back to Search
                 </button>
-                <button
-                  type="submit"
-                  className="order-1 sm:order-2 flex-1 bg-gradient-to-r from-amber-400 to-yellow-500 text-black py-4 px-6 rounded-xl font-semibold hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-lg"
+                 <button
+                   type="submit"
+                   className="order-1 sm:order-2 flex-1 text-white py-4 px-6 rounded-xl font-semibold hover:opacity-90 transition-all duration-200 flex items-center justify-center shadow-lg"
+                   style={{ backgroundColor: '#1461E2' }}
                 >
                   <CreditCard className="w-5 h-5 mr-2" />
                   Continue to Payment
@@ -715,17 +716,8 @@ const App: React.FC = () => {
         getMinEndDate={getMinEndDate}
         inventoryFilter={inventoryFilter}
         setInventoryFilter={setInventoryFilter}
+        error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""}
       />
-
-      {/* Error Message (hidden on no-results to show screenshot only) */}
-      {error && !(hasSearched && !loading && availability.length === 0) && (
-        <div className="max-w-6xl mx-auto px-4 mb-8">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-start">
-            <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
 
       {hasSearched && !loading && availability.length === 0 && (
         <div ref={resultsSectionRef} className="section-spacing">

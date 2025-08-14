@@ -16,6 +16,7 @@ interface SearchFormProps {
   getMinEndDate: () => string;
   inventoryFilter: 'ALL' | 'Studio Plus' | 'Studio';
   setInventoryFilter: React.Dispatch<React.SetStateAction<'ALL' | 'Studio Plus' | 'Studio'>>;
+  error?: string;
 }
 
 const SearchForm: React.FC<SearchFormProps> = ({
@@ -25,7 +26,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
   loading,
   getMinEndDate,
   inventoryFilter,
-  setInventoryFilter
+  setInventoryFilter,
+  error
 }) => {
   // Calendar state
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
@@ -207,8 +209,14 @@ const SearchForm: React.FC<SearchFormProps> = ({
   return (
     <div className="py-16 md:py-20 bg-white" id="search-section">
       <div className="container-modern">
-        <div className="bg-white rounded-2xl shadow-lg p-8 animate-slide-up max-w-5xl mx-auto border border-gray-100">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Book this Studio</h1>
+          <p className="text-gray-600">Find your perfect short-term accommodation</p>
+        </div>
+        
+        <div className="bg-white p-8 animate-slide-up max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Date Range Picker */}
             <div className="md:col-span-2">
               <label className="block text-sm font-medium text-foreground mb-2">
@@ -342,7 +350,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
                       <button
                         onClick={applyDates}
                         disabled={!dateRange.from || !dateRange.to}
-                        className="px-4 py-2 bg-gray-700 text-white rounded-lg hover:bg-gray-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
+                        style={{ backgroundColor: '#1461E2' }}
                       >
                         Apply
                       </button>
@@ -365,37 +374,13 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   value={searchParams.guests}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                 >
-                  {[1, 2, 3, 4, 5, 6].map(num => (
+                  {[1, 2].map(num => (
                     <option key={num} value={num}>{num} Guest{num !== 1 ? 's' : ''}</option>
                   ))}
                 </select>
               </div>
             </div>
 
-            {/* Studio Type Filter */}
-            <div>
-              <label htmlFor="studioType" className="block text-sm font-medium text-foreground mb-2">
-                Studio type
-              </label>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  type="button"
-                  variant={inventoryFilter === 'Studio' ? 'default' : 'outline'}
-                  className="w-full"
-                  onClick={() => setInventoryFilter(prev => (prev === 'Studio' ? 'ALL' : 'Studio'))}
-                >
-                  Studio
-                </Button>
-                <Button
-                  type="button"
-                  variant={inventoryFilter === 'Studio Plus' ? 'default' : 'outline'}
-                  className="w-full"
-                  onClick={() => setInventoryFilter(prev => (prev === 'Studio Plus' ? 'ALL' : 'Studio Plus'))}
-                >
-                  Studio Plus
-                </Button>
-              </div>
-            </div>
 
             {/* Search Button */}
             <div>
@@ -403,7 +388,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
               <button
                 onClick={onSearch}
                 disabled={loading}
-                className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md group"
+                className="w-full py-3 rounded-lg font-semibold hover:opacity-90 transition-all duration-300 flex items-center justify-center shadow-md group"
+                style={{ backgroundColor: '#1461E2', color: 'white' }}
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
@@ -416,6 +402,13 @@ const SearchForm: React.FC<SearchFormProps> = ({
               </button>
             </div>
           </div>
+          
+          {/* Error message */}
+          {error && (
+            <div className="mt-4 text-center">
+              <p className="text-red-600 text-sm font-medium">{error}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
