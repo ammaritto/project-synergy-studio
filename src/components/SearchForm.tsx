@@ -185,19 +185,19 @@ const SearchForm: React.FC<SearchFormProps> = ({
   const getDayClassName = (date: Date | null) => {
     if (!date) return '';
     
-    let classes = 'relative w-12 h-12 flex items-center justify-center text-sm rounded-xl cursor-pointer transition-all duration-300 ';
+    let classes = 'relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-sm rounded-lg cursor-pointer transition-all duration-300 ';
     
     if (isPastDate(date)) {
       classes += 'text-gray-300 cursor-not-allowed hover:bg-transparent ';
     } else if (isSelected(date)) {
-      // Selected dates - using the blue theme color
-      classes += 'bg-[#1461E2] text-white font-semibold hover:bg-[#1252CC] shadow-lg ';
+      // Selected dates - using the blue theme color with reduced padding
+      classes += 'bg-[#1461E2] text-white font-semibold hover:bg-[#1252CC] shadow-md ';
     } else if (isInRange(date)) {
       // Dates in range - light blue
       classes += 'bg-blue-50 text-gray-700 hover:bg-blue-100 ';
     } else if (isToday(date)) {
       // Today - subtle gray background with border
-      classes += 'bg-gray-50 text-gray-900 font-medium ring-2 ring-gray-200 hover:bg-gray-100 ';
+      classes += 'bg-gray-50 text-gray-900 font-medium ring-1 ring-gray-200 hover:bg-gray-100 ';
     } else {
       // Regular dates
       classes += 'text-gray-700 hover:bg-gray-50 ';
@@ -274,7 +274,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
                         <div className="grid grid-cols-7 gap-2 mb-4">
                           {weekDays.map(day => (
-                            <div key={day} className="w-12 h-12 flex items-center justify-center text-xs font-medium text-gray-500">
+                            <div key={day} className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-xs font-medium text-gray-500">
                               {day}
                             </div>
                           ))}
@@ -293,7 +293,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                                   {date.getDate()}
                                 </div>
                               ) : (
-                                <div className="w-12 h-12" />
+                                <div className="w-10 h-10 sm:w-11 sm:h-11" />
                               )}
                             </div>
                           ))}
@@ -317,7 +317,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
                         <div className="grid grid-cols-7 gap-2 mb-4">
                           {weekDays.map(day => (
-                            <div key={`next-${day}`} className="w-12 h-12 flex items-center justify-center text-xs font-medium text-gray-500">
+                            <div key={`next-${day}`} className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-xs font-medium text-gray-500">
                               {day}
                             </div>
                           ))}
@@ -336,7 +336,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                                   {date.getDate()}
                                 </div>
                               ) : (
-                                <div className="w-12 h-12" />
+                                <div className="w-10 h-10 sm:w-11 sm:h-11" />
                               )}
                             </div>
                           ))}
