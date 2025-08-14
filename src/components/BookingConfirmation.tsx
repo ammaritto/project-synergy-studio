@@ -1,8 +1,6 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { CheckCircle } from 'lucide-react';
 import { BookingDetails } from '../hooks/useBookingState';
-import IframeModal from './IframeModal';
-import { isInIframe, setupParentMessageListener } from '../utils/iframeUtils';
 
 interface BookingConfirmationProps {
   bookingDetails: BookingDetails;
@@ -13,23 +11,6 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
   bookingDetails,
   onReset
 }) => {
-  // Setup message listener for parent window responses
-  useEffect(() => {
-    if (isInIframe()) {
-      const cleanup = setupParentMessageListener((message) => {
-        switch(message.type) {
-          case 'MAKE_ANOTHER_BOOKING':
-            onReset();
-            break;
-          case 'MODAL_CLOSED':
-            onReset();
-            break;
-        }
-      });
-      
-      return cleanup;
-    }
-  }, [onReset]);
   const formatCurrency = (amount: number): string => {
     return `${amount.toLocaleString('sv-SE')} SEK`;
   };
