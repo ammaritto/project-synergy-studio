@@ -69,21 +69,7 @@ export function DateRangeFilter({ label, value, onChange }: DateRangeFilterProps
             onSelect={handleSelect}
             numberOfMonths={2}
             className="p-3 pointer-events-auto"
-            disabled={{ before: new Date() }}
           />
-          <div className="flex justify-between items-center p-3 pt-0">
-            <span className="text-xs text-muted-foreground">Min 3 nights</span>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => {
-                onChange({ from: undefined, to: undefined });
-                setIsOpen(false);
-              }}
-            >
-              Clear dates
-            </Button>
-          </div>
         </PopoverContent>
       </Popover>
     </div>
