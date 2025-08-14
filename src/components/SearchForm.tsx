@@ -1,7 +1,7 @@
 import React from 'react';
 import { Search, Users } from 'lucide-react';
+import { DateRangeFilter } from './DateRangeFilter';
 import { Button } from "@/components/ui/button";
-import { DateRangeFilter } from '@/components/DateRangeFilter';
 
 interface SearchParams {
   startDate: string;
@@ -28,39 +28,25 @@ const SearchForm: React.FC<SearchFormProps> = ({
   inventoryFilter,
   setInventoryFilter
 }) => {
-  // Convert string dates to Date objects for the DateRangeFilter
+  // Convert string dates to Date objects for DateRangeFilter
   const dateRange = React.useMemo(() => ({
     from: searchParams.startDate ? new Date(searchParams.startDate) : undefined,
-    to: searchParams.endDate ? new Date(searchParams.endDate) : undefined,
+    to: searchParams.endDate ? new Date(searchParams.endDate) : undefined
   }), [searchParams.startDate, searchParams.endDate]);
 
-  // Convert Date objects back to string format for searchParams
+  // Handle date range change from DateRangeFilter
   const handleDateRangeChange = (range: { from: Date | undefined; to: Date | undefined }) => {
-    const toLocalISO = (date: Date) => {
-      const y = date.getFullYear();
-      const m = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
+    const toLocalISO = (d: Date) => {
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
       return `${y}-${m}-${day}`;
     };
 
-    let from = range.from;
-    let to = range.to;
-
-    // Enforce minimum 3 nights stay
-    if (from && to) {
-      const diffMs = to.getTime() - from.getTime();
-      const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-      if (diffDays < 3) {
-        const forced = new Date(from);
-        forced.setDate(forced.getDate() + 3);
-        to = forced;
-      }
-    }
-
     setSearchParams(prev => ({
       ...prev,
-      startDate: from ? toLocalISO(from) : '',
-      endDate: to ? toLocalISO(to) : '',
+      startDate: range.from ? toLocalISO(range.from) : '',
+      endDate: range.to ? toLocalISO(range.to) : ''
     }));
   };
 
@@ -95,11 +81,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 </select>
               </div>
             </div>
-          </div>
 
-          {inventoryFilter && (
-            <div className="mt-6">
-              <label className="block text-sm font-medium text-foreground mb-2">
+            <div>
+              <label htmlFor="studioType" className="block text-sm font-medium text-foreground mb-2">
                 Studio type
               </label>
               <div className="grid grid-cols-2 gap-2">
@@ -121,26 +105,24 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 </Button>
               </div>
             </div>
-          )}
 
-          <div className="flex justify-center mt-8">
-            <Button
-              onClick={onSearch}
-              disabled={loading || !searchParams.startDate || !searchParams.endDate}
-              className="px-8 py-3 bg-primary hover:bg-primary/90 text-primary-foreground"
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  Searching...
-                </>
-              ) : (
-                <>
-                  <Search className="mr-2 h-4 w-4" />
-                  Search Available Studios
-                </>
-              )}
-            </Button>
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-2"> </label>
+              <button
+                onClick={onSearch}
+                disabled={loading}
+                className="w-full py-3 bg-primary text-primary-foreground rounded-lg font-semibold hover:bg-primary/90 transition-all duration-300 flex items-center justify-center shadow-md group"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
+                    <Search className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                    Search
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
