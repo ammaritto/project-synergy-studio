@@ -56,3 +56,4 @@ const SearchForm: React.FC<SearchFormProps> = ({
     </div>
   );
 };
+export default SearchForm;
