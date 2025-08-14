@@ -249,7 +249,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
 
                 {/* Calendar Dropdown */}
                 {isCalendarOpen && (
-                  <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 p-4 z-50">
+                  <div className="absolute top-full left-0 right-0 lg:right-auto mt-3 bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50 w-full lg:min-w-[700px] max-w-[95vw]">
                     <div className="flex gap-6">
                       {/* First Month */}
                       <div className="flex-1">
