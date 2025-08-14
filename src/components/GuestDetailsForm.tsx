@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
-import { User, Mail, Phone, CreditCard } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Mail, Phone, CreditCard, ArrowLeft } from 'lucide-react';
 import { GuestDetails, SelectedUnit, SearchParams } from '../hooks/useBookingState';
-import { useParentCommunication } from '../hooks/useParentCommunication';
 
 interface GuestDetailsFormProps {
   selectedUnit: SelectedUnit;
@@ -24,13 +23,15 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   error,
   calculateNights
 }) => {
-  const { openFullScreenPopup } = useParentCommunication();
-  const isInIframe = window.parent !== window;
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const formatCurrency = (amount: number): string => {
     try {
       const num = parseFloat(amount?.toString() || '0') || 0;
-      return `${num.toLocaleString('sv-SE')} SEK`;
+      return new Intl.NumberFormat('sv-SE', {
+        style: 'currency',
+        currency: 'SEK'
+      }).format(num);
     } catch (e) {
       return '0 SEK';
     }
@@ -40,120 +41,148 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
     try {
       const date = new Date(dateString);
       const options: Intl.DateTimeFormatOptions = {
-        weekday: 'long',
-        day: '2-digit',
+        weekday: 'short',
+        year: 'numeric',
         month: 'short',
-        year: 'numeric'
+        day: 'numeric'
       };
-      return date.toLocaleDateString('en-GB', options);
+      return date.toLocaleDateString('en-US', options);
     } catch (e) {
       return dateString;
     }
   };
 
-  // Send popup data to parent when component mounts (if in iframe)
-  useEffect(() => {
-    if (isInIframe) {
-      const popupData = {
-        type: 'guest-details-form',
-        selectedUnit,
-        confirmedSearchParams,
-        guestDetails,
-        error,
-        nights: calculateNights(),
-        formattedDates: {
-          startDate: formatDateWithWeekday(confirmedSearchParams.startDate),
-          endDate: formatDateWithWeekday(confirmedSearchParams.endDate)
-        },
-        formattedPrice: formatCurrency(selectedUnit.selectedRate.totalPrice)
-      };
+  // Enhanced validation
+  const validateForm = (): boolean => {
+    const newErrors: Record<string, string> = {};
 
-      openFullScreenPopup(popupData);
+    // First name validation
+    if (!guestDetails.firstName.trim()) {
+      newErrors.firstName = 'First name is required';
+    } else if (guestDetails.firstName.trim().length < 2) {
+      newErrors.firstName = 'First name must be at least 2 characters';
     }
-  }, [isInIframe, selectedUnit, confirmedSearchParams, guestDetails, error, calculateNights, openFullScreenPopup]);
 
-  // Listen for messages from parent (form submissions, back actions)
-  useEffect(() => {
-    if (isInIframe) {
-      const handleParentMessage = (event: MessageEvent) => {
-        if (event.data && event.data.source === 'webflow-parent') {
-          switch (event.data.type) {
-            case 'guest-form-submit':
-              if (event.data.formData) {
-                // Update guest details with parent form data
-                setGuestDetails(event.data.formData);
-                // Trigger the original submit
-                const fakeEvent = { preventDefault: () => {} } as React.FormEvent;
-                onSubmit(fakeEvent);
-              }
-              break;
-            case 'guest-form-back':
-              onBack();
-              break;
-          }
-        }
-      };
-
-      window.addEventListener('message', handleParentMessage);
-      return () => window.removeEventListener('message', handleParentMessage);
+    // Last name validation
+    if (!guestDetails.lastName.trim()) {
+      newErrors.lastName = 'Last name is required';
+    } else if (guestDetails.lastName.trim().length < 2) {
+      newErrors.lastName = 'Last name must be at least 2 characters';
     }
-  }, [isInIframe, setGuestDetails, onSubmit, onBack]);
 
-  // If in iframe, render minimal content (the popup is handled by parent)
-  if (isInIframe) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="bg-white p-8 rounded-lg shadow-lg text-center">
-          <h2 className="text-xl font-semibold mb-4">Loading Guest Details Form...</h2>
-          <p className="text-gray-600">The form will open in full screen mode.</p>
-        </div>
-      </div>
-    );
-  }
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!guestDetails.email.trim()) {
+      newErrors.email = 'Email address is required';
+    } else if (!emailRegex.test(guestDetails.email.trim())) {
+      newErrors.email = 'Please enter a valid email address';
+    }
 
-  // Normal popup behavior when not in iframe
+    // Phone validation (optional but if provided, should be valid)
+    if (guestDetails.phone && guestDetails.phone.trim()) {
+      const phoneRegex = /^[\+]?[0-9\s\-\(\)]{8,}$/;
+      if (!phoneRegex.test(guestDetails.phone.trim())) {
+        newErrors.phone = 'Please enter a valid phone number';
+      }
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (validateForm()) {
+      onSubmit(e);
+    }
+  };
+
+  const handleInputChange = (field: keyof GuestDetails, value: string) => {
+    // Clean up input based on field type
+    if (field === 'firstName' || field === 'lastName') {
+      value = value.replace(/[^a-zA-ZÀ-ÿ\s]/g, ''); // Allow letters, accents, and spaces
+    }
+    if (field === 'phone') {
+      value = value.replace(/[^0-9\+\-\s\(\)]/g, ''); // Allow numbers and common phone characters
+    }
+
+    setGuestDetails(prev => ({ ...prev, [field]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Background content (blurred) */}
-      <div className="filter blur-sm opacity-50">
-        <div className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 py-6">
-            <h1 className="text-3xl font-bold text-gray-900">Short Stay Booking</h1>
-            <p className="text-gray-600 mt-2">Find and book your perfect short-term accommodation</p>
-          </div>
+    <div className="min-h-screen bg-gray-50 py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center mb-8">
+          <button
+            onClick={onBack}
+            className="flex items-center text-gray-600 hover:text-gray-800 mr-4"
+          >
+            <ArrowLeft className="w-5 h-5 mr-1" />
+            Back
+          </button>
+          <h1 className="text-2xl font-bold text-gray-900">Guest Details</h1>
         </div>
-      </div>
 
-      {/* Popup Modal */}
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-        <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Guest Details</h2>
+        {/* Global error display */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            {error}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Booking Summary */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold text-gray-900 mb-4">Booking Summary</h2>
             
-            {/* Booking Summary */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
-              <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">From:</span> {formatDateWithWeekday(confirmedSearchParams.startDate)}
-              </p>
-              <p className="text-sm text-gray-600">
-                <span className="font-medium">To:</span> {formatDateWithWeekday(confirmedSearchParams.endDate)}
-              </p>
-              <p className="text-sm text-gray-600">({calculateNights()} nights)</p>
-              <p className="text-sm font-semibold text-gray-800 mt-2">
-                <span className="font-medium">Total Amount:</span> {formatCurrency(selectedUnit.selectedRate.totalPrice)}
-              </p>
-              <p className="text-xs text-gray-500">(VAT incl.)</p>
+            <div className="space-y-3 text-sm">
+              <div>
+                <span className="font-medium text-gray-700">Property:</span>
+                <span className="ml-2 text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</span>
+              </div>
+              
+              <div>
+                <span className="font-medium text-gray-700">Check-in:</span>
+                <span className="ml-2 text-gray-600">{formatDateWithWeekday(confirmedSearchParams.startDate)}</span>
+              </div>
+              
+              <div>
+                <span className="font-medium text-gray-700">Check-out:</span>
+                <span className="ml-2 text-gray-600">{formatDateWithWeekday(confirmedSearchParams.endDate)}</span>
+              </div>
+              
+              <div>
+                <span className="font-medium text-gray-700">Duration:</span>
+                <span className="ml-2 text-gray-600">{calculateNights()} {calculateNights() === 1 ? 'night' : 'nights'}</span>
+              </div>
+              
+              <div className="border-t pt-3 mt-3">
+                <div className="flex justify-between text-lg font-semibold">
+                  <span>Total Amount:</span>
+                  <div className="text-right">
+                    <span className="text-blue-600">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</span>
+                    <div className="text-xs text-gray-500 font-normal">(VAT incl.)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Guest Details Form */}
+          <div className="bg-white rounded-lg shadow-md p-6">
+            <div className="flex items-center mb-4">
+              <User className="w-5 h-5 text-blue-600 mr-2" />
+              <h2 className="text-xl font-semibold text-gray-900">Guest Information</h2>
             </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-                {error}
-              </div>
-            )}
-
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* First Name */}
               <div>
                 <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-1">
                   First Name *
@@ -163,15 +192,20 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
                   <input
                     type="text"
                     id="firstName"
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={guestDetails.firstName}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
+                    onChange={(e) => handleInputChange('firstName', e.target.value)}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.firstName ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="John"
                   />
                 </div>
+                {errors.firstName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.firstName}</p>
+                )}
               </div>
 
+              {/* Last Name */}
               <div>
                 <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-1">
                   Last Name *
@@ -181,15 +215,20 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
                   <input
                     type="text"
                     id="lastName"
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={guestDetails.lastName}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
+                    onChange={(e) => handleInputChange('lastName', e.target.value)}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.lastName ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="Doe"
                   />
                 </div>
+                {errors.lastName && (
+                  <p className="text-red-500 text-sm mt-1">{errors.lastName}</p>
+                )}
               </div>
 
+              {/* Email Address */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
                   Email Address *
@@ -199,49 +238,56 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
                   <input
                     type="email"
                     id="email"
-                    required
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={guestDetails.email}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
+                    onChange={(e) => handleInputChange('email', e.target.value)}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.email ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="john@example.com"
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+                )}
               </div>
 
+              {/* Phone Number */}
               <div>
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
+                  Phone Number <span className="text-gray-500">(Optional)</span>
                 </label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <input
                     type="tel"
                     id="phone"
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     value={guestDetails.phone}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    className={`w-full pl-10 pr-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                      errors.phone ? 'border-red-500' : 'border-gray-300'
+                    }`}
                     placeholder="+46 70 123 4567"
                   />
                 </div>
+                {errors.phone && (
+                  <p className="text-red-500 text-sm mt-1">{errors.phone}</p>
+                )}
               </div>
 
-              <div className="flex space-x-3 pt-4">
-                <button
-                  type="button"
-                  onClick={onBack}
-                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition-colors"
-                >
-                  Back
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors flex items-center justify-center"
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Continue to Payment
-                </button>
-              </div>
+              {/* Submit Button */}
+              <button
+                type="submit"
+                className="w-full py-3 px-4 rounded-md font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors flex items-center justify-center"
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Continue to Payment
+              </button>
             </form>
+
+            {/* Privacy Notice */}
+            <div className="mt-4 text-sm text-gray-600 bg-gray-50 p-3 rounded-md">
+              <p>Your personal information is secure and will only be used for this booking.</p>
+            </div>
           </div>
         </div>
       </div>
