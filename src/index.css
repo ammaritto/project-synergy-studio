@@ -13,7 +13,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 221 83% 35%; /* dark blue */
+    --primary: 221 83% 53%; /* Updated to brighter blue for better visibility */
     --primary-foreground: 210 40% 98%;
 
     --secondary: 217 91% 60%; /* blue */
@@ -22,8 +22,8 @@
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --accent: 217 92% 90%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 217 91% 85%; /* Updated to more visible light blue */
+    --accent-foreground: 221 83% 35%; /* Dark blue text for contrast */
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 210 40% 98%;
@@ -48,6 +48,42 @@
   * { @apply border-border; }
   body { @apply bg-background text-foreground; }
   h1, h2, h3, h4 { @apply text-foreground; }
+}
+
+/* Calendar Range Selection Styling */
+.rdp {
+  /* Enhanced calendar range colors */
+  --rdp-accent-color: hsl(217 91% 60%); /* Blue for selected dates */
+  --rdp-accent-color-dark: hsl(221 83% 53%); /* Darker blue for start/end */
+  --rdp-background-color: hsl(217 91% 85%); /* Light blue for range middle */
+}
+
+/* Calendar range selection specific styles */
+.rdp-day_selected {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.rdp-day_range_start,
+.rdp-day_range_end {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.rdp-day_range_middle {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+/* Alternative targeting for better range visibility */
+.rdp [aria-selected="true"] {
+  background-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+}
+
+.rdp [aria-selected="true"]:not(.rdp-day_range_start):not(.rdp-day_range_end) {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
 }
 
 /* Custom animations and utilities */
