@@ -115,32 +115,32 @@ const CheckoutForm: React.FC<{
       )}
 
       {/* Action Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+      <div className="flex flex-col gap-3">
+        <button
+          type="submit"
+          disabled={!stripe || processing}
+          className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center"
+          style={{ backgroundColor: '#1461E2', color: 'white' }}
+        >
+          {processing ? (
+            <div className="flex items-center justify-center">
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Processing...
+            </div>
+          ) : (
+            <>
+              Complete Payment
+            </>
+          )}
+        </button>
         <button
           type="button"
           onClick={onBack}
           disabled={processing}
-          className="order-2 sm:order-1 w-full sm:flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-8 rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
+          className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
-          Back to Details
-        </button>
-        <button
-          type="submit"
-          disabled={!stripe || processing}
-          className="order-1 sm:order-2 w-full sm:flex-1 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black py-4 px-8 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center group shadow-lg hover:shadow-xl"
-        >
-          {processing ? (
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-3"></div>
-              Processing Payment...
-            </div>
-          ) : (
-            <>
-              <Lock className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
-              Complete Payment {formatCurrency(totalAmount)}
-            </>
-          )}
+          Back
         </button>
       </div>
     </form>
@@ -316,21 +316,10 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       <CreditCard className="w-8 h-8 text-white" />
                     </div>
                     <h2 className="text-xl font-bold text-gray-900 mb-2">Ready to Complete Your Booking?</h2>
-                    <p className="text-gray-600 mb-3">Click below to proceed with secure payment</p>
-                     <p className="text-xs text-gray-500">
-                       By proceeding with the payment, I accept the{' '}
-                       <a 
-                         href="https://www.allihoopliving.com/" 
-                         target="_blank" 
-                         rel="noopener noreferrer"
-                         className="text-blue-600 underline hover:text-blue-800 transition-colors"
-                       >
-                         Allihoop Terms & Conditions
-                       </a>
-                     </p>
+                    <p className="text-gray-600 mb-6">Click below to proceed with secure payment</p>
                   </div>
 
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 mb-6">
                     <div className="flex items-center">
                       <Lock className="w-5 h-5 text-green-600 mr-3 flex-shrink-0" />
                       <div className="text-sm">
@@ -340,32 +329,46 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                     </div>
                   </div>
                   
-                  <button
-                    onClick={handleInitiatePayment}
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-yellow-400 to-yellow-500 text-black py-4 px-8 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center group shadow-lg hover:shadow-xl"
-                  >
-                    {loading ? (
-                      <div className="flex items-center justify-center">
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-black mr-2"></div>
-                        Initializing Payment...
-                      </div>
-                    ) : (
-                      <>
-                        <Lock className="w-5 h-5 mr-2 group-hover:scale-110 transition-transform duration-200" />
-                        Proceed to Payment - {formatCurrency(totalAmount)}
-                      </>
-                    )}
-                  </button>
+                  <div className="flex flex-col gap-3">
+                    <button
+                      onClick={handleInitiatePayment}
+                      disabled={loading}
+                      className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center"
+                      style={{ backgroundColor: '#1461E2', color: 'white' }}
+                    >
+                      {loading ? (
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                          Processing...
+                        </div>
+                      ) : (
+                        <>
+                          Complete Payment
+                        </>
+                      )}
+                    </button>
 
-                  <button
-                    onClick={onBack}
-                    disabled={loading}
-                    className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-8 rounded-2xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center mt-4"
-                  >
-                    <ArrowLeft className="w-5 h-5 mr-2" />
-                    Back to Guest Details
-                  </button>
+                    <button
+                      onClick={onBack}
+                      disabled={loading}
+                      className="w-full bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
+                    >
+                      <ArrowLeft className="w-5 h-5 mr-2" />
+                      Back
+                    </button>
+                  </div>
+
+                  <p className="text-xs text-gray-500 text-center mt-4">
+                    By proceeding with the payment, I accept the{' '}
+                    <a 
+                      href="https://www.allihoopliving.com/" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 underline hover:text-blue-800 transition-colors"
+                    >
+                      Allihoop Terms & Conditions
+                    </a>
+                  </p>
                 </div>
               ) : (
                 clientSecret && options && (
