@@ -16,6 +16,7 @@ interface StripePaymentFormProps {
     checkOut: string;
     propertyName: string;
     nights: number;
+    guests: number;
   };
 }
 const CheckoutForm: React.FC<{
@@ -229,6 +230,12 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       <div className="font-medium text-gray-700 mb-1">Guest</div>
                       <div className="text-gray-600">{bookingDetails.guestName}</div>
                     </div>
+                    <div className="text-right">
+                      <div className="font-medium text-gray-700 mb-1">Guests</div>
+                      <div className="text-gray-600">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-start">
                     <div className="text-right">
                       <div className="font-medium text-gray-700 mb-1">Duration</div>
                       <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>

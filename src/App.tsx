@@ -381,7 +381,8 @@ const App: React.FC = () => {
       checkIn: lastSearchParams.startDate,
       checkOut: lastSearchParams.endDate,
       propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-      nights: selectedUnit.selectedRate.nights
+      nights: selectedUnit.selectedRate.nights,
+      guests: lastSearchParams.guests
     }} />;
   }
 
