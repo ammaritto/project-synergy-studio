@@ -179,6 +179,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         endDate: toLocalISO(dateRange.to)
       }));
       setIsCalendarOpen(false);
+      onSearch(); // Trigger search when apply is clicked
     }
   };
 
