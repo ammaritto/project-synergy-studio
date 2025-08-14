@@ -209,11 +209,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
   return (
     <div className="py-16 md:py-20 bg-white" id="search-section">
       <div className="container-modern">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Book this Studio</h1>
-          <p className="text-gray-600">Find your perfect short-term accommodation</p>
-        </div>
+         {/* Header */}
+         <div className="text-center mb-8">
+           <h1 className="text-4xl font-bold text-gray-900 mb-2">Book this Studio</h1>
+         </div>
         
         <div className="bg-white p-8 animate-slide-up max-w-5xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

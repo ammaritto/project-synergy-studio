@@ -719,20 +719,6 @@ const App: React.FC = () => {
         error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""}
       />
 
-      {hasSearched && !loading && availability.length === 0 && (
-        <div ref={resultsSectionRef} className="section-spacing">
-          <div className="container-modern">
-            <div className="flex items-center justify-center">
-              <img
-                src="/lovable-uploads/8dd47ad5-4115-46fc-ba06-6573f685d2da.png"
-                alt="No studios match your search - try different dates or guests"
-                className="max-w-full h-auto"
-                loading="lazy"
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
