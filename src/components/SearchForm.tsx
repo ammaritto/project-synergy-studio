@@ -207,10 +207,10 @@ const SearchForm: React.FC<SearchFormProps> = ({
   return (
     <div className="py-16 md:py-20 bg-white" id="search-section">
       <div className="container-modern">
-        <div className="p-8 animate-slide-up max-w-5xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-2xl shadow-lg p-8 animate-slide-up max-w-5xl mx-auto border border-gray-100">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Date Range Picker */}
-            <div>
+            <div className="md:col-span-2">
               <label className="block text-sm font-medium text-foreground mb-2">
                 Pick a date range
               </label>

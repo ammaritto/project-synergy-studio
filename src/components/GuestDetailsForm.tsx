@@ -70,10 +70,10 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
               <h3 className="font-semibold text-gray-800 mb-2">Booking Summary</h3>
               <p className="text-sm text-gray-600">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</p>
               <p className="text-sm text-gray-600">
-                <span className="font-medium">Arrival Date:</span> {formatDateWithWeekday(confirmedSearchParams.startDate)}
+                <span className="font-medium">From:</span> {formatDateWithWeekday(confirmedSearchParams.startDate)}
               </p>
               <p className="text-sm text-gray-600">
-                <span className="font-medium">Departure Date:</span> {formatDateWithWeekday(confirmedSearchParams.endDate)}
+                <span className="font-medium">To:</span> {formatDateWithWeekday(confirmedSearchParams.endDate)}
               </p>
               <p className="text-sm text-gray-600">({calculateNights()} nights)</p>
               <p className="text-sm font-semibold text-gray-800 mt-2">

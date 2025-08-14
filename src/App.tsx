@@ -236,16 +236,21 @@ const App: React.FC = () => {
         setLastSearchParams({ ...searchParams });
         setHasSearched(true);
         
-        // If we have results, go straight to Guest Details by auto-selecting first unit
-        if (transformedData.length > 0) {
-          const unit = transformedData[0];
+        // If we have results, go straight to Guest Details by auto-selecting a unit
+        const listForSelection =
+          inventoryFilter === 'ALL'
+            ? transformedData
+            : transformedData.filter((u: any) => u.inventoryTypeName === inventoryFilter);
+
+        if (listForSelection.length > 0) {
+          const unit = listForSelection[0];
           const rate = unit.rates?.[0];
           if (rate) {
             setSelectedUnit({ ...unit, selectedRate: rate });
             setShowBookingForm(true);
           }
         } else {
-          // No results, show "not found" section
+          // No results after filtering, show "not found" section
           setAvailability([]);
         }
       } else {
