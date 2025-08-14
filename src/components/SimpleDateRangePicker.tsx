@@ -161,7 +161,7 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
   const getDayClassName = (date: Date | null) => {
     if (!date) return '';
     
-    let classes = 'relative w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-sm rounded-xl cursor-pointer transition-all duration-300 ';
+    let classes = 'relative w-12 h-12 flex items-center justify-center text-sm rounded-xl cursor-pointer transition-all duration-300 ';
     
     if (isPastDate(date)) {
       classes += 'text-gray-300 cursor-not-allowed hover:bg-transparent ';
@@ -211,32 +211,38 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
 
       {/* Calendar Dropdown */}
       {isOpen && (
-        <div className="absolute top-full left-0 right-0 md:right-auto mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 md:p-6 z-50 w-full md:min-w-[640px] lg:min-w-[700px] max-w-[95vw]">
-          <div className="flex flex-col md:flex-row gap-4 md:gap-8">
+        <div className="absolute top-full left-0 right-0 md:right-auto mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-3 md:p-6 z-50 w-full md:min-w-[640px] lg:min-w-[700px] max-w-[95vw]">
+          <div className="flex flex-col gap-6 md:flex-row md:gap-8">
             {/* First Month */}
             <div className="flex-1">
-              <div className="flex items-center justify-between mb-4 md:mb-6">
+              <div className="flex items-center justify-between mb-6">
                 <button
                   onClick={handlePrevMonth}
-                  className="p-2 md:p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200"
+                  className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200"
                 >
-                  <ChevronLeft className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+                  <ChevronLeft className="w-5 h-5 text-gray-600" />
                 </button>
-                <h3 className="text-base md:text-lg font-semibold text-gray-800">
+                <h3 className="text-lg font-semibold text-gray-800">
                   {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
                 </h3>
-                <div className="w-8 md:w-11" />
+                <button
+                  onClick={handleNextMonth}
+                  className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200 md:hidden"
+                >
+                  <ChevronRight className="w-5 h-5 text-gray-600" />
+                </button>
+                <div className="w-11 hidden md:block" />
               </div>
 
-              <div className="grid grid-cols-7 gap-1 md:gap-2 mb-3 md:mb-4">
+              <div className="grid grid-cols-7 gap-2 mb-4">
                 {weekDays.map(day => (
-                  <div key={day} className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xs font-medium text-gray-500">
+                  <div key={day} className="w-12 h-12 flex items-center justify-center text-xs font-medium text-gray-500">
                     {day}
                   </div>
                 ))}
               </div>
 
-              <div className="grid grid-cols-7 gap-1 md:gap-2">
+              <div className="grid grid-cols-7 gap-2">
                 {days.map((date, index) => (
                   <div key={index}>
                     {date ? (
@@ -249,37 +255,37 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
                         {date.getDate()}
                       </div>
                      ) : (
-                       <div className="w-10 h-10 md:w-12 md:h-12" />
+                       <div className="w-12 h-12" />
                      )}
                    </div>
                  ))}
                </div>
              </div>
 
-             {/* Second Month */}
-             <div className="flex-1">
-               <div className="flex items-center justify-between mb-4 md:mb-6">
-                 <div className="w-8 md:w-11" />
-                 <h3 className="text-base md:text-lg font-semibold text-gray-800">
+             {/* Second Month - Hidden on mobile */}
+             <div className="flex-1 hidden md:block">
+               <div className="flex items-center justify-between mb-6">
+                 <div className="w-11" />
+                 <h3 className="text-lg font-semibold text-gray-800">
                    {monthNames[nextMonth.getMonth()]} {nextMonth.getFullYear()}
                  </h3>
                  <button
                    onClick={handleNextMonth}
-                   className="p-2 md:p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200"
+                   className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200"
                  >
-                   <ChevronRight className="w-4 h-4 md:w-5 md:h-5 text-gray-600" />
+                   <ChevronRight className="w-5 h-5 text-gray-600" />
                  </button>
                </div>
 
-               <div className="grid grid-cols-7 gap-1 md:gap-2 mb-3 md:mb-4">
+               <div className="grid grid-cols-7 gap-2 mb-4">
                  {weekDays.map(day => (
-                   <div key={`next-${day}`} className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center text-xs font-medium text-gray-500">
+                   <div key={`next-${day}`} className="w-12 h-12 flex items-center justify-center text-xs font-medium text-gray-500">
                      {day}
                    </div>
                  ))}
                </div>
 
-               <div className="grid grid-cols-7 gap-1 md:gap-2">
+               <div className="grid grid-cols-7 gap-2">
                  {nextMonthDays.map((date, index) => (
                    <div key={`next-${index}`}>
                      {date ? (
@@ -292,7 +298,7 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
                          {date.getDate()}
                        </div>
                      ) : (
-                       <div className="w-10 h-10 md:w-12 md:h-12" />
+                       <div className="w-12 h-12" />
                      )}
                   </div>
                 ))}
@@ -301,17 +307,17 @@ export const SimpleDateRangePicker: React.FC<SimpleDateRangePickerProps> = ({
           </div>
 
            {/* Actions */}
-           <div className="mt-4 md:mt-6 pt-4 md:pt-6 border-t border-gray-100 flex justify-end gap-2 md:gap-3">
+           <div className="mt-6 pt-6 border-t border-gray-100 flex justify-end gap-3">
              <button
                onClick={clearDates}
-               className="px-4 md:px-6 py-2 md:py-3 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors duration-200 font-medium text-sm md:text-base"
+               className="px-6 py-3 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors duration-200 font-medium"
              >
                Clear
              </button>
              <button
                onClick={applyDates}
                disabled={!dateRange.from || !dateRange.to}
-               className="px-4 md:px-6 py-2 md:py-3 bg-[#1461E2] text-white rounded-xl hover:bg-[#1252CC] transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium text-sm md:text-base"
+               className="px-6 py-3 bg-[#1461E2] text-white rounded-xl hover:bg-[#1252CC] transition-colors duration-200 disabled:bg-gray-300 disabled:cursor-not-allowed font-medium"
              >
                Apply
              </button>
