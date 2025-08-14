@@ -125,7 +125,7 @@ const App: React.FC = () => {
     try {
       const date = new Date(dateString);
       const options: Intl.DateTimeFormatOptions = {
-        weekday: 'long',
+        weekday: 'short',
         day: '2-digit',
         month: 'short',
         year: 'numeric'
