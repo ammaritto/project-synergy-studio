@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
-import PropertyCard from './components/PropertyCard';
-import LocationInfo from './components/LocationInfo';
+// SearchResults will be rendered inline
 
 // TypeScript interfaces
 interface SearchParams {
@@ -57,6 +56,9 @@ const App: React.FC = () => {
   // Refs
   const resultsSectionRef = useRef<HTMLDivElement>(null);
 
+  // NEW: Extract inventory type ID from URL
+  const [urlInventoryTypeId, setUrlInventoryTypeId] = useState<number | null>(null);
+
   // Main state
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnit | null>(null);
   const [guestDetails, setGuestDetails] = useState<GuestDetails>({
@@ -82,6 +84,34 @@ const App: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
 
+  // NEW: URL parsing effect
+  useEffect(() => {
+    const path = window.location.pathname;
+    const match = path.match(/^\/(\d+)$/);
+    if (match) {
+      const inventoryTypeId = parseInt(match[1], 10);
+      setUrlInventoryTypeId(inventoryTypeId);
+    } else {
+      setUrlInventoryTypeId(null);
+    }
+  }, []);
+
+  // NEW: Listen for URL changes (for SPA navigation)
+  useEffect(() => {
+    const handlePopState = () => {
+      const path = window.location.pathname;
+      const match = path.match(/^\/(\d+)$/);
+      if (match) {
+        const inventoryTypeId = parseInt(match[1], 10);
+        setUrlInventoryTypeId(inventoryTypeId);
+      } else {
+        setUrlInventoryTypeId(null);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
@@ -101,95 +131,25 @@ const App: React.FC = () => {
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const dayAfter = new Date(today);
-    dayAfter.setDate(dayAfter.getDate() + 3);
     
     setSearchParams({
-      startDate: tomorrow.toISOString().split('T')[0],
-      endDate: dayAfter.toISOString().split('T')[0],
+      startDate: today.toISOString().split('T')[0],
+      endDate: tomorrow.toISOString().split('T')[0],
       guests: 1
     });
   }, []);
 
-  // Simple currency formatter
-  const formatCurrency = (amount: number): string => {
-    try {
-      const num = parseFloat(amount?.toString() || '0') || 0;
-      return `${num.toLocaleString('sv-SE')} SEK`;
-    } catch (e) {
-      return '0 SEK';
-    }
-  };
-
-  // Calculate nights based on search params
-  const calculateNights = (): number => {
+  // Calculate nights
+  const calculateNights = () => {
     if (!searchParams.startDate || !searchParams.endDate) return 0;
     const start = new Date(searchParams.startDate);
     const end = new Date(searchParams.endDate);
-    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   };
 
-  // Format date with weekday (e.g., "Monday, 07 Jul 2025")
-  const formatDateWithWeekday = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: 'long',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      };
-      return date.toLocaleDateString('en-GB', options);
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  // Format date for display (dd/mm/yyyy)
-  const formatDisplayDate = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    } catch (e) {
-      return dateString;
-    }
-  };
-
-  // Get minimum end date (always 1 day after check-in)
-  const getMinEndDate = (): string => {
-    if (!searchParams.startDate) return '';
-    const minDate = new Date(searchParams.startDate);
-    minDate.setDate(minDate.getDate() + 1);
-    return minDate.toISOString().split('T')[0];
-  };
-
-  // Auto-update checkout date when checkin changes
-  useEffect(() => {
-    if (searchParams.startDate) {
-      const checkIn = new Date(searchParams.startDate);
-      const checkOut = new Date(searchParams.endDate);
-      
-      if (!searchParams.endDate || checkOut <= checkIn) {
-        const newCheckOut = new Date(checkIn);
-        newCheckOut.setDate(newCheckOut.getDate() + 1);
-        setSearchParams(prev => ({
-          ...prev,
-          endDate: newCheckOut.toISOString().split('T')[0]
-        }));
-      }
-    }
-  }, [searchParams.startDate]);
-
-  // Search for availability
-  const searchAvailability = async (): Promise<void> => {
-    if (!searchParams.startDate || !searchParams.endDate) {
-      setError('Please select check-in and check-out dates');
-      return;
-    }
-
+  // Search availability
+  const searchAvailability = async () => {
     setLoading(true);
     setError('');
     
@@ -199,7 +159,7 @@ const App: React.FC = () => {
         endDate: searchParams.endDate,
         guests: searchParams.guests.toString()
       });
-      
+
       const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
       
       if (!response.ok) {
@@ -211,7 +171,7 @@ const App: React.FC = () => {
       if (data.success && data.data) {
         const searchNights = calculateNights();
         
-        const transformedData = data.data.map((property: any) => {
+        let transformedData = data.data.map((property: any) => {
           return {
             buildingId: property.buildingId || 0,
             buildingName: property.buildingName || 'Unknown Building',
@@ -234,18 +194,30 @@ const App: React.FC = () => {
             })
           };
         });
+
+        // NEW: Filter by URL inventory type ID if present
+        if (urlInventoryTypeId !== null) {
+          transformedData = transformedData.filter((unit: Unit) => 
+            unit.inventoryTypeId === urlInventoryTypeId
+          );
+        }
         
         setAvailability(transformedData);
         setLastSearchParams({ ...searchParams });
         setHasSearched(true);
         
-        // Scroll to results section after search completes
-        setTimeout(() => {
-          resultsSectionRef.current?.scrollIntoView({ 
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 100);
+        // If we have results, go straight to Guest Details by auto-selecting a unit
+        if (transformedData.length > 0) {
+          const unit = transformedData[0];
+          const rate = unit.rates?.[0];
+          if (rate) {
+            setSelectedUnit({ ...unit, selectedRate: rate });
+            setShowBookingForm(true);
+          }
+        } else {
+          // No results after filtering, show "not found" section
+          setAvailability([]);
+        }
       } else {
         setError(data.message || 'No availability found');
         setAvailability([]);
@@ -279,496 +251,380 @@ const App: React.FC = () => {
     }
   };
 
-  // Select unit and rate
-  const selectUnit = (unit: Unit, rate: Rate): void => {
+  // Auto-search when URL changes and we have search params
+  useEffect(() => {
+    if (searchParams.startDate && searchParams.endDate && urlInventoryTypeId !== null) {
+      searchAvailability();
+    }
+  }, [urlInventoryTypeId]);
+
+  // Format currency
+  const formatCurrency = (amount: number, currency: string = 'SEK') => {
+    return new Intl.NumberFormat('sv-SE', {
+      style: 'currency',
+      currency: currency,
+    }).format(amount);
+  };
+
+  // Format date with weekday
+  const formatDateWithWeekday = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  // Handle unit selection
+  const handleSelectUnit = (unit: Unit, rate: Rate) => {
     setSelectedUnit({ ...unit, selectedRate: rate });
     setShowBookingForm(true);
   };
 
-  // Handle guest details submission
-  const handleGuestDetailsSubmit = (e: React.FormEvent): void => {
+  // Handle guest details form submission
+  const handleGuestDetailsSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!selectedUnit) return;
+    
+    setError('');
     
     if (!guestDetails.firstName || !guestDetails.lastName || !guestDetails.email) {
       setError('Please fill in all required fields');
       return;
     }
-
-    setError('');
-    setShowBookingForm(false);
+    
     setShowPaymentForm(true);
   };
 
-  // Handle Stripe payment success
-  const handleStripePaymentSuccess = async (paymentIntentId: string) => {
-    try {
-      setLoading(true);
-      
-      const bookingData = {
-        guestDetails,
-        stayDetails: lastSearchParams!,
-        unitDetails: {
-          inventoryTypeId: selectedUnit!.inventoryTypeId,
-          rateId: selectedUnit!.selectedRate.rateId
-        },
-        paymentDetails: {
-          amount: selectedUnit!.selectedRate.totalPrice,
-          cardNumber: '4111111111111111',
-          cardholderName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-          expiryMonth: '12',
-          expiryYear: '2025',
-          cvv: '123',
-          cardType: 'VISA_CREDIT',
-          lastFour: '1111'
-        },
-        stripePaymentIntentId: paymentIntentId
-      };
-
-      const response = await fetch(`${API_BASE_URL}/booking/create-with-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bookingData),
-      });
-
-      const data = await response.json();
-      
-      if (data.success) {
-        setBookingDetails(data.data);
-        setBookingComplete(true);
-        setShowPaymentForm(false);
-      } else {
-        setError(data.message || 'Failed to create booking');
-        if (data.stripePaymentSuccessful) {
-          setError('Payment was successful but booking creation failed. Please contact support with reference: ' + paymentIntentId);
-        }
-      }
-    } catch (err) {
-      console.error('Booking error:', err);
-      setError('Failed to create booking. If payment was processed, please contact support.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle back from payment form
-  const handleBackFromPayment = (): void => {
-    setShowPaymentForm(false);
-    setShowBookingForm(true);
-  };
-
-  // Handle modal backdrop click
-  const handleModalBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setShowBookingForm(false);
-    }
-  };
-
-  // Reset to search
-  const resetToSearch = (): void => {
-    setBookingComplete(false);
+  // Handle booking completion
+  const handleBookingComplete = (bookingData: BookingDetails) => {
+    setBookingDetails(bookingData);
+    setBookingComplete(true);
     setShowPaymentForm(false);
     setShowBookingForm(false);
-    setSelectedUnit(null);
-    setGuestDetails({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: ''
-    });
-    setError('');
   };
 
-  // Show payment form
-  if (showPaymentForm && selectedUnit && lastSearchParams) {
+  // Handle starting new search
+  const handleNewSearch = () => {
+    setBookingComplete(false);
+    setBookingDetails(null);
+    setSelectedUnit(null);
+    setShowBookingForm(false);
+    setShowPaymentForm(false);
+    setGuestDetails({ firstName: '', lastName: '', email: '', phone: '' });
+    setError('');
+    setHasSearched(false);
+    setAvailability([]);
+    
+    // NEW: Update URL to remove inventory type filter
+    window.history.pushState({}, '', '/');
+    setUrlInventoryTypeId(null);
+  };
+
+  // NEW: Get inventory type display name
+  const getInventoryTypeDisplayName = (inventoryTypeId: number): string => {
+    const nameMap: { [key: number]: string } = {
+      10: 'Studio',
+      11: 'Studio Plus',
+      38: 'Studio Premium'
+    };
+    return nameMap[inventoryTypeId] || `Unit Type ${inventoryTypeId}`;
+  };
+
+  if (bookingComplete && bookingDetails) {
     return (
-      <StripePaymentForm
-        totalAmount={selectedUnit.selectedRate.totalPrice}
-        currency={selectedUnit.selectedRate.currency}
-        onPaymentSuccess={handleStripePaymentSuccess}
-        onBack={handleBackFromPayment}
-        bookingDetails={{
-          guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-          checkIn: lastSearchParams.startDate,
-          checkOut: lastSearchParams.endDate,
-          propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-          nights: selectedUnit.selectedRate.nights
-        }}
-      />
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4 py-8">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+              <div className="text-green-500 mb-6">
+                <CheckCircle className="w-20 h-20 mx-auto" />
+              </div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">Booking Confirmed!</h1>
+              <div className="bg-gray-50 rounded-lg p-6 mb-6 text-left">
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Booking Details</h2>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <p><span className="font-medium">Booking Reference:</span> {bookingDetails.bookingReference}</p>
+                  <p><span className="font-medium">Guest Name:</span> {bookingDetails.guestName}</p>
+                  <p><span className="font-medium">Check-in:</span> {formatDateWithWeekday(bookingDetails.checkIn)}</p>
+                  <p><span className="font-medium">Check-out:</span> {formatDateWithWeekday(bookingDetails.checkOut)}</p>
+                  <p><span className="font-medium">Status:</span> <span className="text-blue-600 font-medium">{bookingDetails.status}</span></p>
+                  {bookingDetails.paymentReference && (
+                    <p><span className="font-medium">Payment Reference:</span> {bookingDetails.paymentReference}</p>
+                  )}
+                  {bookingDetails.paymentAmount && (
+                    <p><span className="font-medium">Amount Paid:</span> {formatCurrency(bookingDetails.paymentAmount)}</p>
+                  )}
+                </div>
+              </div>
+              <p className="text-gray-600 mb-6">
+                A confirmation email has been sent to {guestDetails.email}
+              </p>
+              <button
+                onClick={handleNewSearch}
+                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+              >
+                Make Another Booking
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  // Booking confirmation screen
-  if (bookingComplete) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 section-spacing">
-        <div className="container-modern">
-          <div className="max-w-2xl mx-auto">
-            <div className="card-glass p-12 text-center animate-bounce-in">
-              {/* Success Animation */}
-              <div className="mb-8">
-                <div className="relative">
-                  <div className="w-32 h-32 bg-gradient-to-r from-orange-400 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-glow">
-                    <CheckCircle className="w-16 h-16 text-white" />
-                  </div>
-                  {/* Floating confetti effect */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    {[...Array(6)].map((_, i) => (
-                      <div
-                        key={i}
-                        className="absolute w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full opacity-70 animate-float-slow"
-                        style={{
-                          left: `${20 + i * 15}%`,
-                          top: `${10 + (i % 2) * 20}%`,
-                          animationDelay: `${i * 0.5}s`
-                        }}
-                      ></div>
-                    ))}
-                  </div>
-                </div>
-                
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-                  🎉 Booking <span className="text-gradient-warm">Confirmed!</span>
-                </h1>
-                <p className="text-xl text-gray-600 mb-8">
-                  Your amazing studio is all set! Get ready for an unforgettable experience.
-                </p>
-              </div>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="flex items-center justify-center mb-4">
+            <Sparkles className="text-blue-600 w-8 h-8 mr-2" />
+            <h1 className="text-4xl font-bold text-gray-900">Short Stay Booking</h1>
+          </div>
+          {/* NEW: Show filtered view indicator */}
+          {urlInventoryTypeId && (
+            <div className="bg-blue-100 border border-blue-200 rounded-lg p-3 mb-4 inline-block">
+              <p className="text-blue-800 font-medium">
+                Showing only: {getInventoryTypeDisplayName(urlInventoryTypeId)}
+              </p>
+            </div>
+          )}
+          <p className="text-gray-600 text-lg">Find and book your perfect short-term accommodation</p>
+        </div>
 
-              {/* Booking Details Card */}
-              <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 mb-8 border border-gray-100 shadow-xl">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Booking Details</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Booking Reference</div>
-                        <div className="text-2xl font-bold text-purple-600">{bookingDetails?.bookingReference}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                        <Users className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Guest Name</div>
-                        <div className="text-lg text-gray-800">{bookingDetails?.guestName}</div>
-                      </div>
-                    </div>
+        {!showBookingForm && !showPaymentForm && (
+          <>
+            {/* Search Form */}
+            <SearchForm 
+              searchParams={searchParams}
+              setSearchParams={setSearchParams}
+              onSearch={searchAvailability}
+              loading={loading}
+            />
+
+            {/* Search Results */}
+            {hasSearched && (
+              <div ref={resultsSectionRef}>
+                {error ? (
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <p className="text-red-800">{error}</p>
                   </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-white" />
+                ) : (
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                      Available Properties ({availability.length})
+                    </h2>
+
+                    {availability.length === 0 ? (
+                      <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                        <div className="text-gray-400 mb-4">
+                          <Search className="w-16 h-16 mx-auto" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
+                        <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
                       </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Check-in</div>
-                        <div className="text-lg text-gray-800">{bookingDetails && formatDisplayDate(bookingDetails.checkIn)}</div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {availability.map((unit, index) => (
+                          <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
+                            <img 
+                              src={getPropertyImage(unit.inventoryTypeId)} 
+                              alt={unit.inventoryTypeName}
+                              className="w-full h-48 object-cover"
+                            />
+                            <div className="p-6">
+                              <h3 className="text-lg font-semibold text-gray-900 mb-2">{unit.buildingName}</h3>
+                              <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
+                              
+                              <div className="space-y-3">
+                                {unit.rates.map((rate, rateIndex) => (
+                                  <div key={`${rate.rateId}-${rateIndex}`} className="border border-gray-200 rounded-lg p-3">
+                                    <div className="flex justify-between items-start mb-2">
+                                      <div>
+                                        <div className="text-sm text-gray-600">
+                                          <div><span className="font-medium">From:</span> {formatDateWithWeekday(lastSearchParams!.startDate)}</div>
+                                          <div><span className="font-medium">To:</span> {formatDateWithWeekday(lastSearchParams!.endDate)}</div>
+                                        </div>
+                                        <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
+                                      </div>
+                                      <div className="text-right">
+                                        <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
+                                        <p className="text-sm text-gray-500">
+                                          {formatCurrency(rate.avgNightlyRate)}/night
+                                        </p>
+                                        <p className="text-xs text-gray-500">(VAT incl.)</p>
+                                      </div>
+                                    </div>
+                                    <button
+                                      onClick={() => handleSelectUnit(unit, rate)}
+                                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
+                                    >
+                                      Select & Book
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Check-out</div>
-                        <div className="text-lg text-gray-800">{bookingDetails && formatDisplayDate(bookingDetails.checkOut)}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {bookingDetails?.paymentAmount && (
-                  <div className="border-t border-gray-200 pt-6 mt-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-gray-700">Total Amount Paid</span>
-                      <span className="text-3xl font-bold text-orange-600">{formatCurrency(bookingDetails.paymentAmount)}</span>
-                    </div>
+                    )}
                   </div>
                 )}
               </div>
+            )}
+          </>
+        )}
 
-              {/* Additional Info */}
-              <div className="bg-orange-50 rounded-2xl p-6 mb-8 border border-orange-100">
-                <h3 className="font-bold text-orange-800 mb-2">📧 What's Next?</h3>
-                <p className="text-orange-700">
-                  A confirmation email with all details and check-in instructions has been sent to your email address.
+        {/* Guest Details Form */}
+        {showBookingForm && selectedUnit && !showPaymentForm && (
+          <div className="max-w-2xl mx-auto">
+            <button
+              onClick={() => setShowBookingForm(false)}
+              className="flex items-center text-blue-600 hover:text-blue-800 mb-6 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Results
+            </button>
+
+            <div className="bg-white rounded-2xl shadow-xl p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-6">Guest Details</h2>
+              
+              {/* Selected Unit Summary */}
+              <div className="bg-blue-50 rounded-lg p-6 mb-6">
+                <h3 className="font-semibold text-gray-900 mb-2">Selected Accommodation</h3>
+                <p className="text-gray-700">{selectedUnit.buildingName} - {selectedUnit.inventoryTypeName}</p>
+                <p className="text-gray-600 text-sm mt-1">
+                  {formatDateWithWeekday(lastSearchParams!.startDate)} - {formatDateWithWeekday(lastSearchParams!.endDate)} 
+                  ({selectedUnit.selectedRate.nights} {selectedUnit.selectedRate.nights === 1 ? 'night' : 'nights'})
+                </p>
+                <p className="text-lg font-bold text-blue-600 mt-2">
+                  Total: {formatCurrency(selectedUnit.selectedRate.totalPrice)}
                 </p>
               </div>
 
-              {/* Action Button */}
-              <button
-                onClick={resetToSearch}
-                className="btn-warm group"
-              >
-                <span className="flex items-center">
-                  Book Another Amazing Studio
-                  <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform duration-300" />
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+              {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                  <p className="text-red-800">{error}</p>
+                </div>
+              )}
 
-  // Guest details form (popup overlay)
-  if (showBookingForm && selectedUnit && lastSearchParams) {
-    return (
-      <div 
-        className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-        onClick={handleModalBackdropClick}
-      >
-        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-          <div className="p-8">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-3xl font-bold text-gray-800">Guest Details</h2>
-              <button
-                onClick={() => setShowBookingForm(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
-              >
-                ✕
-              </button>
-            </div>
-            
-            {/* Booking Summary */}
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-6 mb-8 border border-orange-100">
-              <h3 className="font-bold text-gray-800 mb-4 flex items-center">
-                <Sparkles className="w-5 h-5 mr-2 text-orange-600" />
-                Booking Summary
-              </h3>
-              
-              <div className="space-y-3 text-sm mb-4">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Property:</span>
-                  <span className="font-medium text-gray-800">{selectedUnit.inventoryTypeName} - {selectedUnit.buildingName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Check-in:</span>
-                  <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.startDate)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Check-out:</span>
-                  <span className="font-medium text-gray-800">{formatDateWithWeekday(lastSearchParams.endDate)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Duration:</span>
-                  <span className="font-medium text-gray-800">{selectedUnit.selectedRate.nights} nights</span>
-                </div>
-              </div>
-              
-              <div className="pt-4 border-t border-blue-200">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-bold text-gray-800">Total:</span>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold text-orange-600">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
-                    <div className="text-xs text-gray-500">VAT included</div>
+              <form onSubmit={handleGuestDetailsSubmit} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      First Name <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={guestDetails.firstName}
+                        onChange={(e) => setGuestDetails({ ...guestDetails, firstName: e.target.value })}
+                        placeholder="Enter first name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Last Name <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="text"
+                        required
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        value={guestDetails.lastName}
+                        onChange={(e) => setGuestDetails({ ...guestDetails, lastName: e.target.value })}
+                        placeholder="Enter last name"
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-start">
-                <CheckCircle className="w-5 h-5 mr-2 flex-shrink-0 mt-0.5" />
-                <span className="text-sm">{error}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleGuestDetailsSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="firstName" className="block text-sm font-medium text-gray-700 mb-2">
-                    First Name *
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
-                      type="text"
-                      id="firstName"
+                      type="email"
                       required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                      value={guestDetails.firstName}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, firstName: e.target.value }))}
-                      placeholder="Ammar Raad"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={guestDetails.email}
+                      onChange={(e) => setGuestDetails({ ...guestDetails, email: e.target.value })}
+                      placeholder="Enter email address"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="lastName" className="block text-sm font-medium text-gray-700 mb-2">
-                    Last Name *
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Phone Number
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
+                    <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
                     <input
-                      type="text"
-                      id="lastName"
-                      required
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                      value={guestDetails.lastName}
-                      onChange={(e) => setGuestDetails(prev => ({ ...prev, lastName: e.target.value }))}
-                      placeholder="Mohammed AL-Rubaye"
+                      type="tel"
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      value={guestDetails.phone}
+                      onChange={(e) => setGuestDetails({ ...guestDetails, phone: e.target.value })}
+                      placeholder="Enter phone number (optional)"
                     />
                   </div>
                 </div>
-              </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address *
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
-                  <input
-                    type="email"
-                    id="email"
-                    required
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                    value={guestDetails.email}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, email: e.target.value }))}
-                    placeholder="ammar.rubaye1992@gmail.com"
-                  />
+                <div className="flex flex-col sm:flex-row gap-4 pt-6">
+                  <button
+                    type="button"
+                    onClick={() => setShowBookingForm(false)}
+                    className="flex-1 bg-gray-200 text-gray-800 py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  >
+                    Back to Results
+                  </button>
+                  <button
+                    type="submit"
+                    className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center"
+                  >
+                    Continue to Payment
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </button>
                 </div>
-              </div>
-
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number (Optional)
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-orange-400" />
-                  <input
-                    type="tel"
-                    id="phone"
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200"
-                    value={guestDetails.phone}
-                    onChange={(e) => setGuestDetails(prev => ({ ...prev, phone: e.target.value }))}
-                    placeholder="3204764555"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-6">
-                <button
-                  type="button"
-                  onClick={() => setShowBookingForm(false)}
-                  className="order-2 sm:order-1 flex-1 bg-white border border-gray-300 text-gray-700 py-4 px-6 rounded-xl font-medium hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
-                >
-                  Back to Search
-                </button>
-                <button
-                  type="submit"
-                  className="order-1 sm:order-2 flex-1 bg-gradient-to-r from-orange-400 to-amber-500 text-white py-4 px-6 rounded-xl font-semibold hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-lg"
-                >
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Continue to Payment
-                </button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Payment Form */}
+        {showPaymentForm && selectedUnit && (
+          <div className="max-w-2xl mx-auto">
+            <button
+              onClick={() => setShowPaymentForm(false)}
+              className="flex items-center text-blue-600 hover:text-blue-800 mb-6 transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 mr-2" />
+              Back to Guest Details
+            </button>
+
+            <StripePaymentForm
+              selectedUnit={selectedUnit}
+              guestDetails={guestDetails}
+              searchParams={lastSearchParams!}
+              onBookingComplete={handleBookingComplete}
+              formatCurrency={formatCurrency}
+              formatDateWithWeekday={formatDateWithWeekday}
+            />
+          </div>
+        )}
       </div>
-    );
-  }
-
-  // Main interface
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-      {/* Location Information */}
-      <LocationInfo />
-
-      {/* Search Section */}
-      <SearchForm
-        searchParams={searchParams}
-        setSearchParams={setSearchParams}
-        onSearch={searchAvailability}
-        loading={loading}
-        getMinEndDate={getMinEndDate}
-      />
-
-      {/* Error Message */}
-      {error && (
-        <div className="max-w-6xl mx-auto px-4 mb-8">
-          <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl flex items-start">
-            <CheckCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        </div>
-      )}
-
-      {/* Search Results */}
-      {hasSearched && availability.length > 0 && lastSearchParams && (
-        <div ref={resultsSectionRef} className="section-spacing bg-gradient-to-br from-white via-orange-50/20 to-amber-50">
-          <div className="container-modern">
-            <div className="text-center mb-8 md:mb-16 animate-fade-in-up">
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold text-gray-900 mb-4 md:mb-6">
-                <span className="text-orange-600">Your</span> Matches
-              </h2>
-              <p className="text-lg md:text-xl lg:text-2xl text-gray-600 max-w-3xl mx-auto px-4">
-                We found {availability.length} studio type{availability.length === 1 ? '' : 's'} for your dates in Stockholm
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 lg:gap-10 px-4">
-              {availability.map((unit, index) => (
-                <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} 
-                     className="animate-fade-in-up" 
-                     style={{animationDelay: `${index * 0.15}s`}}>
-                  <PropertyCard
-                    unit={unit}
-                    lastSearchParams={lastSearchParams}
-                    onSelectUnit={selectUnit}
-                    getPropertyImage={getPropertyImage}
-                    formatCurrency={formatCurrency}
-                    formatDateWithWeekday={formatDateWithWeekday}
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* No results message */}
-      {hasSearched && !loading && availability.length === 0 && (
-        <div ref={resultsSectionRef} className="section-spacing">
-          <div className="container-modern">
-            <div className="text-center mb-8 animate-fade-in">
-              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              No Studios Found
-            </h2>
-          </div>
-            <div className="card-elegant p-8 md:p-12 text-center animate-slide-up max-w-2xl mx-auto">
-              <div className="text-gray-400 mb-6">
-                <Search className="w-20 h-20 md:w-24 md:h-24 mx-auto" />
-            </div>
-              <h3 className="text-xl md:text-2xl font-semibold text-gray-900 mb-4">
-              No studios match your search
-            </h3>
-              <p className="text-gray-600 mb-8 max-w-md mx-auto text-lg">
-              Try adjusting your dates or number of guests to find available studios.
-            </p>
-              <button
-                onClick={searchAvailability}
-                className="bg-gradient-to-r from-orange-400 to-amber-500 text-white py-4 px-8 rounded-2xl font-bold text-lg hover:scale-105 transition-all duration-300 flex items-center justify-center mx-auto shadow-lg hover:shadow-xl group"
-              >
-                <Search className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform duration-300" />
-                Search Again
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
