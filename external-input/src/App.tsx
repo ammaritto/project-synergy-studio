@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
-// SearchResults will be rendered inline
 
 // TypeScript interfaces
 interface SearchParams {
