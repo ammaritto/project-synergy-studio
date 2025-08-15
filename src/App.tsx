@@ -51,6 +51,8 @@ const App: React.FC = () => {
   const { inventoryTypeId } = useParams<{ inventoryTypeId?: string }>();
   const filterByInventoryTypeId = inventoryTypeId ? parseInt(inventoryTypeId, 10) : null;
   
+  console.log('App component loaded - inventory filter removed, using URL-based filtering:', filterByInventoryTypeId);
+  
   // Refs
   const resultsSectionRef = useRef<HTMLDivElement>(null);
 
