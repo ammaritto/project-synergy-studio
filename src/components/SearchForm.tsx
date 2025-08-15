@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Search, Calendar, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 
@@ -29,6 +30,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
   setInventoryFilter,
   error
 }) => {
+  const navigate = useNavigate();
+  const { inventoryTypeId } = useParams<{ inventoryTypeId?: string }>();
+  
   // Calendar state
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
   const [dateRange, setDateRange] = useState<{ from: Date | null; to: Date | null }>({ 
@@ -190,6 +194,20 @@ const SearchForm: React.FC<SearchFormProps> = ({
       }));
       setIsCalendarOpen(false);
       onSearch(); // Trigger search when apply is clicked
+    }
+  };
+
+  // Handle inventory filter change and update URL
+  const handleInventoryFilterChange = (filter: 'ALL' | 'Studio Plus' | 'Studio') => {
+    setInventoryFilter(filter);
+    
+    // Update URL based on filter
+    if (filter === 'Studio') {
+      navigate('/10');
+    } else if (filter === 'Studio Plus') {
+      navigate('/11');
+    } else {
+      navigate('/');
     }
   };
 
@@ -400,9 +418,50 @@ const SearchForm: React.FC<SearchFormProps> = ({
               </div>
             </div>
 
+            {/* Inventory Type Filter */}
+            <div className="md:col-span-3">
+              <label className="block text-sm font-medium text-foreground mb-2">
+                Studio Type
+              </label>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => handleInventoryFilterChange('ALL')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    inventoryFilter === 'ALL'
+                      ? 'bg-[#1461E2] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  All Studios
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInventoryFilterChange('Studio')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    inventoryFilter === 'Studio'
+                      ? 'bg-[#1461E2] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Studio
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInventoryFilterChange('Studio Plus')}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                    inventoryFilter === 'Studio Plus'
+                      ? 'bg-[#1461E2] text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Studio Plus
+                </button>
+              </div>
+            </div>
 
             {/* Search Button */}
-            <div>
+            <div className="md:col-span-1">
               <label className="block text-sm font-medium text-foreground mb-2">&nbsp;</label>
               <button
                 onClick={onSearch}
