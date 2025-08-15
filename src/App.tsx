@@ -506,7 +506,7 @@ const App: React.FC = () => {
   // Guest details form (full page)
   if (showBookingForm && selectedUnit && lastSearchParams) {
     const searchParamsWithCommunities = {
-      ...lastSearchParams,
+      ...searchParams,  // Use current searchParams instead of lastSearchParams
       communities: []  // Add empty communities array to match interface
     };
     
