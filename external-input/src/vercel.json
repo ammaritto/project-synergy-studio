@@ -13,5 +13,23 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/10",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/11",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/38",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/",
+      "destination": "/index.html"
+    }
   ]
 }
