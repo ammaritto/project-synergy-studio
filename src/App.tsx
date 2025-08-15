@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
+import SearchResults from './components/SearchResults';
 
 // TypeScript interfaces
 interface SearchParams {
@@ -407,72 +408,15 @@ const App: React.FC = () => {
             {/* Search Results */}
             {hasSearched && (
               <div ref={resultsSectionRef}>
-                {error ? (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                    <p className="text-red-800">{error}</p>
-                  </div>
-                ) : (
-                  <div>
-                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
-                      Available Properties ({availability.length})
-                    </h2>
-
-                    {availability.length === 0 ? (
-                      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                        <div className="text-gray-400 mb-4">
-                          <Search className="w-16 h-16 mx-auto" />
-                        </div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No properties found</h3>
-                        <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
-                      </div>
-                    ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        {availability.map((unit, index) => (
-                          <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-md overflow-hidden">
-                            <img 
-                              src={getPropertyImage(unit.inventoryTypeId)} 
-                              alt={unit.inventoryTypeName}
-                              className="w-full h-48 object-cover"
-                            />
-                            <div className="p-6">
-                              <h3 className="text-lg font-semibold text-gray-900 mb-2">{unit.buildingName}</h3>
-                              <p className="text-gray-600 mb-4">{unit.inventoryTypeName}</p>
-                              
-                              <div className="space-y-3">
-                                {unit.rates.map((rate, rateIndex) => (
-                                  <div key={`${rate.rateId}-${rateIndex}`} className="border border-gray-200 rounded-lg p-3">
-                                    <div className="flex justify-between items-start mb-2">
-                                      <div>
-                                        <div className="text-sm text-gray-600">
-                                          <div><span className="font-medium">From:</span> {formatDateWithWeekday(lastSearchParams!.startDate)}</div>
-                                          <div><span className="font-medium">To:</span> {formatDateWithWeekday(lastSearchParams!.endDate)}</div>
-                                        </div>
-                                        <p className="text-xs text-gray-500 mt-1">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</p>
-                                      </div>
-                                      <div className="text-right">
-                                        <p className="font-bold text-lg text-blue-600">{formatCurrency(rate.totalPrice)}</p>
-                                        <p className="text-sm text-gray-500">
-                                          {formatCurrency(rate.avgNightlyRate)}/night
-                                        </p>
-                                        <p className="text-xs text-gray-500">(VAT incl.)</p>
-                                      </div>
-                                    </div>
-                                    <button
-                                      onClick={() => handleSelectUnit(unit, rate)}
-                                      className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors"
-                                    >
-                                      Select & Book
-                                    </button>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <SearchResults
+                  availability={availability}
+                  confirmedSearchParams={lastSearchParams!}
+                  onSelectUnit={handleSelectUnit}
+                  formatCurrency={formatCurrency}
+                  formatDateWithWeekday={formatDateWithWeekday}
+                  getPropertyImage={getPropertyImage}
+                  error={error}
+                />
               </div>
             )}
           </>
