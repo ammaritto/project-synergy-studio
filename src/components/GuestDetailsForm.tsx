@@ -31,7 +31,8 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   };
   const formatDateWithWeekday = (dateString: string): string => {
     try {
-      const date = new Date(dateString);
+      // Ensure the date string is in yyyy-mm-dd format
+      const date = new Date(dateString + 'T00:00:00');
       const options: Intl.DateTimeFormatOptions = {
         weekday: 'long',
         day: '2-digit',
