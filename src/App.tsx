@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
@@ -47,9 +46,6 @@ interface BookingDetails {
   paymentAmount?: number;
 }
 const App: React.FC = () => {
-  const { inventoryTypeId } = useParams<{ inventoryTypeId?: string }>();
-  const navigate = useNavigate();
-  
   // Refs
   const resultsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -77,20 +73,7 @@ const App: React.FC = () => {
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
-  
-  // Determine inventory filter based on URL parameter
-  const getInventoryFilterFromUrl = (): 'ALL' | 'Studio Plus' | 'Studio' => {
-    if (inventoryTypeId === '10') return 'Studio';
-    if (inventoryTypeId === '11') return 'Studio Plus';
-    return 'ALL';
-  };
-  
-  const [inventoryFilter, setInventoryFilter] = useState<'ALL' | 'Studio Plus' | 'Studio'>(getInventoryFilterFromUrl());
-
-  // Update filter when URL changes
-  useEffect(() => {
-    setInventoryFilter(getInventoryFilterFromUrl());
-  }, [inventoryTypeId]);
+  const [inventoryFilter, setInventoryFilter] = useState<'ALL' | 'Studio Plus' | 'Studio'>('ALL');
 
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
@@ -240,15 +223,8 @@ const App: React.FC = () => {
         });
         setHasSearched(true);
 
-        // Filter results based on URL parameter
-        let filteredData = transformedData;
-        if (inventoryTypeId) {
-          const targetInventoryTypeId = parseInt(inventoryTypeId);
-          filteredData = transformedData.filter((u: any) => u.inventoryTypeId === targetInventoryTypeId);
-        }
-        
         // If we have results, go straight to Guest Details by auto-selecting a unit
-        const listForSelection = filteredData;
+        const listForSelection = inventoryFilter === 'ALL' ? transformedData : transformedData.filter((u: any) => u.inventoryTypeName === inventoryFilter);
         if (listForSelection.length > 0) {
           const unit = listForSelection[0];
           const rate = unit.rates?.[0];
@@ -261,7 +237,7 @@ const App: React.FC = () => {
           }
         } else {
           // No results after filtering, show "not found" section
-          setAvailability(filteredData);
+          setAvailability([]);
         }
       } else {
         setError(data.message || 'No availability found');
