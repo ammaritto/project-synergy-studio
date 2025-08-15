@@ -14,8 +14,6 @@ interface SearchFormProps {
   onSearch: () => void;
   loading: boolean;
   getMinEndDate: () => string;
-  inventoryFilter: 'ALL' | 'Studio Plus' | 'Studio';
-  setInventoryFilter: React.Dispatch<React.SetStateAction<'ALL' | 'Studio Plus' | 'Studio'>>;
   error?: string;
 }
 
@@ -25,8 +23,6 @@ const SearchForm: React.FC<SearchFormProps> = ({
   onSearch,
   loading,
   getMinEndDate,
-  inventoryFilter,
-  setInventoryFilter,
   error
 }) => {
   // Calendar state

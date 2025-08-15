@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams } from 'react-router-dom';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
@@ -46,6 +47,10 @@ interface BookingDetails {
   paymentAmount?: number;
 }
 const App: React.FC = () => {
+  // Get inventory type ID from URL
+  const { inventoryTypeId } = useParams<{ inventoryTypeId?: string }>();
+  const filterByInventoryTypeId = inventoryTypeId ? parseInt(inventoryTypeId, 10) : null;
+  
   // Refs
   const resultsSectionRef = useRef<HTMLDivElement>(null);
 
@@ -73,7 +78,6 @@ const App: React.FC = () => {
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
-  const [inventoryFilter, setInventoryFilter] = useState<'ALL' | 'Studio Plus' | 'Studio'>('ALL');
 
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
@@ -217,16 +221,21 @@ const App: React.FC = () => {
             })
           };
         });
-        setAvailability(transformedData);
+        
+        // Filter by inventory type ID from URL if specified
+        const filteredData = filterByInventoryTypeId 
+          ? transformedData.filter((u: any) => u.inventoryTypeId === filterByInventoryTypeId)
+          : transformedData;
+        
+        setAvailability(filteredData);
         setLastSearchParams({
           ...searchParams
         });
         setHasSearched(true);
 
         // If we have results, go straight to Guest Details by auto-selecting a unit
-        const listForSelection = inventoryFilter === 'ALL' ? transformedData : transformedData.filter((u: any) => u.inventoryTypeName === inventoryFilter);
-        if (listForSelection.length > 0) {
-          const unit = listForSelection[0];
+        if (filteredData.length > 0) {
+          const unit = filteredData[0];
           const rate = unit.rates?.[0];
           if (rate) {
             setSelectedUnit({
@@ -235,9 +244,6 @@ const App: React.FC = () => {
             });
             setShowBookingForm(true);
           }
-        } else {
-          // No results after filtering, show "not found" section
-          setAvailability([]);
         }
       } else {
         setError(data.message || 'No availability found');
@@ -522,7 +528,7 @@ const App: React.FC = () => {
   return <div className="min-h-screen bg-white">
 
       {/* Search Section */}
-      <SearchForm searchParams={searchParams} setSearchParams={setSearchParams} onSearch={searchAvailability} loading={loading} getMinEndDate={getMinEndDate} inventoryFilter={inventoryFilter} setInventoryFilter={setInventoryFilter} error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} />
+      <SearchForm searchParams={searchParams} setSearchParams={setSearchParams} onSearch={searchAvailability} loading={loading} getMinEndDate={getMinEndDate} error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} />
 
     </div>;
 };
