@@ -258,7 +258,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold text-gray-900">Total Amount</span>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
+                      <div className="text-xl md:text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
                       <div className="text-xs text-gray-500">VAT included</div>
                     </div>
                   </div>
