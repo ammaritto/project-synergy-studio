@@ -86,7 +86,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
               <div className="flex justify-between text-xl font-bold border-t pt-2">
                 <span>Total:</span>
                 <div className="text-right">
-                  <div className="text-2xl">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
+                  <div className="text-2xl md:text-2xl text-xl">{formatCurrency(selectedUnit.selectedRate.totalPrice)}</div>
                   <div className="text-sm text-gray-500 font-normal">VAT included</div>
                 </div>
               </div>
