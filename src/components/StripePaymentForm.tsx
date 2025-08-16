@@ -212,7 +212,10 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Guest:</span>
-              <span className="font-medium">{bookingDetails.guestName}</span>
+              <div className="text-right">
+                <div className="font-medium">{bookingDetails.guestName}</div>
+                <div className="text-gray-600">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</div>
+              </div>
             </div>
             <div className="flex justify-between">
               <span className="text-gray-600">Arrival Date:</span>
@@ -225,10 +228,6 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             <div className="flex justify-between">
               <span className="text-gray-600">Duration:</span>
               <span className="font-medium">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600">Guests:</span>
-              <span className="font-medium">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</span>
             </div>
             <div className="border-t pt-4">
               <div className="flex justify-between text-xl font-bold">
