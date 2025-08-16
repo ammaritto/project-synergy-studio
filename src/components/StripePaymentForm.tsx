@@ -207,7 +207,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
           </h3>
           <div className="space-y-4">
             <div className="flex justify-between">
-              <span className="text-gray-600">Property:</span>
+              <span className="text-gray-600">Booked studio:</span>
               <span className="font-medium text-right">{bookingDetails.propertyName}</span>
             </div>
             <div className="flex justify-between">
