@@ -383,24 +383,6 @@ const App: React.FC = () => {
     setError('');
   };
 
-  // TEMPORARY: Show booking confirmation for preview
-  const tempBookingDetails = {
-    bookingId: 12345,
-    bookingReference: "BK-2024-001234",
-    status: "confirmed",
-    guestName: "John Doe", 
-    checkIn: "2024-02-15",
-    checkOut: "2024-02-18",
-    paymentReference: "PI_1234567890",
-    paymentAmount: 2850
-  };
-
-  return (
-    <BookingConfirmation 
-      bookingDetails={tempBookingDetails}
-      onReset={resetToSearch}
-    />
-  );
 
   // Show payment form
   if (showPaymentForm && selectedUnit && lastSearchParams) {
