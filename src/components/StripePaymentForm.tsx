@@ -224,8 +224,8 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
                 </div>
 
-                <div className="space-y-4 text-sm">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 text-sm mx-auto max-w-lg">
+                  <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
                       <div className="font-medium text-gray-700 mb-1">Guest</div>
                       <div className="text-gray-600 break-words">{bookingDetails.guestName}</div>
@@ -235,7 +235,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       <div className="text-gray-600">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-4 text-center">
                     <div>
                       <div className="font-medium text-gray-700 mb-1">Duration</div>
                     </div>
@@ -245,11 +245,11 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   </div>
                   
                   <div className="space-y-2">
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-4 text-center">
                        <span className="font-medium text-gray-700">Arrival Date:</span>
                        <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-4 text-center">
                        <span className="font-medium text-gray-700">Departure Date:</span>
                        <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
                      </div>

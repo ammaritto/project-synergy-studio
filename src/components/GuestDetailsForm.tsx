@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Mail, Phone, CreditCard } from 'lucide-react';
+import { User, Mail, Phone, CreditCard, Sparkles } from 'lucide-react';
 import { GuestDetails, SelectedUnit, SearchParams } from '../hooks/useBookingState';
 interface GuestDetailsFormProps {
   selectedUnit: SelectedUnit;
@@ -46,7 +46,10 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   };
   return <div className="min-h-screen py-8 px-4 bg-white">
       <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Guest Details</h1>
+        <div className="flex items-center justify-center mb-8">
+          <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
+          <h1 className="text-2xl font-bold text-gray-900">Guest Details</h1>
+        </div>
         
         {/* Booking Summary */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
