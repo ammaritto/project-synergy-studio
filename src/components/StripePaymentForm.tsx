@@ -231,7 +231,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       <div className="text-gray-600">{bookingDetails.guestName}</div>
                     </div>
                     <div className="text-right">
-                      
+                      <div className="font-medium text-gray-700 mb-1">Guests</div>
                       <div className="text-gray-600">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</div>
                     </div>
                   </div>
