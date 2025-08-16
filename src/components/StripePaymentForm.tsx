@@ -238,10 +238,9 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   <div className="grid grid-cols-2 gap-8">
                     <div>
                       <div className="font-medium text-gray-700 mb-1">Duration</div>
-                    </div>
-                    <div>
                       <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
                     </div>
+                    <div></div>
                   </div>
                   
                   <div className="space-y-2">
