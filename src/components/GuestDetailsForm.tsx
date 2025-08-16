@@ -46,8 +46,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   };
   return <div className="min-h-screen py-8 px-4 bg-white">
       <div className="max-w-2xl mx-auto">
-        <div className="flex items-center justify-center mb-8">
-          <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
+        <div className="text-center mb-8">
           <h1 className="text-2xl font-bold text-gray-900">Guest Details</h1>
         </div>
         

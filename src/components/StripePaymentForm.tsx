@@ -220,12 +220,12 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
               
 
               <div className="space-y-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
+                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100 text-center">
                   <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
                 </div>
 
-                <div className="space-y-4 text-sm mx-auto max-w-lg">
-                  <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-4 text-sm max-w-md mx-auto">
+                  <div className="grid grid-cols-2 gap-8">
                     <div>
                       <div className="font-medium text-gray-700 mb-1">Guest</div>
                       <div className="text-gray-600 break-words">{bookingDetails.guestName}</div>
@@ -235,7 +235,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       <div className="text-gray-600">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</div>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-2 gap-8">
                     <div>
                       <div className="font-medium text-gray-700 mb-1">Duration</div>
                     </div>
@@ -245,19 +245,19 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   </div>
                   
                   <div className="space-y-2">
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-8">
                        <span className="font-medium text-gray-700">Arrival Date:</span>
                        <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
                      </div>
-                     <div className="grid grid-cols-2 gap-4">
+                     <div className="grid grid-cols-2 gap-8">
                        <span className="font-medium text-gray-700">Departure Date:</span>
                        <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
                      </div>
                   </div>
                 </div>
                 
-                <div className="border-t border-gray-200 pt-4 mx-auto max-w-lg">
-                  <div className="flex justify-between items-center">
+                <div className="border-t border-gray-200 pt-4 max-w-md mx-auto">
+                  <div className="grid grid-cols-2 gap-8">
                     <span className="text-lg font-semibold text-gray-900">Total Amount</span>
                     <div className="text-right">
                       <div className="text-xl md:text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
