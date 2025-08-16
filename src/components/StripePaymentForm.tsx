@@ -224,7 +224,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-4 text-sm">
                   <div className="flex justify-between items-start">
                     <div>
                       <div className="font-medium text-gray-700 mb-1">Guest</div>
