@@ -195,84 +195,55 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       }
     }
   } : undefined;
-  return <div className="min-h-screen bg-white py-8 px-4">
-
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8 animate-fade-in">
-          <div className="flex items-center justify-center mb-4">
-            <div className="bg-gradient-to-r from-blue-600 to-blue-500 p-3 rounded-2xl">
-              <Lock className="w-8 h-8 text-white" />
+  return <div className="min-h-screen py-8 px-4 bg-white">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold text-gray-900 mb-8">Secure Payment</h1>
+        
+        {/* Booking Summary */}
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+          <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+            <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
+            Booking Summary
+          </h3>
+          <div className="space-y-4">
+            <div className="flex justify-between">
+              <span className="text-gray-600">Property:</span>
+              <span className="font-medium text-right">{bookingDetails.propertyName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Guest:</span>
+              <span className="font-medium">{bookingDetails.guestName}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Arrival Date:</span>
+              <span className="font-medium">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Departure Date:</span>
+              <span className="font-medium">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Duration:</span>
+              <span className="font-medium">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Guests:</span>
+              <span className="font-medium">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</span>
+            </div>
+            <div className="border-t pt-4">
+              <div className="flex justify-between text-xl font-bold">
+                <span>Total:</span>
+                <div className="text-right">
+                  <div className="text-2xl">{formatCurrency(totalAmount)}</div>
+                  <div className="text-sm text-gray-500 font-normal">VAT included</div>
+                </div>
+              </div>
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Secure Payment</h1>
-          
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Booking Summary */}
-          <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up">
-              <div className="flex items-center mb-6">
-                <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
-                <h2 className="text-2xl font-bold text-gray-900">Booking Summary</h2>
-              </div>
-              
-
-              <div className="space-y-4">
-                <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl p-4 border border-blue-100">
-                  <div className="font-semibold text-gray-800">{bookingDetails.propertyName}</div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-4 text-sm">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-medium text-gray-700 mb-1">Guest</div>
-                      <div className="text-gray-600">{bookingDetails.guestName}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-medium text-gray-700 mb-1">Guests</div>
-                      <div className="text-gray-600">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-start">
-                    <div className="text-right">
-                      <div className="font-medium text-gray-700 mb-1">Duration</div>
-                      <div className="text-gray-600">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</div>
-                    </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 gap-2">
-                     <div className="flex justify-between">
-                       <span className="font-medium text-gray-700">Arrival Date:</span>
-                       <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
-                     </div>
-                     <div className="flex justify-between">
-                       <span className="font-medium text-gray-700">Departure Date:</span>
-                       <span className="text-gray-600">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
-                     </div>
-                  </div>
-                </div>
-                
-                <div className="border-t border-gray-200 pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-900">Total Amount</span>
-                    <div className="text-right">
-                      <div className="text-xl md:text-2xl font-bold text-blue-600">{formatCurrency(totalAmount)}</div>
-                      <div className="text-xs text-gray-500">VAT included</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Payment Form */}
-          <div className="space-y-6">
-            <div className="card-elegant p-8 animate-slide-up" style={{
-            animationDelay: '0.1s'
-          }}>
+        {/* Payment Form */}
+        <div className="bg-white rounded-lg shadow-md p-6">
               {error && <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
                   <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
                   <div>
@@ -326,13 +297,11 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                     </button>
                   </div>
 
-                </div> : clientSecret && options && <Elements stripe={stripePromise} options={options}>
-                    <CheckoutForm onPaymentSuccess={onPaymentSuccess} onBack={onBack} totalAmount={totalAmount} currency={currency} />
-                  </Elements>}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>;
+                 </div> : clientSecret && options && <Elements stripe={stripePromise} options={options}>
+                     <CheckoutForm onPaymentSuccess={onPaymentSuccess} onBack={onBack} totalAmount={totalAmount} currency={currency} />
+                   </Elements>}
+         </div>
+       </div>
+     </div>;
 };
 export default StripePaymentForm;
