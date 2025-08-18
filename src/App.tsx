@@ -5,12 +5,16 @@ import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
 import GuestDetailsForm from './components/GuestDetailsForm';
 import BookingConfirmation from './components/BookingConfirmation';
+import { IframeHeightProvider } from './hooks/IframeHeightProvider';
+import { useBookingHeightTrigger } from './hooks/useHeightTrigger';
+
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
   endDate: string;
   guests: number;
 }
+
 interface Rate {
   rateId: number;
   rateName: string;
@@ -21,6 +25,7 @@ interface Rate {
   nights: number;
   description?: string;
 }
+
 interface Unit {
   buildingId: number;
   buildingName: string;
@@ -28,15 +33,18 @@ interface Unit {
   inventoryTypeName: string;
   rates: Rate[];
 }
+
 interface SelectedUnit extends Unit {
   selectedRate: Rate;
 }
+
 interface GuestDetails {
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
 }
+
 interface BookingDetails {
   bookingId: number;
   bookingReference: string;
@@ -47,7 +55,9 @@ interface BookingDetails {
   paymentReference?: string;
   paymentAmount?: number;
 }
-const App: React.FC = () => {
+
+// Main App Content Component
+const AppContent: React.FC = () => {
   // Get inventory type ID from URL
   const { inventoryTypeId } = useParams<{ inventoryTypeId?: string }>();
   const filterByInventoryTypeId = inventoryTypeId ? parseInt(inventoryTypeId, 10) : null;
@@ -82,6 +92,16 @@ const App: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
 
+  // Height communication hook - triggers height updates on state changes
+  useBookingHeightTrigger(
+    showBookingForm,
+    showPaymentForm,
+    bookingComplete,
+    hasSearched,
+    availability,
+    error
+  );
+
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
     const imageMap: {
@@ -89,143 +109,66 @@ const App: React.FC = () => {
     } = {
       38: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/680a675aca567cd974c649a9_ANG-Studio-ThumbnailComp-min.png',
       11: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/65b03be9ae7287d722a74fc7_1-p-1600.png',
-      10: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/65b03bc52fbd20a5ad097a7c_1-p-1600.jpg'
+      10: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/65b03be9ae7287d722a74fc7_1-p-1600.png',
+      39: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/65b03be9ae7287d722a74fc7_1-p-1600.png'
     };
-    return imageMap[inventoryTypeId] || 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
+    return imageMap[inventoryTypeId] || imageMap[11];
   };
+
   const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
 
-  // Set default dates
-  useEffect(() => {
-    const today = new Date();
-    const start = new Date(today);
-    start.setDate(start.getDate() + 1);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 3); // minimum 3 nights
-
-    setSearchParams({
-      startDate: start.toISOString().split('T')[0],
-      endDate: end.toISOString().split('T')[0],
-      guests: 1
-    });
-  }, []);
-
-  // Simple currency formatter
+  // Helper functions
   const formatCurrency = (amount: number): string => {
-    try {
-      const num = parseFloat(amount?.toString() || '0') || 0;
-      return `${num.toLocaleString('sv-SE')} SEK`;
-    } catch (e) {
-      return '0 SEK';
-    }
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'SEK'
+    }).format(amount);
   };
 
-  // Calculate nights based on search params
-  const calculateNights = (): number => {
-    if (!searchParams.startDate || !searchParams.endDate) return 0;
-    const start = new Date(searchParams.startDate);
-    const end = new Date(searchParams.endDate);
-    return Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-  };
-
-  // Format date with weekday (e.g., "Monday, 07 Jul 2025")
   const formatDateWithWeekday = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      const options: Intl.DateTimeFormatOptions = {
-        weekday: 'short',
-        day: '2-digit',
-        month: 'short',
-        year: 'numeric'
-      };
-      return date.toLocaleDateString('en-GB', options);
-    } catch (e) {
-      return dateString;
-    }
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
-  // Format date for display (dd/mm/yyyy)
-  const formatDisplayDate = (dateString: string): string => {
-    try {
-      const date = new Date(dateString);
-      const day = date.getDate().toString().padStart(2, '0');
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const year = date.getFullYear();
-      return `${day}/${month}/${year}`;
-    } catch (e) {
-      return dateString;
-    }
+  const calculateNights = (startDate: string, endDate: string): number => {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const timeDiff = end.getTime() - start.getTime();
+    return Math.ceil(timeDiff / (1000 * 3600 * 24));
   };
 
-  // Get minimum end date (always 3 nights minimum)
-  const getMinEndDate = (): string => {
-    if (!searchParams.startDate) return '';
-    const minDate = new Date(searchParams.startDate);
-    minDate.setDate(minDate.getDate() + 3);
-    return minDate.toISOString().split('T')[0];
-  };
-
-  // Auto-update checkout date when checkin changes
-  useEffect(() => {
-    if (searchParams.startDate) {
-      const checkIn = new Date(searchParams.startDate);
-      const checkOut = new Date(searchParams.endDate);
-      if (!searchParams.endDate || checkOut <= checkIn) {
-        const newCheckOut = new Date(checkIn);
-        newCheckOut.setDate(newCheckOut.getDate() + 3);
-        setSearchParams(prev => ({
-          ...prev,
-          endDate: newCheckOut.toISOString().split('T')[0]
-        }));
-      }
-    }
-  }, [searchParams.startDate]);
-
-  // Search for availability
-  const searchAvailability = async (): Promise<void> => {
-    if (!searchParams.startDate || !searchParams.endDate) {
-      setError('Please select check-in and check-out dates');
-      return;
-    }
+  // Search availability
+  const searchAvailability = async (searchData: SearchParams): Promise<void> => {
+    console.log('Searching with params:', searchData);
     setLoading(true);
     setError('');
+    setAvailability([]);
+    setHasSearched(false);
+
+    const { startDate, endDate, guests } = searchData;
+
     try {
-      const params = new URLSearchParams({
-        startDate: searchParams.startDate,
-        endDate: searchParams.endDate,
-        guests: searchParams.guests.toString()
-      });
-      const response = await fetch(`${API_BASE_URL}/availability/search?${params}`);
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
+      const url = `${API_BASE_URL}/availability/search?startDate=${startDate}&endDate=${endDate}&guests=${guests}`;
+      console.log('Fetching from URL:', url);
+
+      const response = await fetch(url);
       const data = await response.json();
-      if (data.success && data.data) {
-        const searchNights = calculateNights();
-        const transformedData = data.data.map((property: any) => {
-          return {
-            buildingId: property.buildingId || 0,
-            buildingName: property.buildingName || 'Unknown Building',
-            inventoryTypeId: property.inventoryTypeId || 0,
-            inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
-            rates: (property.rates || []).map((rate: any) => {
-              const avgNightlyRate = parseFloat(rate.avgNightlyRate || '0');
-              const totalPrice = avgNightlyRate * searchNights;
-              return {
-                rateId: rate.rateId || 0,
-                rateName: rate.rateName || 'Standard Rate',
-                currency: rate.currency || 'SEK',
-                currencySymbol: rate.currencySymbol || 'SEK',
-                totalPrice: totalPrice,
-                avgNightlyRate: avgNightlyRate,
-                nights: searchNights,
-                description: rate.description || ''
-              };
-            })
-          };
-        });
-        
-        // Filter by inventory type ID from URL if specified
+
+      if (data.success) {
+        const transformedData = data.data.map((item: any) => ({
+          buildingId: item.buildingId,
+          buildingName: item.buildingName,
+          inventoryTypeId: item.inventoryTypeId,
+          inventoryTypeName: item.inventoryTypeName,
+          rates: item.rates || []
+        }));
+
+        // Apply inventory type filter if specified in URL
         const filteredData = filterByInventoryTypeId 
           ? transformedData.filter((u: any) => u.inventoryTypeId === filterByInventoryTypeId)
           : transformedData;
@@ -329,6 +272,7 @@ const App: React.FC = () => {
         },
         stripePaymentIntentId: paymentIntentId
       };
+
       const response = await fetch(`${API_BASE_URL}/booking/create-with-payment`, {
         method: 'POST',
         headers: {
@@ -336,7 +280,9 @@ const App: React.FC = () => {
         },
         body: JSON.stringify(bookingData)
       });
+
       const data = await response.json();
+
       if (data.success) {
         setBookingDetails(data.data);
         setBookingComplete(true);
@@ -355,185 +301,195 @@ const App: React.FC = () => {
     }
   };
 
-  // Handle back from payment form
-  const handleBackFromPayment = (): void => {
-    setShowPaymentForm(false);
-    setShowBookingForm(true);
-  };
-
-  // Handle modal backdrop click
-  const handleModalBackdropClick = (e: React.MouseEvent) => {
-    if (e.target === e.currentTarget) {
-      setShowBookingForm(false);
-    }
-  };
-
-  // Reset to search
-  const resetToSearch = (): void => {
-    setBookingComplete(false);
-    setShowPaymentForm(false);
-    setShowBookingForm(false);
+  // Go back to search
+  const goBackToSearch = (): void => {
     setSelectedUnit(null);
-    setGuestDetails({
-      firstName: '',
-      lastName: '',
-      email: '',
-      phone: ''
-    });
+    setShowBookingForm(false);
+    setShowPaymentForm(false);
+    setBookingComplete(false);
     setError('');
   };
 
+  // Go back to guest details
+  const goBackToGuestDetails = (): void => {
+    setShowPaymentForm(false);
+    setShowBookingForm(true);
+    setError('');
+  };
 
-  // Show payment form
-  if (showPaymentForm && selectedUnit && lastSearchParams) {
-    return <StripePaymentForm totalAmount={selectedUnit.selectedRate.totalPrice} currency={selectedUnit.selectedRate.currency} onPaymentSuccess={handleStripePaymentSuccess} onBack={handleBackFromPayment} bookingDetails={{
-      guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-      checkIn: lastSearchParams.startDate,
-      checkOut: lastSearchParams.endDate,
-      propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-      nights: selectedUnit.selectedRate.nights,
-      guests: lastSearchParams.guests
-    }} />;
-  }
-
-  // Booking confirmation screen
-  if (bookingComplete) {
-    return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 section-spacing">
-        <div className="container-modern">
-          <div className="max-w-2xl mx-auto">
-            <div className="card-glass p-12 text-center animate-bounce-in">
-              {/* Success Animation */}
-              <div className="mb-8">
-                <div className="relative">
-                  <div className="w-32 h-32 bg-gradient-to-r from-orange-400 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-glow">
-                    <CheckCircle className="w-16 h-16 text-white" />
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50">
+      {/* Show booking confirmation if complete */}
+      {bookingComplete && bookingDetails ? (
+        <BookingConfirmation 
+          bookingDetails={bookingDetails}
+          onStartNewBooking={goBackToSearch}
+        />
+      ) : (
+        <>
+          {/* Header */}
+          <div className="bg-white shadow-sm">
+            <div className="max-w-4xl mx-auto px-4 py-6">
+              <div className="flex items-center justify-center">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-lg flex items-center justify-center">
+                    <Sparkles className="w-6 h-6 text-white" />
                   </div>
-                  {/* Floating confetti effect */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    {[...Array(6)].map((_, i) => <div key={i} className="absolute w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full opacity-70 animate-float-slow" style={{
-                    left: `${20 + i * 15}%`,
-                    top: `${10 + i % 2 * 20}%`,
-                    animationDelay: `${i * 0.5}s`
-                  }}></div>)}
+                  <div>
+                    <h1 className="text-2xl font-bold text-gray-900">Allihoop Studios</h1>
+                    <p className="text-sm text-gray-600">Find your perfect stay</p>
                   </div>
                 </div>
-                
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-                  🎉 Booking <span className="text-gradient-warm">Confirmed!</span>
-                </h1>
-                <p className="text-xl text-gray-600 mb-8">
-                  Your amazing studio is all set! Get ready for an unforgettable experience.
-                </p>
               </div>
-
-              {/* Booking Details Card */}
-              <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 mb-8 border border-gray-100 shadow-xl">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Booking Details</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Booking Reference</div>
-                        <div className="text-2xl font-bold text-purple-600">{bookingDetails?.bookingReference}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                        <Users className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Guest Name</div>
-                        <div className="text-lg text-gray-800">{bookingDetails?.guestName}</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Check-in</div>
-                        <div className="text-lg text-gray-800">{bookingDetails && formatDisplayDate(bookingDetails.checkIn)}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Check-out</div>
-                        <div className="text-lg text-gray-800">{bookingDetails && formatDisplayDate(bookingDetails.checkOut)}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {bookingDetails?.paymentAmount && <div className="border-t border-gray-200 pt-6 mt-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-gray-700">Total Amount Paid</span>
-                      <span className="text-3xl font-bold text-orange-600">{formatCurrency(bookingDetails.paymentAmount)}</span>
-                    </div>
-                  </div>}
-              </div>
-
-              {/* Additional Info */}
-              <div className="bg-orange-50 rounded-2xl p-6 mb-8 border border-orange-100">
-                <h3 className="font-bold text-orange-800 mb-2">📧 What's Next?</h3>
-                <p className="text-orange-700">
-                  A confirmation email with all details and check-in instructions has been sent to your email address.
-                </p>
-              </div>
-
-              {/* Action Button */}
-              <button onClick={resetToSearch} className="btn-warm group">
-                <span className="flex items-center">
-                  Book Another Amazing Studio
-                  <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform duration-300" />
-                </span>
-              </button>
             </div>
           </div>
-        </div>
-      </div>;
-  }
 
-  // Guest details form (full page)
-  if (showBookingForm && selectedUnit && lastSearchParams) {
-    const searchParamsWithCommunities = {
-      ...searchParams,  // Use current searchParams instead of lastSearchParams
-      communities: []  // Add empty communities array to match interface
-    };
-    
-    return <GuestDetailsForm
-      selectedUnit={selectedUnit}
-      confirmedSearchParams={searchParamsWithCommunities}
-      guestDetails={guestDetails}
-      setGuestDetails={setGuestDetails}
-      onSubmit={handleGuestDetailsSubmit}
-      onBack={() => {
-        setShowBookingForm(false);
-        setHasSearched(false);
-        setAvailability([]);
-      }}
-      error={error}
-      calculateNights={() => selectedUnit.selectedRate.nights}
-    />;
-  }
+          <div className="max-w-4xl mx-auto px-4 py-8">
+            {/* Payment Form */}
+            {showPaymentForm && selectedUnit && lastSearchParams ? (
+              <StripePaymentForm
+                totalAmount={selectedUnit.selectedRate.totalPrice}
+                currency={selectedUnit.selectedRate.currency}
+                onPaymentSuccess={handleStripePaymentSuccess}
+                onBack={goBackToGuestDetails}
+                bookingDetails={{
+                  guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+                  checkIn: lastSearchParams.startDate,
+                  checkOut: lastSearchParams.endDate,
+                  propertyName: selectedUnit.inventoryTypeName,
+                  nights: calculateNights(lastSearchParams.startDate, lastSearchParams.endDate)
+                }}
+              />
+            ) : showBookingForm && selectedUnit && lastSearchParams ? (
+              /* Guest Details Form */
+              <GuestDetailsForm
+                guestDetails={guestDetails}
+                setGuestDetails={setGuestDetails}
+                onSubmit={handleGuestDetailsSubmit}
+                onBack={goBackToSearch}
+                bookingDetails={{
+                  propertyName: selectedUnit.inventoryTypeName,
+                  checkIn: lastSearchParams.startDate,
+                  checkOut: lastSearchParams.endDate,
+                  nights: calculateNights(lastSearchParams.startDate, lastSearchParams.endDate),
+                  totalAmount: selectedUnit.selectedRate.totalPrice,
+                  currency: selectedUnit.selectedRate.currency
+                }}
+              />
+            ) : (
+              /* Search Form */
+              <SearchForm
+                searchParams={searchParams}
+                setSearchParams={setSearchParams}
+                onSearch={searchAvailability}
+                loading={loading}
+              />
+            )}
 
-  // Main interface
-  return <div className="min-h-screen bg-white">
+            {/* Error Message */}
+            {error && (
+              <div className="mt-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <p className="text-red-800">{error}</p>
+              </div>
+            )}
 
-      {/* Search Section */}
-      <SearchForm searchParams={searchParams} setSearchParams={setSearchParams} onSearch={searchAvailability} loading={loading} getMinEndDate={getMinEndDate} error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} />
+            {/* Results Section */}
+            <div ref={resultsSectionRef}>
+              {hasSearched && !showBookingForm && !showPaymentForm && (
+                <div className="mt-8">
+                  {availability.length > 0 ? (
+                    <div className="space-y-6">
+                      <h2 className="text-2xl font-bold text-gray-900">Available Properties</h2>
+                      <div className="grid gap-6">
+                        {availability.map((unit) => (
+                          <div key={`${unit.buildingId}-${unit.inventoryTypeId}`} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                            <div className="flex flex-col md:flex-row">
+                              {/* Property Image */}
+                              <div className="md:w-1/3">
+                                <img
+                                  src={getPropertyImage(unit.inventoryTypeId)}
+                                  alt={unit.inventoryTypeName}
+                                  className="w-full h-48 md:h-full object-cover"
+                                />
+                              </div>
+                              
+                              {/* Property Details */}
+                              <div className="md:w-2/3 p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                  <div>
+                                    <h3 className="text-xl font-semibold text-gray-900 mb-2">{unit.inventoryTypeName}</h3>
+                                    <div className="flex items-center text-gray-600 mb-2">
+                                      <MapPin className="w-4 h-4 mr-1" />
+                                      <span className="text-sm">{unit.buildingName}</span>
+                                    </div>
+                                    <div className="flex items-center text-gray-600">
+                                      <Users className="w-4 h-4 mr-1" />
+                                      <span className="text-sm">Up to {searchParams.guests} guests</span>
+                                    </div>
+                                  </div>
+                                </div>
 
-    </div>;
+                                {/* Available Rates */}
+                                <div className="space-y-3">
+                                  {unit.rates.map((rate) => (
+                                    <div key={rate.rateId} className="border border-gray-200 rounded-lg p-4">
+                                      <div className="flex justify-between items-center">
+                                        <div>
+                                          <h4 className="font-medium text-gray-900">{rate.rateName}</h4>
+                                          <p className="text-sm text-gray-600">
+                                            {rate.nights} {rate.nights === 1 ? 'night' : 'nights'} • 
+                                            Average {formatCurrency(rate.avgNightlyRate)}/night
+                                          </p>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="text-2xl font-bold text-blue-600">
+                                            {formatCurrency(rate.totalPrice)}
+                                          </div>
+                                          <button 
+                                            onClick={() => selectUnit(unit, rate)}
+                                            className="mt-2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                          >
+                                            Select
+                                          </button>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center py-12">
+                      <div className="max-w-md mx-auto">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-4">
+                          <Search className="w-8 h-8 text-gray-400" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No properties available</h3>
+                        <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
 };
+
+// Main App component with IframeHeightProvider wrapper
+const App: React.FC = () => {
+  return (
+    <IframeHeightProvider>
+      <AppContent />
+    </IframeHeightProvider>
+  );
+};
+
 export default App;
