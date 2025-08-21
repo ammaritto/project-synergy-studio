@@ -1,12 +1,10 @@
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
-
 interface SearchParams {
   startDate: string;
   endDate: string;
   guests: number;
 }
-
 interface Rate {
   rateId: number;
   rateName: string;
@@ -16,7 +14,6 @@ interface Rate {
   avgNightlyRate: number;
   nights: number;
 }
-
 interface Unit {
   buildingId: number;
   buildingName: string;
@@ -24,7 +21,6 @@ interface Unit {
   inventoryTypeName: string;
   rates: Rate[];
 }
-
 interface SearchResultsProps {
   availability: Unit[];
   hasSearched: boolean;
@@ -32,7 +28,6 @@ interface SearchResultsProps {
   onSelectUnit: (unit: Unit, rate: Rate) => void;
   calculateNights: () => number;
 }
-
 const SearchResults: React.FC<SearchResultsProps> = ({
   availability,
   hasSearched,
@@ -48,19 +43,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       return '0 SEK';
     }
   };
-
   const getPropertyImage = (inventoryTypeId: number): string => {
-    const imageMap: { [key: number]: string } = {
+    const imageMap: {
+      [key: number]: string;
+    } = {
       38: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/680a675aca567cd974c649a9_ANG-Studio-ThumbnailComp-min.png',
       11: '/lovable-uploads/f528cfcd-9377-4dad-8f71-2e8ecb9836d9.png',
-      10: '/lovable-uploads/27013fda-d438-4fd6-bec3-a1603019cf01.png',
+      10: '/lovable-uploads/27013fda-d438-4fd6-bec3-a1603019cf01.png'
     };
-    
     return imageMap[inventoryTypeId] || 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
   };
-
   const getStudioDetails = (inventoryTypeId: number) => {
-    const detailsMap: { [key: number]: any } = {
+    const detailsMap: {
+      [key: number]: any;
+    } = {
       10: {
         sqm: 15,
         bathroom: 'Shared',
@@ -70,29 +66,25 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       },
       11: {
         sqm: 20,
-        bathroom: 'Private', 
+        bathroom: 'Private',
         kitchen: 'Private',
         rooms: 1,
         readMoreUrl: 'https://www.allihoopliving.com/listing/studio-bromma-140-cm-bed'
       }
     };
-    
     return detailsMap[inventoryTypeId] || {
       sqm: 15,
       bathroom: 'Shared',
-      kitchen: 'Shared', 
+      kitchen: 'Shared',
       rooms: 1,
       readMoreUrl: '#'
     };
   };
-
   if (!hasSearched) {
     return null;
   }
-
   if (availability.length === 0) {
-    return (
-      <div className="py-8 bg-gray-50">
+    return <div className="py-8 bg-gray-50">
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-white rounded-lg shadow-sm p-12 text-center">
             <div className="mb-6">
@@ -106,28 +98,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({
             <p className="text-gray-600">Try adjusting your search criteria or dates.</p>
           </div>
         </div>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="py-8 bg-gray-50">
+  return <div className="py-8 bg-[#fcfbf7]">
       <div className="max-w-4xl mx-auto px-4">
         <div className="space-y-6">
           {availability.map((unit, index) => {
-            const studioDetails = getStudioDetails(unit.inventoryTypeId);
-            const rate = unit.rates[0]; // Use first rate
-            
-            return (
-            <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
+          const studioDetails = getStudioDetails(unit.inventoryTypeId);
+          const rate = unit.rates[0]; // Use first rate
+
+          return <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                 {/* Image */}
                 <div className="lg:order-1">
-                  <img 
-                    src={getPropertyImage(unit.inventoryTypeId)} 
-                    alt={unit.inventoryTypeName}
-                    className="w-full h-64 lg:h-full object-cover"
-                  />
+                  <img src={getPropertyImage(unit.inventoryTypeId)} alt={unit.inventoryTypeName} className="w-full h-64 lg:h-full object-cover" />
                 </div>
                 
                 {/* Content */}
@@ -196,31 +180,20 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
                   {/* Actions */}
                   <div className="flex gap-3">
-                    <a
-                      href={studioDetails.readMoreUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors text-center font-medium flex items-center justify-center gap-2"
-                    >
+                    <a href={studioDetails.readMoreUrl} target="_blank" rel="noopener noreferrer" className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors text-center font-medium flex items-center justify-center gap-2">
                       Read more
                       <img src="https://cdn.prod.website-files.com/5ffc799abc54c384e95bfbf9/67b2285852654c8e0c082e53_tabOpen2.svg" alt="External link" className="w-4 h-4" />
                     </a>
-                    <button
-                      onClick={() => onSelectUnit(unit, rate)}
-                      className="flex-1 bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:opacity-90 transition-opacity font-semibold"
-                    >
+                    <button onClick={() => onSelectUnit(unit, rate)} className="flex-1 bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:opacity-90 transition-opacity font-semibold">
                       Book Studio
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
-            );
-          })}
+            </div>;
+        })}
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default SearchResults;
