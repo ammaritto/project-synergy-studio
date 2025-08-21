@@ -409,12 +409,10 @@ const App: React.FC = () => {
       <div className="min-h-screen bg-white">
         <BookingConfirmation
           bookingDetails={bookingDetails!}
-          guestDetails={guestDetails}
-          selectedUnit={selectedUnit!}
-          lastSearchParams={lastSearchParams!}
-          onNewBooking={resetToSearch}
+          onReset={resetToSearch}
         />
       </div>
+    );
   }
 
   // Guest details form (full page)
