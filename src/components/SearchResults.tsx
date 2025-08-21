@@ -49,56 +49,41 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     }
   };
 
-  // Mock data for the two studios with proper images
-  const getStudioData = () => {
-    return [
-      {
-        buildingId: 1,
-        buildingName: 'Bromma Friends',
-        inventoryTypeId: 10,
-        inventoryTypeName: 'Studio',
-        image: '/lovable-uploads/27013fda-d438-4fd6-bec3-a1603019cf01.png',
+  const getPropertyImage = (inventoryTypeId: number): string => {
+    const imageMap: { [key: number]: string } = {
+      38: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/680a675aca567cd974c649a9_ANG-Studio-ThumbnailComp-min.png',
+      11: '/lovable-uploads/f528cfcd-9377-4dad-8f71-2e8ecb9836d9.png',
+      10: '/lovable-uploads/27013fda-d438-4fd6-bec3-a1603019cf01.png',
+    };
+    
+    return imageMap[inventoryTypeId] || 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
+  };
+
+  const getStudioDetails = (inventoryTypeId: number) => {
+    const detailsMap: { [key: number]: any } = {
+      10: {
         sqm: 15,
         bathroom: 'Shared',
         kitchen: 'Shared',
         rooms: 1,
-        readMoreUrl: 'https://www.allihoopliving.com/listing/studio-bromma-2',
-        totalPrice: 3700,
-        avgNightlyRate: 925,
-        rates: [{
-          rateId: 1,
-          rateName: 'Standard Rate',
-          currency: 'SEK',
-          currencySymbol: 'SEK',
-          totalPrice: 3700,
-          avgNightlyRate: 925,
-          nights: calculateNights()
-        }]
+        readMoreUrl: 'https://www.allihoopliving.com/listing/studio-bromma-2'
       },
-      {
-        buildingId: 1,
-        buildingName: 'Bromma Friends',
-        inventoryTypeId: 11,
-        inventoryTypeName: 'Studio Plus',
-        image: '/lovable-uploads/f528cfcd-9377-4dad-8f71-2e8ecb9836d9.png',
+      11: {
         sqm: 20,
-        bathroom: 'Private',
+        bathroom: 'Private', 
         kitchen: 'Private',
         rooms: 1,
-        readMoreUrl: 'https://www.allihoopliving.com/listing/studio-bromma-140-cm-bed',
-        totalPrice: 4400,
-        avgNightlyRate: 1100,
-        rates: [{
-          rateId: 2,
-          rateName: 'Standard Rate',
-          currency: 'SEK',
-          currencySymbol: 'SEK',
-          totalPrice: 4400,
-          avgNightlyRate: 1100,
-          nights: calculateNights()
-        }]
+        readMoreUrl: 'https://www.allihoopliving.com/listing/studio-bromma-140-cm-bed'
       }
-    ];
+    };
+    
+    return detailsMap[inventoryTypeId] || {
+      sqm: 15,
+      bathroom: 'Shared',
+      kitchen: 'Shared', 
+      rooms: 1,
+      readMoreUrl: '#'
+    };
   };
 
   if (!hasSearched) {
@@ -125,20 +110,22 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     );
   }
 
-  const studios = getStudioData();
-
   return (
     <div className="py-8 bg-gray-50">
       <div className="max-w-4xl mx-auto px-4">
         <div className="space-y-6">
-          {studios.map((studio) => (
-            <div key={studio.inventoryTypeId} className="bg-white rounded-lg shadow-sm overflow-hidden">
+          {availability.map((unit, index) => {
+            const studioDetails = getStudioDetails(unit.inventoryTypeId);
+            const rate = unit.rates[0]; // Use first rate
+            
+            return (
+            <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-0">
                 {/* Image */}
                 <div className="lg:order-1">
                   <img 
-                    src={studio.image} 
-                    alt={studio.inventoryTypeName}
+                    src={getPropertyImage(unit.inventoryTypeId)} 
+                    alt={unit.inventoryTypeName}
                     className="w-full h-64 lg:h-full object-cover"
                   />
                 </div>
@@ -148,12 +135,12 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   {/* Header */}
                   <div className="flex justify-between items-start mb-6">
                     <div>
-                      <h3 className="text-2xl font-semibold text-gray-900 mb-1">{studio.inventoryTypeName}</h3>
-                      <p className="text-gray-600">{studio.buildingName}</p>
+                      <h3 className="text-2xl font-semibold text-gray-900 mb-1">{unit.inventoryTypeName}</h3>
+                      <p className="text-gray-600">{unit.buildingName}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-2xl font-bold text-gray-900">{formatCurrency(studio.totalPrice)}</div>
-                      <div className="text-sm text-gray-600">avg. {formatCurrency(studio.avgNightlyRate)}/night</div>
+                      <div className="text-2xl font-bold text-gray-900">{formatCurrency(rate.totalPrice)}</div>
+                      <div className="text-sm text-gray-600">avg. {formatCurrency(rate.avgNightlyRate)}/night</div>
                     </div>
                   </div>
 
@@ -163,19 +150,19 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <img src="https://cdn.prod.website-files.com/5ffc799abc54c384e95bfbf9/67bc361a17072666a6cbbd39_Sqm.svg" alt="Area" className="w-4 h-4" />
-                        <span>{studio.sqm} Sqm</span>
+                        <span>{studioDetails.sqm} Sqm</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <img src="https://cdn.prod.website-files.com/5ffc799abc54c384e95bfbf9/67bc361a94a2a8db6df5d799_ShowerFull.svg" alt="Bathroom" className="w-4 h-4" />
-                        <span>{studio.bathroom}</span>
+                        <span>{studioDetails.bathroom}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <img src="https://cdn.prod.website-files.com/5ffc799abc54c384e95bfbf9/67bc36159d792c24da1fbee1_Kitchen.svg" alt="Kitchen" className="w-4 h-4" />
-                        <span>{studio.kitchen}</span>
+                        <span>{studioDetails.kitchen}</span>
                       </div>
                       <div className="flex items-center gap-2 text-sm text-gray-600">
                         <img src="https://cdn.prod.website-files.com/5ffc799abc54c384e95bfbf9/67bc37969fc4e91319b9c12c_Floorplan.svg" alt="Rooms" className="w-4 h-4" />
-                        <span>{studio.rooms} Room</span>
+                        <span>{studioDetails.rooms} Room</span>
                       </div>
                     </div>
                   </div>
@@ -210,7 +197,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                   {/* Actions */}
                   <div className="flex gap-3">
                     <a
-                      href={studio.readMoreUrl}
+                      href={studioDetails.readMoreUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex-1 border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors text-center font-medium flex items-center justify-center gap-2"
@@ -219,7 +206,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                       <img src="https://cdn.prod.website-files.com/5ffc799abc54c384e95bfbf9/67b2285852654c8e0c082e53_tabOpen2.svg" alt="External link" className="w-4 h-4" />
                     </a>
                     <button
-                      onClick={() => onSelectUnit(studio as Unit, studio.rates[0])}
+                      onClick={() => onSelectUnit(unit, rate)}
                       className="flex-1 bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:opacity-90 transition-opacity font-semibold"
                     >
                       Book Studio
@@ -228,7 +215,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </div>
     </div>

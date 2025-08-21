@@ -210,15 +210,13 @@ const App: React.FC = () => {
             inventoryTypeId: property.inventoryTypeId || 0,
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
             rates: (property.rates || []).map((rate: any) => {
-              const avgNightlyRate = parseFloat(rate.avgNightlyRate || '0');
-              const totalPrice = avgNightlyRate * searchNights;
               return {
                 rateId: rate.rateId || 0,
                 rateName: rate.rateName || 'Standard Rate',
                 currency: rate.currency || 'SEK',
                 currencySymbol: rate.currencySymbol || 'SEK',
-                totalPrice: totalPrice,
-                avgNightlyRate: avgNightlyRate,
+                totalPrice: rate.totalPrice?.gross || rate.totalPrice || 0,
+                avgNightlyRate: rate.avgNightlyRate || 0,
                 nights: searchNights,
                 description: rate.description || ''
               };
