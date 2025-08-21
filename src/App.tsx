@@ -378,72 +378,26 @@ const App: React.FC = () => {
     setError('');
   };
 
+  // Handle search with reset
+  const handleSearch = (): void => {
+    // Reset any ongoing booking process
+    setShowBookingForm(false);
+    setShowPaymentForm(false);
+    setBookingComplete(false);
+    setSelectedUnit(null);
+    // Perform search
+    searchAvailability();
+  };
 
-  // Show payment form
-  if (showPaymentForm && selectedUnit && lastSearchParams) {
-    return (
-      <div className="min-h-screen bg-white">
-        <StripePaymentForm 
-          totalAmount={selectedUnit.selectedRate.totalPrice} 
-          currency={selectedUnit.selectedRate.currency} 
-          onPaymentSuccess={handleStripePaymentSuccess} 
-          onBack={handleBackFromPayment} 
-          bookingDetails={{
-            guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-            checkIn: lastSearchParams.startDate,
-            checkOut: lastSearchParams.endDate,
-            propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-            nights: selectedUnit.selectedRate.nights,
-            guests: lastSearchParams.guests
-          }} 
-        />
-      </div>
-    );
-  }
 
-  // Booking confirmation screen
-  if (bookingComplete) {
-    return (
-      <div className="min-h-screen bg-white">
-        <BookingConfirmation
-          bookingDetails={bookingDetails!}
-          onReset={resetToSearch}
-        />
-      </div>
-    );
-  }
-
-  // Guest details form (full page)
-  if (showBookingForm && selectedUnit && lastSearchParams) {
-    const searchParamsWithCommunities = {
-      ...searchParams,  // Use current searchParams instead of lastSearchParams
-      communities: []  // Add empty communities array to match interface
-    };
-    
-    return <GuestDetailsForm
-      selectedUnit={selectedUnit}
-      confirmedSearchParams={searchParamsWithCommunities}
-      guestDetails={guestDetails}
-      setGuestDetails={setGuestDetails}
-      onSubmit={handleGuestDetailsSubmit}
-      onBack={() => {
-        setShowBookingForm(false);
-        setHasSearched(false);
-        setAvailability([]);
-      }}
-      error={error}
-      calculateNights={() => selectedUnit.selectedRate.nights}
-    />;
-  }
-
-  // Main interface
+  // Main interface with all steps
   return (
     <div className="min-h-screen bg-white">
-      {/* Search Section */}
+      {/* Search Section - Always visible */}
       <SearchForm 
         searchParams={searchParams} 
         setSearchParams={setSearchParams} 
-        onSearch={searchAvailability} 
+        onSearch={handleSearch} 
         loading={loading} 
         getMinEndDate={getMinEndDate} 
         error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
@@ -459,6 +413,57 @@ const App: React.FC = () => {
           calculateNights={calculateNights}
         />
       </div>
+
+      {/* Guest Details Form - Shows underneath search */}
+      {showBookingForm && selectedUnit && lastSearchParams && (
+        <div className="bg-gray-50">
+          <GuestDetailsForm
+            selectedUnit={selectedUnit}
+            confirmedSearchParams={{
+              ...searchParams,
+              communities: []
+            }}
+            guestDetails={guestDetails}
+            setGuestDetails={setGuestDetails}
+            onSubmit={handleGuestDetailsSubmit}
+            onBack={() => {
+              setShowBookingForm(false);
+            }}
+            error={error}
+            calculateNights={() => selectedUnit.selectedRate.nights}
+          />
+        </div>
+      )}
+
+      {/* Payment Form - Shows underneath search */}
+      {showPaymentForm && selectedUnit && lastSearchParams && (
+        <div className="bg-gray-50">
+          <StripePaymentForm 
+            totalAmount={selectedUnit.selectedRate.totalPrice} 
+            currency={selectedUnit.selectedRate.currency} 
+            onPaymentSuccess={handleStripePaymentSuccess} 
+            onBack={handleBackFromPayment} 
+            bookingDetails={{
+              guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+              checkIn: lastSearchParams.startDate,
+              checkOut: lastSearchParams.endDate,
+              propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
+              nights: selectedUnit.selectedRate.nights,
+              guests: lastSearchParams.guests
+            }} 
+          />
+        </div>
+      )}
+
+      {/* Booking Confirmation - Shows underneath search */}
+      {bookingComplete && bookingDetails && (
+        <div className="bg-gray-50">
+          <BookingConfirmation
+            bookingDetails={bookingDetails}
+            onReset={resetToSearch}
+          />
+        </div>
+      )}
     </div>
   );
 };
