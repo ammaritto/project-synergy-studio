@@ -4,13 +4,13 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 47 43% 97%;
     --foreground: 222 47% 11%;
 
-    --card: 0 0% 100%;
+    --card: 47 43% 97%;
     --card-foreground: 222 47% 11%;
 
-    --popover: 0 0% 100%;
+    --popover: 47 43% 97%;
     --popover-foreground: 222 47% 11%;
 
     --primary: 45 93% 47%; /* Yellow primary color */
