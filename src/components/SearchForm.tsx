@@ -221,196 +221,81 @@ const SearchForm: React.FC<SearchFormProps> = ({
       <div className="container-modern">
          {/* Header */}
          <div className="text-center mb-8">
-           <h1 className="text-4xl font-bold text-gray-900 mb-2">Book this Studio</h1>
+           <h1 className="text-4xl font-bold text-gray-900 mb-2">Find Your Studio</h1>
          </div>
         
-        <div className="bg-white p-8 animate-slide-up max-w-5xl mx-auto">
+        <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-4xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Date Range Picker */}
-            <div className="md:col-span-2">
-              <label className="block text-sm font-medium text-foreground mb-2">
-                Pick a date range
+            {/* Check-in */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Check-in
               </label>
               <div className="relative">
-                <button
-                  onClick={() => setIsCalendarOpen(!isCalendarOpen)}
-                  className="w-full px-4 py-3 text-left bg-white border-2 border-gray-300 rounded-lg hover:border-gray-500 focus:outline-none focus:border-gray-600 transition-colors duration-200"
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-5 h-5 text-gray-500" />
-                      <span className={dateRange.from ? 'text-gray-900' : 'text-gray-500'}>
-                        {formatDateRange()}
-                      </span>
-                    </div>
-                    {dateRange.from && (
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          clearDates();
-                        }}
-                        className="text-gray-400 hover:text-gray-600"
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                </button>
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="date"
+                  value={searchParams.startDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, startDate: e.target.value }))}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
+              </div>
+            </div>
 
-                {/* Calendar Dropdown */}
-                {isCalendarOpen && (
-                  <div className="absolute top-full left-0 right-0 lg:right-auto mt-3 bg-white rounded-2xl shadow-2xl border border-gray-100 p-6 z-50 w-full lg:min-w-[700px] max-w-[95vw]">
-                    <div className="flex flex-col gap-6 lg:flex-row lg:gap-8">
-                      {/* First Month */}
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between mb-6">
-                          <button
-                            onClick={handlePrevMonth}
-                            className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200"
-                          >
-                            <ChevronLeft className="w-5 h-5 text-gray-600" />
-                          </button>
-                          <h3 className="text-lg font-semibold text-gray-800">
-                            {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
-                          </h3>
-                          <button
-                            onClick={handleNextMonth}
-                            className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200 lg:hidden"
-                          >
-                            <ChevronRight className="w-5 h-5 text-gray-600" />
-                          </button>
-                          <div className="w-11 hidden lg:block" />
-                        </div>
-
-                        <div className="grid grid-cols-7 gap-2 mb-4">
-                          {weekDays.map(day => (
-                            <div key={day} className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-xs font-medium text-gray-500">
-                              {day}
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="grid grid-cols-7 gap-2">
-                          {days.map((date, index) => (
-                            <div key={index}>
-                              {date ? (
-                                <div
-                                  className={getDayClassName(date)}
-                                   onClick={() => !isPastDate(date) && !isInvalidEndDate(date) && handleDateClick(date)}
-                                  onMouseEnter={() => setHoveredDate(date)}
-                                  onMouseLeave={() => setHoveredDate(null)}
-                                >
-                                  {date.getDate()}
-                                </div>
-                              ) : (
-                                <div className="w-10 h-10 sm:w-11 sm:h-11" />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Second Month - Hidden on mobile and tablet, only show on large screens */}
-                      <div className="flex-1 hidden lg:block">
-                        <div className="flex items-center justify-between mb-6">
-                          <div className="w-11" />
-                          <h3 className="text-lg font-semibold text-gray-800">
-                            {monthNames[nextMonth.getMonth()]} {nextMonth.getFullYear()}
-                          </h3>
-                          <button
-                            onClick={handleNextMonth}
-                            className="p-3 hover:bg-gray-50 rounded-xl transition-colors duration-200"
-                          >
-                            <ChevronRight className="w-5 h-5 text-gray-600" />
-                          </button>
-                        </div>
-
-                        <div className="grid grid-cols-7 gap-2 mb-4">
-                          {weekDays.map(day => (
-                            <div key={`next-${day}`} className="w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-xs font-medium text-gray-500">
-                              {day}
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="grid grid-cols-7 gap-2">
-                          {nextMonthDays.map((date, index) => (
-                            <div key={`next-${index}`}>
-                              {date ? (
-                                <div
-                                  className={getDayClassName(date)}
-                                  onClick={() => !isPastDate(date) && !isInvalidEndDate(date) && handleDateClick(date)}
-                                  onMouseEnter={() => setHoveredDate(date)}
-                                  onMouseLeave={() => setHoveredDate(null)}
-                                >
-                                  {date.getDate()}
-                                </div>
-                              ) : (
-                                <div className="w-10 h-10 sm:w-11 sm:h-11" />
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="mt-6 pt-6 border-t border-gray-100 flex justify-end gap-3">
-                      <button
-                        onClick={clearDates}
-                        className="px-6 py-3 text-gray-600 hover:bg-gray-50 rounded-xl transition-colors duration-200 font-medium"
-                      >
-                        Clear
-                      </button>
-                      <button
-                        onClick={applyDates}
-                        disabled={!dateRange.from || !dateRange.to}
-                        className="px-4 py-2 text-white rounded-lg hover:opacity-90 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
-                        style={{ backgroundColor: '#1461E2' }}
-                      >
-                        Apply
-                      </button>
-                    </div>
-                  </div>
-                )}
+            {/* Check-out */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Check-out
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <input
+                  type="date"
+                  value={searchParams.endDate}
+                  onChange={(e) => setSearchParams(prev => ({ ...prev, endDate: e.target.value }))}
+                  min={getMinEndDate()}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                />
               </div>
             </div>
 
             {/* Guests Dropdown */}
             <div>
-              <label htmlFor="guests" className="block text-sm font-medium text-foreground mb-2">
+              <label htmlFor="guests" className="block text-sm font-medium text-gray-700 mb-2">
                 Guests
               </label>
               <div className="relative">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-primary" />
+                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <select
                   id="guests"
-                  className="w-full pl-10 pr-8 py-3 border border-border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent appearance-none transition-all duration-200 text-foreground"
+                  className="w-full pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none"
                   value={searchParams.guests}
                   onChange={(e) => setSearchParams(prev => ({ ...prev, guests: parseInt(e.target.value) }))}
                 >
-                  {[1, 2].map(num => (
-                    <option key={num} value={num}>{num} Guest{num !== 1 ? 's' : ''}</option>
-                  ))}
+                  <option value={1}>1 Guest</option>
+                  <option value={2}>2 Guests</option>
                 </select>
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
               </div>
             </div>
 
-
             {/* Search Button */}
             <div>
-              <label className="block text-sm font-medium text-foreground mb-2">&nbsp;</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
               <button
                 onClick={onSearch}
                 disabled={loading}
-                className="w-full py-3 rounded-lg font-semibold hover:opacity-90 transition-all duration-300 flex items-center justify-center shadow-md group"
-                style={{ backgroundColor: '#1461E2', color: 'white' }}
+                className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
                 ) : (
                   <>
-                    <Search className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform duration-300" />
+                    <Search className="w-4 h-4" />
                     Search
                   </>
                 )}
