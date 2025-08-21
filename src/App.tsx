@@ -392,7 +392,7 @@ const App: React.FC = () => {
 
   // Main interface with all steps
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-background">
       {/* Search Section - Always visible */}
       <SearchForm 
         searchParams={searchParams} 
@@ -416,7 +416,7 @@ const App: React.FC = () => {
 
       {/* Guest Details Form - Shows underneath search */}
       {showBookingForm && selectedUnit && lastSearchParams && (
-        <div className="bg-gray-50">
+        <div className="bg-background">
           <GuestDetailsForm
             selectedUnit={selectedUnit}
             confirmedSearchParams={{
@@ -437,8 +437,8 @@ const App: React.FC = () => {
 
       {/* Payment Form - Shows underneath search */}
       {showPaymentForm && selectedUnit && lastSearchParams && (
-        <div className="bg-gray-50">
-          <StripePaymentForm 
+        <div className="bg-background">
+          <StripePaymentForm
             totalAmount={selectedUnit.selectedRate.totalPrice} 
             currency={selectedUnit.selectedRate.currency} 
             onPaymentSuccess={handleStripePaymentSuccess} 
@@ -457,7 +457,7 @@ const App: React.FC = () => {
 
       {/* Booking Confirmation - Shows underneath search */}
       {bookingComplete && bookingDetails && (
-        <div className="bg-gray-50">
+        <div className="bg-background">
           <BookingConfirmation
             bookingDetails={bookingDetails}
             onReset={resetToSearch}
