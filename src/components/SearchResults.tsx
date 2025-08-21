@@ -182,21 +182,22 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     {/* Right Content - Pricing & Booking */}
                     <div className="lg:w-64 mt-6 lg:mt-0 space-y-3">
                       {unit.rates.map((rate, rateIndex) => (
-                        <div key={`${rate.rateId}-${rateIndex}`} className="bg-background rounded-lg p-4 border">
-                          <div className="text-right mb-3">
-                            <p className="text-2xl font-bold text-foreground">{formatCurrency(rate.totalPrice)} <span className="text-sm font-normal">SEK</span></p>
-                            <p className="text-sm text-muted-foreground">avg. {formatCurrency(rate.avgNightlyRate)}/night</p>
+                        <div key={`${rate.rateId}-${rateIndex}`} className="bg-white rounded-lg p-6 border border-gray-200 shadow-sm">
+                          <div className="text-right mb-6">
+                            <div className="flex items-baseline justify-end gap-1">
+                              <span className="text-4xl font-bold text-gray-900">{Math.round(rate.totalPrice)}</span>
+                              <span className="text-lg font-medium text-gray-600">SEK</span>
+                            </div>
+                            <p className="text-sm text-gray-500 mt-1">avg. {Math.round(rate.avgNightlyRate)} SEK/night</p>
                           </div>
                           
-                          <div className="text-sm text-muted-foreground mb-3 space-y-1">
-                            <div><span className="font-medium">From:</span> {new Date(confirmedSearchParams.startDate).toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                            <div><span className="font-medium">To:</span> {new Date(confirmedSearchParams.endDate).toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: 'short', year: 'numeric' })}</div>
-                            <div className="text-xs">{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</div>
+                          <div className="text-sm text-gray-500 mb-6 text-center">
+                            <div>{rate.nights} {rate.nights === 1 ? 'night' : 'nights'}</div>
                           </div>
 
                           <button
                             onClick={() => onSelectUnit(unit, rate)}
-                            className="w-full bg-primary text-primary-foreground py-3 px-4 rounded-lg font-semibold hover:opacity-90 transition-opacity"
+                            className="w-full bg-yellow-400 text-black py-3 px-4 rounded-lg font-bold hover:bg-yellow-500 transition-colors"
                           >
                             Book Studio
                           </button>
