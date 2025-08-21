@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
+import SearchResults from './components/SearchResults';
 import GuestDetailsForm from './components/GuestDetailsForm';
 import BookingConfirmation from './components/BookingConfirmation';
 // TypeScript interfaces
@@ -209,15 +210,13 @@ const App: React.FC = () => {
             inventoryTypeId: property.inventoryTypeId || 0,
             inventoryTypeName: property.inventoryTypeName || 'Unknown Unit',
             rates: (property.rates || []).map((rate: any) => {
-              const avgNightlyRate = parseFloat(rate.avgNightlyRate || '0');
-              const totalPrice = avgNightlyRate * searchNights;
               return {
                 rateId: rate.rateId || 0,
                 rateName: rate.rateName || 'Standard Rate',
                 currency: rate.currency || 'SEK',
                 currencySymbol: rate.currencySymbol || 'SEK',
-                totalPrice: totalPrice,
-                avgNightlyRate: avgNightlyRate,
+                totalPrice: rate.totalPrice?.gross || rate.totalPrice || 0,
+                avgNightlyRate: rate.avgNightlyRate || 0,
                 nights: searchNights,
                 description: rate.description || ''
               };
@@ -236,18 +235,14 @@ const App: React.FC = () => {
         });
         setHasSearched(true);
 
-        // If we have results, go straight to Guest Details by auto-selecting a unit
-        if (filteredData.length > 0) {
-          const unit = filteredData[0];
-          const rate = unit.rates?.[0];
-          if (rate) {
-            setSelectedUnit({
-              ...unit,
-              selectedRate: rate
-            });
-            setShowBookingForm(true);
-          }
-        }
+        // Show search results - don't auto-select
+        // Scroll to results section
+        setTimeout(() => {
+          resultsSectionRef.current?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }, 100);
       } else {
         setError(data.message || 'No availability found');
         setAvailability([]);
@@ -383,157 +378,93 @@ const App: React.FC = () => {
     setError('');
   };
 
+  // Handle search with reset
+  const handleSearch = (): void => {
+    // Reset any ongoing booking process
+    setShowBookingForm(false);
+    setShowPaymentForm(false);
+    setBookingComplete(false);
+    setSelectedUnit(null);
+    // Perform search
+    searchAvailability();
+  };
 
-  // Show payment form
-  if (showPaymentForm && selectedUnit && lastSearchParams) {
-    return <StripePaymentForm totalAmount={selectedUnit.selectedRate.totalPrice} currency={selectedUnit.selectedRate.currency} onPaymentSuccess={handleStripePaymentSuccess} onBack={handleBackFromPayment} bookingDetails={{
-      guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-      checkIn: lastSearchParams.startDate,
-      checkOut: lastSearchParams.endDate,
-      propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-      nights: selectedUnit.selectedRate.nights,
-      guests: lastSearchParams.guests
-    }} />;
-  }
 
-  // Booking confirmation screen
-  if (bookingComplete) {
-    return <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 section-spacing">
-        <div className="container-modern">
-          <div className="max-w-2xl mx-auto">
-            <div className="card-glass p-12 text-center animate-bounce-in">
-              {/* Success Animation */}
-              <div className="mb-8">
-                <div className="relative">
-                  <div className="w-32 h-32 bg-gradient-to-r from-orange-400 to-amber-500 rounded-full flex items-center justify-center mx-auto mb-6 animate-glow">
-                    <CheckCircle className="w-16 h-16 text-white" />
-                  </div>
-                  {/* Floating confetti effect */}
-                  <div className="absolute inset-0 pointer-events-none">
-                    {[...Array(6)].map((_, i) => <div key={i} className="absolute w-3 h-3 bg-gradient-to-r from-yellow-400 to-orange-400 rounded-full opacity-70 animate-float-slow" style={{
-                    left: `${20 + i * 15}%`,
-                    top: `${10 + i % 2 * 20}%`,
-                    animationDelay: `${i * 0.5}s`
-                  }}></div>)}
-                  </div>
-                </div>
-                
-                <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
-                  🎉 Booking <span className="text-gradient-warm">Confirmed!</span>
-                </h1>
-                <p className="text-xl text-gray-600 mb-8">
-                  Your amazing studio is all set! Get ready for an unforgettable experience.
-                </p>
-              </div>
+  // Main interface with all steps
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Search Section - Always visible */}
+      <SearchForm 
+        searchParams={searchParams} 
+        setSearchParams={setSearchParams} 
+        onSearch={handleSearch} 
+        loading={loading} 
+        getMinEndDate={getMinEndDate} 
+        error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
+      />
 
-              {/* Booking Details Card */}
-              <div className="bg-gradient-to-br from-white to-gray-50 rounded-3xl p-8 mb-8 border border-gray-100 shadow-xl">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6">Your Booking Details</h2>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-left">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
-                        <CheckCircle className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Booking Reference</div>
-                        <div className="text-2xl font-bold text-purple-600">{bookingDetails?.bookingReference}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                        <Users className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Guest Name</div>
-                        <div className="text-lg text-gray-800">{bookingDetails?.guestName}</div>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-orange-500 to-amber-500 rounded-xl flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Check-in</div>
-                        <div className="text-lg text-gray-800">{bookingDetails && formatDisplayDate(bookingDetails.checkIn)}</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-gradient-to-r from-amber-500 to-orange-500 rounded-xl flex items-center justify-center">
-                        <Calendar className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-gray-700">Check-out</div>
-                        <div className="text-lg text-gray-800">{bookingDetails && formatDisplayDate(bookingDetails.checkOut)}</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                
-                {bookingDetails?.paymentAmount && <div className="border-t border-gray-200 pt-6 mt-6">
-                    <div className="flex justify-between items-center">
-                      <span className="text-lg font-semibold text-gray-700">Total Amount Paid</span>
-                      <span className="text-3xl font-bold text-orange-600">{formatCurrency(bookingDetails.paymentAmount)}</span>
-                    </div>
-                  </div>}
-              </div>
+      {/* Results Section */}
+      <div ref={resultsSectionRef}>
+        <SearchResults
+          availability={availability}
+          hasSearched={hasSearched}
+          confirmedSearchParams={lastSearchParams || searchParams}
+          onSelectUnit={selectUnit}
+          calculateNights={calculateNights}
+        />
+      </div>
 
-              {/* Additional Info */}
-              <div className="bg-orange-50 rounded-2xl p-6 mb-8 border border-orange-100">
-                <h3 className="font-bold text-orange-800 mb-2">📧 What's Next?</h3>
-                <p className="text-orange-700">
-                  A confirmation email with all details and check-in instructions has been sent to your email address.
-                </p>
-              </div>
-
-              {/* Action Button */}
-              <button onClick={resetToSearch} className="btn-warm group">
-                <span className="flex items-center">
-                  Book Another Amazing Studio
-                  <ArrowRight className="w-6 h-6 ml-3 group-hover:translate-x-2 transition-transform duration-300" />
-                </span>
-              </button>
-            </div>
-          </div>
+      {/* Guest Details Form - Shows underneath search */}
+      {showBookingForm && selectedUnit && lastSearchParams && (
+        <div className="bg-background">
+          <GuestDetailsForm
+            selectedUnit={selectedUnit}
+            confirmedSearchParams={{
+              ...searchParams,
+              communities: []
+            }}
+            guestDetails={guestDetails}
+            setGuestDetails={setGuestDetails}
+            onSubmit={handleGuestDetailsSubmit}
+            onBack={() => {
+              setShowBookingForm(false);
+            }}
+            error={error}
+            calculateNights={() => selectedUnit.selectedRate.nights}
+          />
         </div>
-      </div>;
-  }
+      )}
 
-  // Guest details form (full page)
-  if (showBookingForm && selectedUnit && lastSearchParams) {
-    const searchParamsWithCommunities = {
-      ...searchParams,  // Use current searchParams instead of lastSearchParams
-      communities: []  // Add empty communities array to match interface
-    };
-    
-    return <GuestDetailsForm
-      selectedUnit={selectedUnit}
-      confirmedSearchParams={searchParamsWithCommunities}
-      guestDetails={guestDetails}
-      setGuestDetails={setGuestDetails}
-      onSubmit={handleGuestDetailsSubmit}
-      onBack={() => {
-        setShowBookingForm(false);
-        setHasSearched(false);
-        setAvailability([]);
-      }}
-      error={error}
-      calculateNights={() => selectedUnit.selectedRate.nights}
-    />;
-  }
+      {/* Payment Form - Shows underneath search */}
+      {showPaymentForm && selectedUnit && lastSearchParams && (
+        <div className="bg-background">
+          <StripePaymentForm
+            totalAmount={selectedUnit.selectedRate.totalPrice} 
+            currency={selectedUnit.selectedRate.currency} 
+            onPaymentSuccess={handleStripePaymentSuccess} 
+            onBack={handleBackFromPayment} 
+            bookingDetails={{
+              guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
+              checkIn: lastSearchParams.startDate,
+              checkOut: lastSearchParams.endDate,
+              propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
+              nights: selectedUnit.selectedRate.nights,
+              guests: lastSearchParams.guests
+            }} 
+          />
+        </div>
+      )}
 
-  // Main interface
-  return <div className="min-h-screen bg-white">
-
-      {/* Search Section */}
-      <SearchForm searchParams={searchParams} setSearchParams={setSearchParams} onSearch={searchAvailability} loading={loading} getMinEndDate={getMinEndDate} error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} />
-
-    </div>;
+      {/* Booking Confirmation - Shows underneath search */}
+      {bookingComplete && bookingDetails && (
+        <div className="bg-background">
+          <BookingConfirmation
+            bookingDetails={bookingDetails}
+            onReset={resetToSearch}
+          />
+        </div>
+      )}
+    </div>
+  );
 };
 export default App;
