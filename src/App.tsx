@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
-import StripePaymentForm from './components/StripePaymentForm';
 import SearchForm from './components/SearchForm';
-import SearchResults from './components/SearchResults';
-import GuestDetailsForm from './components/GuestDetailsForm';
-import BookingConfirmation from './components/BookingConfirmation';
+import ProcessContent from './components/ProcessContent';
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
@@ -390,10 +387,10 @@ const App: React.FC = () => {
   };
 
 
-  // Main interface with all steps
+  // Main interface with two clear divs
   return (
     <div className="min-h-screen bg-background">
-      {/* Search Section - Always visible */}
+      {/* DIV 1 - Search Section (Always exists) */}
       <SearchForm 
         searchParams={searchParams} 
         setSearchParams={setSearchParams} 
@@ -403,67 +400,29 @@ const App: React.FC = () => {
         error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
       />
 
-      {/* Results Section */}
+      {/* DIV 2 - Process Content (Goes through the process) */}
       <div ref={resultsSectionRef}>
-        <SearchResults
+        <ProcessContent
           availability={availability}
           hasSearched={hasSearched}
           confirmedSearchParams={lastSearchParams || searchParams}
           onSelectUnit={selectUnit}
           calculateNights={calculateNights}
+          showBookingForm={showBookingForm}
+          selectedUnit={selectedUnit}
+          guestDetails={guestDetails}
+          setGuestDetails={setGuestDetails}
+          onGuestDetailsSubmit={handleGuestDetailsSubmit}
+          onBackFromGuestDetails={() => setShowBookingForm(false)}
+          error={error}
+          showPaymentForm={showPaymentForm}
+          onPaymentSuccess={handleStripePaymentSuccess}
+          onBackFromPayment={handleBackFromPayment}
+          bookingComplete={bookingComplete}
+          bookingDetails={bookingDetails}
+          onReset={resetToSearch}
         />
       </div>
-
-      {/* Guest Details Form - Shows underneath search */}
-      {showBookingForm && selectedUnit && lastSearchParams && (
-        <div className="bg-background">
-          <GuestDetailsForm
-            selectedUnit={selectedUnit}
-            confirmedSearchParams={{
-              ...searchParams,
-              communities: []
-            }}
-            guestDetails={guestDetails}
-            setGuestDetails={setGuestDetails}
-            onSubmit={handleGuestDetailsSubmit}
-            onBack={() => {
-              setShowBookingForm(false);
-            }}
-            error={error}
-            calculateNights={() => selectedUnit.selectedRate.nights}
-          />
-        </div>
-      )}
-
-      {/* Payment Form - Shows underneath search */}
-      {showPaymentForm && selectedUnit && lastSearchParams && (
-        <div className="bg-background">
-          <StripePaymentForm
-            totalAmount={selectedUnit.selectedRate.totalPrice} 
-            currency={selectedUnit.selectedRate.currency} 
-            onPaymentSuccess={handleStripePaymentSuccess} 
-            onBack={handleBackFromPayment} 
-            bookingDetails={{
-              guestName: `${guestDetails.firstName} ${guestDetails.lastName}`,
-              checkIn: lastSearchParams.startDate,
-              checkOut: lastSearchParams.endDate,
-              propertyName: `${selectedUnit.inventoryTypeName} - ${selectedUnit.buildingName}`,
-              nights: selectedUnit.selectedRate.nights,
-              guests: lastSearchParams.guests
-            }} 
-          />
-        </div>
-      )}
-
-      {/* Booking Confirmation - Shows underneath search */}
-      {bookingComplete && bookingDetails && (
-        <div className="bg-background">
-          <BookingConfirmation
-            bookingDetails={bookingDetails}
-            onReset={resetToSearch}
-          />
-        </div>
-      )}
     </div>
   );
 };
