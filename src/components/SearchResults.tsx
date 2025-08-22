@@ -109,12 +109,18 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
             return (
               <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-card rounded-lg shadow-sm overflow-hidden border">
-                {/* Mobile Image - only show on small screens */}
-                <div className="block md:hidden">
-                  <img src={getPropertyImage(unit.inventoryTypeId)} alt={unit.inventoryTypeName} className="w-full h-48 object-cover" />
-                </div>
-                
-                <div className="p-6">
+                <div className="flex flex-col md:flex-row">
+                  {/* Desktop Image - show on medium screens and up */}
+                  <div className="hidden md:block md:w-80 lg:w-96">
+                    <img src={getPropertyImage(unit.inventoryTypeId)} alt={unit.inventoryTypeName} className="w-full h-full object-cover" />
+                  </div>
+                  
+                  {/* Mobile Image - only show on small screens */}
+                  <div className="block md:hidden">
+                    <img src={getPropertyImage(unit.inventoryTypeId)} alt={unit.inventoryTypeName} className="w-full h-48 object-cover" />
+                  </div>
+                  
+                  <div className="flex-1 p-6">
                   {/* Header Row - Title and Price */}
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6">
                     <div>
@@ -197,13 +203,14 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     >
                       Book studio
                     </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </div>;
+                   </div>
+                 </div>
+               </div>
+             </div>
+             );
+           })}
+         </div>
+       </div>
+     </div>;
 };
 export default SearchResults;
