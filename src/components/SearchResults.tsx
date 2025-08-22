@@ -101,7 +101,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       </div>;
   }
   return <div className="py-8 bg-background">
-      <div className="max-w-4xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4">
         <div className="space-y-6">
           {availability.map((unit, index) => {
             const studioDetails = getStudioDetails(unit.inventoryTypeId);
@@ -111,7 +111,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-card rounded-lg shadow-sm overflow-hidden border">
                 <div className="flex flex-col md:flex-row">
                   {/* Desktop Image - show on medium screens and up */}
-                  <div className="hidden md:block md:w-80 lg:w-96">
+                  <div className="hidden md:block md:w-64 lg:w-72">
                     <img src={getPropertyImage(unit.inventoryTypeId)} alt={unit.inventoryTypeName} className="w-full h-full object-cover" />
                   </div>
                   
