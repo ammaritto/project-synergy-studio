@@ -44,7 +44,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
       return dateString;
     }
   };
-  return <div className="min-h-screen py-8 px-4 bg-white">
+  return <div className="min-h-screen py-8 px-4 bg-[#faf9f5]">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Guest Details</h1>
         
