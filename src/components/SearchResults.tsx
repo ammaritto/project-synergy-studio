@@ -104,11 +104,10 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       <div className="max-w-6xl mx-auto px-4">
         <div className="space-y-6">
           {availability.map((unit, index) => {
-            const studioDetails = getStudioDetails(unit.inventoryTypeId);
-            const rate = unit.rates[0]; // Use first rate
+          const studioDetails = getStudioDetails(unit.inventoryTypeId);
+          const rate = unit.rates[0]; // Use first rate
 
-            return (
-              <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-card rounded-lg shadow-sm overflow-hidden border">
+          return <div key={`${unit.buildingId}-${unit.inventoryTypeId}-${index}`} className="bg-card rounded-lg shadow-sm overflow-hidden border">
                 <div className="flex flex-col md:flex-row">
                   {/* Desktop Image - show on medium screens and up */}
                   <div className="hidden md:block md:w-64 lg:w-72">
@@ -130,7 +129,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                     <div className="mt-4 sm:mt-0 text-left sm:text-right">
                       <div className="flex items-baseline gap-1">
                         <span className="text-3xl font-bold text-foreground">{Math.round(rate.totalPrice)}</span>
-                        <span className="text-lg text-foreground">SEK / <span className="text-muted-foreground">month</span></span>
+                        
                       </div>
                     </div>
                   </div>
@@ -188,27 +187,18 @@ const SearchResults: React.FC<SearchResultsProps> = ({
 
                   {/* Bottom Actions */}
                   <div className="flex flex-col sm:flex-row gap-4 justify-between items-stretch sm:items-center">
-                    <a 
-                      href={studioDetails.readMoreUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer" 
-                      className="flex items-center justify-center gap-2 px-6 py-3 border border-border rounded-lg text-foreground hover:bg-muted transition-colors flex-1 sm:flex-initial"
-                    >
+                    <a href={studioDetails.readMoreUrl} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-6 py-3 border border-border rounded-lg text-foreground hover:bg-muted transition-colors flex-1 sm:flex-initial">
                       <span>Read more</span>
                       <img src="https://cdn.prod.website-files.com/5ffc799abc54c384e95bfbf9/67b2285852654c8e0c082e53_tabOpen2.svg" alt="External link" className="w-5 h-5" />
                     </a>
-                    <button
-                      onClick={() => onSelectUnit(unit, rate)}
-                      className="px-8 py-3 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors flex-1 sm:flex-initial"
-                    >
+                    <button onClick={() => onSelectUnit(unit, rate)} className="px-8 py-3 bg-yellow-400 text-black rounded-lg font-semibold hover:bg-yellow-500 transition-colors flex-1 sm:flex-initial">
                       Book studio
                     </button>
                    </div>
                  </div>
                </div>
-             </div>
-             );
-           })}
+             </div>;
+        })}
          </div>
        </div>
      </div>;
