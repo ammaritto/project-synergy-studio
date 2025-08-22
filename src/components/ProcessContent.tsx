@@ -100,16 +100,22 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
   bookingDetails,
   onReset
 }) => {
+  // Determine if we should show search results
+  // Only show when we have searched and we're not in any booking step
+  const shouldShowSearchResults = hasSearched && !showBookingForm && !showPaymentForm && !bookingComplete;
+
   return (
     <div>
-      {/* Search Results */}
-      <SearchResults
-        availability={availability}
-        hasSearched={hasSearched}
-        confirmedSearchParams={confirmedSearchParams}
-        onSelectUnit={onSelectUnit}
-        calculateNights={calculateNights}
-      />
+      {/* Search Results - Only show when appropriate */}
+      {shouldShowSearchResults && (
+        <SearchResults
+          availability={availability}
+          hasSearched={hasSearched}
+          confirmedSearchParams={confirmedSearchParams}
+          onSelectUnit={onSelectUnit}
+          calculateNights={calculateNights}
+        />
+      )}
 
       {/* Guest Details Form */}
       {showBookingForm && selectedUnit && (
