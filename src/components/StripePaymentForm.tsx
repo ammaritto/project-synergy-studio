@@ -195,7 +195,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       }
     }
   } : undefined;
-  return <div className="min-h-screen py-8 px-4 bg-white">
+  return <div className="min-h-screen py-8 px-4 bg-[#faf9f5]">
       <div className="max-w-2xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Secure Payment</h1>
         
@@ -279,9 +279,9 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                   
                   <div className="flex flex-col gap-3">
                     <button onClick={handleInitiatePayment} disabled={loading} className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center" style={{
-                  backgroundColor: '#1461E2',
-                  color: 'white'
-                }}>
+              backgroundColor: '#1461E2',
+              color: 'white'
+            }}>
                       {loading ? <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
                           Processing...
