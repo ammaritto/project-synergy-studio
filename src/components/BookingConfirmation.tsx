@@ -23,7 +23,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
       return dateString;
     }
   };
-  return <div className="min-h-screen py-8 px-4 bg-[#faf9f5]">
+  return <div className="min-h-screen py-8 px-4 bg-[#FCFBF7]">
     <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
       <div className="max-w-md mx-auto md:max-w-2xl lg:max-w-3xl md:flex md:flex-col md:items-center md:justify-center md:min-h-[400px]">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
