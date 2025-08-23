@@ -23,13 +23,12 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
       return dateString;
     }
   };
-  return <div className="min-h-screen py-8 bg-[faf9f5] bg-[#faf9f5]">
-      <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
+  return <div className="min-h-screen py-8 px-4 bg-[#faf9f5]">
+    <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
+      <div className="max-w-md mx-auto">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Booking Confirmed & Paid!
-
-      </h2>
-        <div className="space-y-2 text-gray-600 mx-0">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Booking Confirmed & Paid!</h2>
+        <div className="space-y-2 text-gray-600">
           <p><strong>Booking Reference:</strong> {bookingDetails.bookingReference}</p>
           <p><strong>Guest:</strong> {bookingDetails.guestName}</p>
           <p><strong>Check-in:</strong> {formatDisplayDate(bookingDetails.checkIn)}</p>
@@ -38,6 +37,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
           {bookingDetails.paymentAmount && <p><strong>Amount Paid:</strong> {formatCurrency(bookingDetails.paymentAmount)}</p>}
         </div>
       </div>
-    </div>;
+    </div>
+  </div>;
 };
 export default BookingConfirmation;
