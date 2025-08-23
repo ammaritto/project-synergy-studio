@@ -205,7 +205,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     return classes;
   };
   return <div id="search-section" className="pt-10 pb-0 md:pt-5 md:pb-5">
-      <div className="container-modern">
+<div className="container-modern" style={{backgroundColor: '#FCFBF7'}}>
          {/* Header */}
          <div className="text-center mb-8">
            <h1 className="text-4xl font-bold text-gray-900 mb-2">Find Your Studio</h1>
