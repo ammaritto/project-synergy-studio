@@ -96,70 +96,51 @@ const App: React.FC = () => {
     
     if (!isInIframe) return;
 
-    let lastHeight = 0;
-    let heightCheckTimer: NodeJS.Timeout;
+    let isUpdating = false;
 
     // Function to send height to parent
     const sendHeight = () => {
+      // Prevent recursive updates
+      if (isUpdating) return;
+      
       try {
-        const height = Math.max(
-          document.documentElement.scrollHeight || 0,
-          document.body.scrollHeight || 0,
-          document.documentElement.offsetHeight || 0,
-          document.body.offsetHeight || 0
-        );
+        const bodyRect = document.body.getBoundingClientRect();
+        const height = Math.ceil(bodyRect.height);
         
-        // Only send if height actually changed (with 5px tolerance)
-        if (Math.abs(height - lastHeight) > 5) {
-          lastHeight = height;
-          
-          // Send height to parent window
-          window.parent.postMessage(
-            { 
-              type: 'iframe-height',
-              height: height 
-            }, 
-            '*' // In production, replace with your Webflow domain for security
-          );
-        }
+        // Send height to parent window
+        window.parent.postMessage(
+          { 
+            type: 'iframe-height',
+            height: height 
+          }, 
+          '*' // In production, replace with your Webflow domain for security
+        );
       } catch (error) {
         console.error('Failed to send height to parent:', error);
       }
     };
 
-    // Debounced height check
-    const debouncedSendHeight = () => {
-      clearTimeout(heightCheckTimer);
-      heightCheckTimer = setTimeout(sendHeight, 150);
-    };
-
-    // Send initial height after component mounts
-    setTimeout(sendHeight, 500);
-
-    // Create ResizeObserver to watch for height changes
-    const resizeObserver = new ResizeObserver(() => {
-      debouncedSendHeight();
-    });
-
-    // Observe the document body for size changes
-    resizeObserver.observe(document.body);
-
-    // Send height on window resize
-    window.addEventListener('resize', debouncedSendHeight);
+    // Send initial height after content loads
+    const initTimer = setTimeout(() => {
+      sendHeight();
+    }, 1000);
 
     // Listen for height requests from parent
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'request-height') {
         sendHeight();
       }
+      // Mark that we're updating to prevent loops
+      if (event.data && event.data.type === 'height-updated') {
+        isUpdating = true;
+        setTimeout(() => { isUpdating = false; }, 500);
+      }
     };
     window.addEventListener('message', handleMessage);
 
     // Cleanup
     return () => {
-      clearTimeout(heightCheckTimer);
-      resizeObserver.disconnect();
-      window.removeEventListener('resize', debouncedSendHeight);
+      clearTimeout(initTimer);
       window.removeEventListener('message', handleMessage);
     };
   }, []);
