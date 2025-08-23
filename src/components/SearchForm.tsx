@@ -204,13 +204,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
     return classes;
   };
-  return <div id="search-section" className="pt-16 pb-0 md:pt-5 md:pb-5">
+  return <div id="search-section" className="pt-5 pb-0 md:pt-5 md:pb-5">
       <div className="container-modern">
-         {/* Header */}
-         <div className="text-center mb-8">
-           <h1 className="text-6xl md:text-7xl lg:text-8xl font-normal text-black tracking-tight leading-tight">Find Your Studio</h1>
-         </div>
-        
         <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Check-in */}
