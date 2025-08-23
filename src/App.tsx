@@ -485,7 +485,7 @@ const App: React.FC = () => {
 
   // Main interface with two clear divs
   return (
-    <div className="min-h-screen" style={{backgroundColor: '#FCFBF7'}}>
+    <div style={{backgroundColor: '#FCFBF7'}}>
       {/* DIV 1 - Search Section (Always exists) */}
       <SearchForm 
         searchParams={searchParams} 
