@@ -3,12 +3,14 @@ import { useParams } from 'react-router-dom';
 import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCircle, ArrowLeft, Sparkles, ArrowRight } from 'lucide-react';
 import SearchForm from './components/SearchForm';
 import ProcessContent from './components/ProcessContent';
+
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
   endDate: string;
   guests: number;
 }
+
 interface Rate {
   rateId: number;
   rateName: string;
@@ -19,6 +21,7 @@ interface Rate {
   nights: number;
   description?: string;
 }
+
 interface Unit {
   buildingId: number;
   buildingName: string;
@@ -26,15 +29,18 @@ interface Unit {
   inventoryTypeName: string;
   rates: Rate[];
 }
+
 interface SelectedUnit extends Unit {
   selectedRate: Rate;
 }
+
 interface GuestDetails {
   firstName: string;
   lastName: string;
   email: string;
   phone?: string;
 }
+
 interface BookingDetails {
   bookingId: number;
   bookingReference: string;
@@ -45,6 +51,7 @@ interface BookingDetails {
   paymentReference?: string;
   paymentAmount?: number;
 }
+
 const App: React.FC = () => {
   // Get inventory type ID from URL
   const { inventoryTypeId } = useParams<{ inventoryTypeId?: string }>();
@@ -79,6 +86,101 @@ const App: React.FC = () => {
   const [availability, setAvailability] = useState<Unit[]>([]);
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
+
+  // ====================
+  // IFRAME HEIGHT COMMUNICATION
+  // ====================
+  useEffect(() => {
+    // Check if app is running inside an iframe
+    const isInIframe = window.parent !== window;
+    
+    if (!isInIframe) return;
+
+    // Function to send height to parent
+    const sendHeight = () => {
+      try {
+        const height = document.documentElement.scrollHeight || 
+                      document.body.scrollHeight;
+        
+        // Send height to parent window
+        window.parent.postMessage(
+          { 
+            type: 'iframe-height',
+            height: height 
+          }, 
+          '*' // In production, replace with your Webflow domain for security
+        );
+      } catch (error) {
+        console.error('Failed to send height to parent:', error);
+      }
+    };
+
+    // Send initial height after component mounts
+    setTimeout(sendHeight, 100);
+
+    // Create ResizeObserver to watch for height changes
+    const resizeObserver = new ResizeObserver(() => {
+      sendHeight();
+    });
+
+    // Observe the document body for size changes
+    resizeObserver.observe(document.body);
+
+    // Also observe when content changes (useful for dynamic content)
+    const mutationObserver = new MutationObserver(() => {
+      sendHeight();
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      characterData: true
+    });
+
+    // Send height on specific events that might change content
+    window.addEventListener('load', sendHeight);
+    window.addEventListener('resize', sendHeight);
+
+    // Listen for height requests from parent
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'request-height') {
+        sendHeight();
+      }
+    };
+    window.addEventListener('message', handleMessage);
+
+    // Cleanup
+    return () => {
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+      window.removeEventListener('load', sendHeight);
+      window.removeEventListener('resize', sendHeight);
+      window.removeEventListener('message', handleMessage);
+    };
+  }, []);
+
+  // Also trigger height update when key states change
+  useEffect(() => {
+    const isInIframe = window.parent !== window;
+    if (!isInIframe) return;
+
+    // Send height update when these states change
+    setTimeout(() => {
+      const height = document.documentElement.scrollHeight || 
+                    document.body.scrollHeight;
+      window.parent.postMessage(
+        { 
+          type: 'iframe-height',
+          height: height 
+        }, 
+        '*'
+      );
+    }, 100);
+  }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading]);
+  // ====================
+  // END IFRAME HEIGHT COMMUNICATION
+  // ====================
 
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
@@ -386,10 +488,9 @@ const App: React.FC = () => {
     searchAvailability();
   };
 
-
   // Main interface with two clear divs
   return (
-<div className="min-h-screen" style={{backgroundColor: '#FCFBF7'}}>
+    <div className="min-h-screen" style={{backgroundColor: '#FCFBF7'}}>
       {/* DIV 1 - Search Section (Always exists) */}
       <SearchForm 
         searchParams={searchParams} 
@@ -426,4 +527,5 @@ const App: React.FC = () => {
     </div>
   );
 };
+
 export default App;
