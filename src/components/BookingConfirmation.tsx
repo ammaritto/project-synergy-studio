@@ -37,9 +37,6 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
           {bookingDetails.paymentReference && <p><strong>Payment Reference:</strong> {bookingDetails.paymentReference}</p>}
           {bookingDetails.paymentAmount && <p><strong>Amount Paid:</strong> {formatCurrency(bookingDetails.paymentAmount)}</p>}
         </div>
-        <button onClick={onReset} className="mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors">
-          Make Another Booking
-        </button>
       </div>
     </div>;
 };
