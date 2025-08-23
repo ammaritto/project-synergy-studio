@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from 'react';
-import { Search, Calendar, Users, ChevronLeft, ChevronRight, CalendarDays } from 'lucide-react';
+import { Search, Calendar, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 interface SearchParams {
   startDate: string;
@@ -183,24 +183,24 @@ const SearchForm: React.FC<SearchFormProps> = ({
   };
   const getDayClassName = (date: Date | null) => {
     if (!date) return '';
-    let classes = 'relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-sm rounded-xl cursor-pointer transition-all duration-300 font-medium ';
+    let classes = 'relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-sm rounded-lg cursor-pointer transition-all duration-300 ';
     if (isPastDate(date)) {
-      classes += 'text-gray-300 cursor-not-allowed hover:bg-transparent opacity-40 ';
+      classes += 'text-gray-300 cursor-not-allowed hover:bg-transparent ';
     } else if (isInvalidEndDate(date)) {
       // Invalid end dates (less than 3 nights from start) - grayed out and not clickable
-      classes += 'text-red-300 cursor-not-allowed hover:bg-transparent opacity-50 ';
+      classes += 'text-red-300 cursor-not-allowed hover:bg-transparent ';
     } else if (isSelected(date)) {
       // Selected dates - using the blue theme color with reduced padding
-      classes += 'bg-gradient-to-br from-blue-500 to-blue-600 text-white font-bold hover:from-blue-600 hover:to-blue-700 shadow-lg transform scale-105 ring-2 ring-blue-200 ';
+      classes += 'bg-[#1461E2] text-white font-semibold hover:bg-[#1252CC] shadow-md ';
     } else if (isInRange(date)) {
       // Dates in range - light blue
-      classes += 'bg-gradient-to-br from-blue-50 to-blue-100 text-blue-800 hover:from-blue-100 hover:to-blue-150 border border-blue-200 ';
+      classes += 'bg-blue-50 text-gray-700 hover:bg-blue-100 ';
     } else if (isToday(date)) {
       // Today - subtle gray background with border
-      classes += 'bg-gradient-to-br from-amber-50 to-amber-100 text-amber-800 font-bold ring-2 ring-amber-300 hover:from-amber-100 hover:to-amber-150 shadow-sm ';
+      classes += 'bg-gray-50 text-gray-900 font-medium ring-1 ring-gray-200 hover:bg-gray-100 ';
     } else {
       // Regular dates
-      classes += 'text-gray-700 hover:bg-gradient-to-br hover:from-gray-50 hover:to-gray-100 hover:shadow-sm hover:scale-105 ';
+      classes += 'text-gray-700 hover:bg-gray-50 ';
     }
     return classes;
   };
@@ -211,7 +211,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
            <h1 className="text-4xl font-bold text-gray-900 mb-2">Find Your Studio</h1>
          </div>
         
-        <div className="bg-white rounded-2xl shadow-xl p-8 animate-slide-up max-w-6xl mx-auto border border-gray-100">
+        <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Check-in */}
             <div>
@@ -219,11 +219,11 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 Check-in
               </label>
               <div className="relative">
-                <CalendarDays className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input type="date" value={searchParams.startDate} onChange={e => setSearchParams(prev => ({
                 ...prev,
                 startDate: e.target.value
-              }))} className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white font-medium" />
+              }))} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
             </div>
 
@@ -233,11 +233,11 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 Check-out
               </label>
               <div className="relative">
-                <CalendarDays className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input type="date" value={searchParams.endDate} onChange={e => setSearchParams(prev => ({
                 ...prev,
                 endDate: e.target.value
-              }))} min={getMinEndDate()} className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 bg-gray-50 hover:bg-white font-medium" />
+              }))} min={getMinEndDate()} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
               </div>
             </div>
 
@@ -247,16 +247,16 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 Guests
               </label>
               <div className="relative">
-                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-blue-500" />
-                <select id="guests" className="w-full pl-10 pr-8 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 appearance-none transition-all duration-200 bg-gray-50 hover:bg-white font-medium" value={searchParams.guests} onChange={e => setSearchParams(prev => ({
+                <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+                <select id="guests" className="w-full pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none" value={searchParams.guests} onChange={e => setSearchParams(prev => ({
                 ...prev,
                 guests: parseInt(e.target.value)
               }))}>
                   <option value={1}>1 Guest</option>
                   <option value={2}>2 Guests</option>
                 </select>
-                <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none">
-                  <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                   </svg>
                 </div>
@@ -266,9 +266,9 @@ const SearchForm: React.FC<SearchFormProps> = ({
             {/* Search Button */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
-              <button onClick={onSearch} disabled={loading} className="w-full bg-gradient-to-r from-blue-500 to-blue-600 text-white py-3 rounded-xl font-bold hover:from-blue-600 hover:to-blue-700 transition-all duration-200 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none">
+              <button onClick={onSearch} disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
                 {loading ? <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div> : <>
-                    <Search className="w-5 h-5" />
+                    <Search className="w-4 h-4" />
                     Search
                   </>}
               </button>
@@ -277,9 +277,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
           
           {/* Error message */}
           {error && <div className="mt-4 text-center">
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 inline-block">
-                <p className="text-red-700 text-sm font-medium">{error}</p>
-              </div>
+              <p className="text-red-600 text-sm font-medium">{error}</p>
             </div>}
         </div>
       </div>
