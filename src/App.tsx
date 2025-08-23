@@ -96,51 +96,56 @@ const App: React.FC = () => {
     
     if (!isInIframe) return;
 
+    let lastHeight = 0;
+    let heightCheckTimer: NodeJS.Timeout;
+
     // Function to send height to parent
     const sendHeight = () => {
       try {
-        const height = document.documentElement.scrollHeight || 
-                      document.body.scrollHeight;
-        
-        // Send height to parent window
-        window.parent.postMessage(
-          { 
-            type: 'iframe-height',
-            height: height 
-          }, 
-          '*' // In production, replace with your Webflow domain for security
+        const height = Math.max(
+          document.documentElement.scrollHeight || 0,
+          document.body.scrollHeight || 0,
+          document.documentElement.offsetHeight || 0,
+          document.body.offsetHeight || 0
         );
+        
+        // Only send if height actually changed (with 5px tolerance)
+        if (Math.abs(height - lastHeight) > 5) {
+          lastHeight = height;
+          
+          // Send height to parent window
+          window.parent.postMessage(
+            { 
+              type: 'iframe-height',
+              height: height 
+            }, 
+            '*' // In production, replace with your Webflow domain for security
+          );
+        }
       } catch (error) {
         console.error('Failed to send height to parent:', error);
       }
     };
 
+    // Debounced height check
+    const debouncedSendHeight = () => {
+      clearTimeout(heightCheckTimer);
+      heightCheckTimer = setTimeout(sendHeight, 150);
+    };
+
     // Send initial height after component mounts
-    setTimeout(sendHeight, 100);
+    setTimeout(sendHeight, 500);
 
     // Create ResizeObserver to watch for height changes
     const resizeObserver = new ResizeObserver(() => {
-      sendHeight();
+      debouncedSendHeight();
     });
 
     // Observe the document body for size changes
     resizeObserver.observe(document.body);
 
-    // Also observe when content changes (useful for dynamic content)
-    const mutationObserver = new MutationObserver(() => {
-      sendHeight();
-    });
-
-    mutationObserver.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      characterData: true
-    });
-
-    // Send height on specific events that might change content
-    window.addEventListener('load', sendHeight);
-    window.addEventListener('resize', sendHeight);
+    // Send height on window resize
+    window.addEventListener('resize', debouncedSendHeight);
 
     // Listen for height requests from parent
     const handleMessage = (event: MessageEvent) => {
@@ -152,10 +157,9 @@ const App: React.FC = () => {
 
     // Cleanup
     return () => {
+      clearTimeout(heightCheckTimer);
       resizeObserver.disconnect();
-      mutationObserver.disconnect();
-      window.removeEventListener('load', sendHeight);
-      window.removeEventListener('resize', sendHeight);
+      window.removeEventListener('resize', debouncedSendHeight);
       window.removeEventListener('message', handleMessage);
     };
   }, []);
@@ -166,9 +170,14 @@ const App: React.FC = () => {
     if (!isInIframe) return;
 
     // Send height update when these states change
-    setTimeout(() => {
-      const height = document.documentElement.scrollHeight || 
-                    document.body.scrollHeight;
+    const sendHeightUpdate = () => {
+      const height = Math.max(
+        document.documentElement.scrollHeight || 0,
+        document.body.scrollHeight || 0,
+        document.documentElement.offsetHeight || 0,
+        document.body.offsetHeight || 0
+      );
+      
       window.parent.postMessage(
         { 
           type: 'iframe-height',
@@ -176,7 +185,12 @@ const App: React.FC = () => {
         }, 
         '*'
       );
-    }, 100);
+    };
+
+    // Small delay to ensure DOM has updated
+    const timer = setTimeout(sendHeightUpdate, 200);
+    
+    return () => clearTimeout(timer);
   }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading]);
   // ====================
   // END IFRAME HEIGHT COMMUNICATION
