@@ -45,11 +45,13 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
     }
   };
   return <div className="min-h-screen py-8 px-4 bg-[#faf9f5]">
-      <div className="max-w-2xl mx-auto">
+  <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="col-span-full">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Guest Details</h1>
         
         {/* Booking Summary */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 w-full md:w-3/4 mx-auto">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
             <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
             Booking Summary
@@ -98,7 +100,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
         {error && <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
             {error}
           </div>}
-
+          <br/><br />
         <form onSubmit={onSubmit} className="space-y-6">
           {/* Name Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -169,6 +171,8 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
           </div>
         </form>
       </div>
-    </div>;
+    </div>
+  </div>
+</div>;
 };
 export default GuestDetailsForm;
