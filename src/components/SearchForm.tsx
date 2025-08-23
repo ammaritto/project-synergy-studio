@@ -204,11 +204,11 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
     return classes;
   };
-  return <div id="search-section" className="pt-10 pb-0 md:pt-5 md:pb-5">
-<div className="container-modern" style={{backgroundColor: '#FCFBF7'}}>
+  return <div id="search-section" className="pt-16 pb-0 md:pt-5 md:pb-5">
+      <div className="container-modern">
          {/* Header */}
          <div className="text-center mb-8">
-           <h1 className="text-4xl font-bold text-gray-900 mb-2">Find Your Studio</h1>
+           <h1 className="text-6xl md:text-7xl lg:text-8xl font-normal text-black tracking-tight leading-tight">Find Your Studio</h1>
          </div>
         
         <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
