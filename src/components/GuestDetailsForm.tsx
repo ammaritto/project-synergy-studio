@@ -47,7 +47,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
   return <div className="min-h-screen py-8 px-4 bg-[#FCFBF7]">
   <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div className="col-span-full">
+      <div className="pt-[10px] pb-[10px] col-span-full">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Guest Details</h1>
         
         {/* Booking Summary */}
