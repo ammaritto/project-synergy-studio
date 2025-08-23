@@ -221,7 +221,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
   };
 
   return (
-    <div id="search-section" className="pt-4 pb-0">
+    <div id="search-section" className="pt-4 pb-6 bg-[#FCFBF7]">
       <div className="max-w-6xl mx-auto px-4">
         <div className="bg-white rounded-lg shadow-lg p-4 animate-slide-up">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
