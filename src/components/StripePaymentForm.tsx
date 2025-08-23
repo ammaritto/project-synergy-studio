@@ -202,8 +202,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Secure Payment</h1>
         
         {/* Booking Summary */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 w-full md:w-3/4 mx-auto">
-          <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
+        <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-full md:w-3/4 mx-auto">          <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
             <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
             Booking Summary
           </h3>
@@ -242,9 +241,9 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
             </div>
           </div>
         </div>
-
+<br />
         {/* Payment Form */}
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white">
               {error && <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-xl mb-6 flex items-start animate-fade-in">
                   <AlertCircle className="w-5 h-5 mr-3 flex-shrink-0 mt-0.5" />
                   <div>

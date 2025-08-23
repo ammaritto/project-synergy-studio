@@ -51,7 +51,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Guest Details</h1>
         
         {/* Booking Summary */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6 w-full md:w-3/4 mx-auto">
+        <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-full md:w-3/4 mx-auto">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
             <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
             Booking Summary
