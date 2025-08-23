@@ -195,7 +195,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
       }
     }
   } : undefined;
-  return <div className="min-h-screen py-8 px-4 bg-[#faf9f5]">
+  return <div className="min-h-screen py-8 px-4 bg-[#FCFBF7]">
   <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
     <div className="pt-[10px] pb-[10px] grid grid-cols-1 md:grid-cols-4 gap-6">
       <div className="col-span-full">
