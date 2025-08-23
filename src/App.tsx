@@ -65,17 +65,8 @@ const App: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>({
-    bookingId: 12345,
-    bookingReference: "BK-2025-001234",
-    status: "confirmed",
-    guestName: "John Doe",
-    checkIn: "2025-01-15",
-    checkOut: "2025-01-18",
-    paymentReference: "PAY-789012",
-    paymentAmount: 2400
-  });
-  const [bookingComplete, setBookingComplete] = useState(true);
+  const [bookingDetails, setBookingDetails] = useState<BookingDetails | null>(null);
+  const [bookingComplete, setBookingComplete] = useState(false);
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
 
