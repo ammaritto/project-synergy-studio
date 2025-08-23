@@ -1,11 +1,13 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Calendar, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+
 interface SearchParams {
   startDate: string;
   endDate: string;
   guests: number;
 }
+
 interface SearchFormProps {
   searchParams: SearchParams;
   setSearchParams: React.Dispatch<React.SetStateAction<SearchParams>>;
@@ -14,6 +16,7 @@ interface SearchFormProps {
   getMinEndDate: () => string;
   error?: string;
 }
+
 const SearchForm: React.FC<SearchFormProps> = ({
   searchParams,
   setSearchParams,
@@ -75,6 +78,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     return next;
   }, [currentMonth]);
   const nextMonthDays = useMemo(() => getDaysInMonth(nextMonth), [nextMonth]);
+  
   const handleDateClick = (date: Date) => {
     if (!dateRange.from || dateRange.from && dateRange.to) {
       // Start new selection
@@ -101,27 +105,32 @@ const SearchForm: React.FC<SearchFormProps> = ({
       }
     }
   };
+
   const handlePrevMonth = () => {
     const prev = new Date(currentMonth);
     prev.setMonth(prev.getMonth() - 1);
     setCurrentMonth(prev);
   };
+
   const handleNextMonth = () => {
     const next = new Date(currentMonth);
     next.setMonth(next.getMonth() + 1);
     setCurrentMonth(next);
   };
+
   const isToday = (date: Date | null) => {
     if (!date) return false;
     const today = new Date();
     return date.toDateString() === today.toDateString();
   };
+
   const isSelected = (date: Date | null) => {
     if (!date) return false;
     if (dateRange.from && date.toDateString() === dateRange.from.toDateString()) return true;
     if (dateRange.to && date.toDateString() === dateRange.to.toDateString()) return true;
     return false;
   };
+
   const isInRange = (date: Date | null) => {
     if (!date || !dateRange.from) return false;
     if (dateRange.to) {
@@ -136,17 +145,20 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
     return false;
   };
+
   const isPastDate = (date: Date | null) => {
     if (!date) return false;
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     return date < today;
   };
+
   const isInvalidEndDate = (date: Date | null) => {
     if (!date || !dateRange.from || dateRange.to) return false;
     const daysDiff = Math.floor((date.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
     return date > dateRange.from && daysDiff < 3;
   };
+
   const formatDateRange = () => {
     const formatDate = (date: Date) => {
       return date.toLocaleDateString('en-US', {
@@ -159,6 +171,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     if (!dateRange.to) return `${formatDate(dateRange.from)} - Select end date`;
     return `${formatDate(dateRange.from)} - ${formatDate(dateRange.to)}`;
   };
+
   const clearDates = () => {
     setDateRange({
       from: null,
@@ -170,6 +183,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       endDate: ''
     }));
   };
+
   const applyDates = () => {
     if (dateRange.from && dateRange.to) {
       setSearchParams(prev => ({
@@ -181,6 +195,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
       onSearch(); // Trigger search when apply is clicked
     }
   };
+
   const getDayClassName = (date: Date | null) => {
     if (!date) return '';
     let classes = 'relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-sm rounded-lg cursor-pointer transition-all duration-300 ';
@@ -204,9 +219,11 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
     return classes;
   };
-  return <div id="search-section" className="pt-10 pb-0 md:pt-5 md:pb-5">
-      <div className="container-modern">
-        <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
+
+  return (
+    <div id="search-section" className="pt-4 pb-0">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-lg p-4 animate-slide-up">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Check-in */}
             <div>
@@ -215,10 +232,15 @@ const SearchForm: React.FC<SearchFormProps> = ({
               </label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input type="date" value={searchParams.startDate} onChange={e => setSearchParams(prev => ({
-                ...prev,
-                startDate: e.target.value
-              }))} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <input 
+                  type="date" 
+                  value={searchParams.startDate} 
+                  onChange={e => setSearchParams(prev => ({
+                    ...prev,
+                    startDate: e.target.value
+                  }))} 
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                />
               </div>
             </div>
 
@@ -229,10 +251,16 @@ const SearchForm: React.FC<SearchFormProps> = ({
               </label>
               <div className="relative">
                 <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input type="date" value={searchParams.endDate} onChange={e => setSearchParams(prev => ({
-                ...prev,
-                endDate: e.target.value
-              }))} min={getMinEndDate()} className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" />
+                <input 
+                  type="date" 
+                  value={searchParams.endDate} 
+                  onChange={e => setSearchParams(prev => ({
+                    ...prev,
+                    endDate: e.target.value
+                  }))} 
+                  min={getMinEndDate()} 
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                />
               </div>
             </div>
 
@@ -243,10 +271,15 @@ const SearchForm: React.FC<SearchFormProps> = ({
               </label>
               <div className="relative">
                 <Users className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <select id="guests" className="w-full pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none" value={searchParams.guests} onChange={e => setSearchParams(prev => ({
-                ...prev,
-                guests: parseInt(e.target.value)
-              }))}>
+                <select 
+                  id="guests" 
+                  className="w-full pl-10 pr-8 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent appearance-none" 
+                  value={searchParams.guests} 
+                  onChange={e => setSearchParams(prev => ({
+                    ...prev,
+                    guests: parseInt(e.target.value)
+                  }))}
+                >
                   <option value={1}>1 Guest</option>
                   <option value={2}>2 Guests</option>
                 </select>
@@ -261,21 +294,33 @@ const SearchForm: React.FC<SearchFormProps> = ({
             {/* Search Button */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">&nbsp;</label>
-              <button onClick={onSearch} disabled={loading} className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
-                {loading ? <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div> : <>
+              <button 
+                onClick={onSearch} 
+                disabled={loading} 
+                className="w-full bg-primary text-primary-foreground py-3 rounded-lg font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              >
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-primary-foreground border-t-transparent rounded-full animate-spin"></div>
+                ) : (
+                  <>
                     <Search className="w-4 h-4" />
                     Search
-                  </>}
+                  </>
+                )}
               </button>
             </div>
           </div>
           
-          {/* Error message */}
-          {error && <div className="mt-4 text-center">
+          {/* Error message - Compact styling */}
+          {error && (
+            <div className="mt-2 text-center">
               <p className="text-red-600 text-sm font-medium">{error}</p>
-            </div>}
+            </div>
+          )}
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default SearchForm;

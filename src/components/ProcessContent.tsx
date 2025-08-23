@@ -101,12 +101,17 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
   onReset
 }) => {
   // Determine if we should show search results
-  // Only show when we have searched and we're not in any booking step
-  const shouldShowSearchResults = hasSearched && !showBookingForm && !showPaymentForm && !bookingComplete;
+  // Only show when we have searched AND have actual results AND not in booking steps
+  const shouldShowSearchResults = hasSearched && availability.length > 0 && !showBookingForm && !showPaymentForm && !bookingComplete;
+
+  // Return null if there's nothing to render - prevents empty container height
+  if (!shouldShowSearchResults && !showBookingForm && !showPaymentForm && !bookingComplete) {
+    return null;
+  }
 
   return (
     <div>
-      {/* Search Results - Only show when appropriate */}
+      {/* Search Results - Only show when we have actual results */}
       {shouldShowSearchResults && (
         <SearchResults
           availability={availability}

@@ -330,13 +330,15 @@ const App: React.FC = () => {
         setHasSearched(true);
 
         // Show search results - don't auto-select
-        // Scroll to results section
-        setTimeout(() => {
-          resultsSectionRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 100);
+        // Only scroll to results section if there are actual results
+        if (filteredData.length > 0) {
+          setTimeout(() => {
+            resultsSectionRef.current?.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+          }, 100);
+        }
       } else {
         setError(data.message || 'No availability found');
         setAvailability([]);
@@ -345,13 +347,7 @@ const App: React.FC = () => {
         });
         setHasSearched(true);
 
-        // Scroll to results section even if no results found
-        setTimeout(() => {
-          resultsSectionRef.current?.scrollIntoView({
-            behavior: 'smooth',
-            block: 'start'
-          });
-        }, 100);
+        // DON'T scroll when no results found - removed this section
       }
     } catch (err: any) {
       console.error('Search error:', err);
@@ -362,13 +358,7 @@ const App: React.FC = () => {
       });
       setHasSearched(true);
 
-      // Scroll to results section even on error
-      setTimeout(() => {
-        resultsSectionRef.current?.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-      }, 100);
+      // DON'T scroll on error either - removed this section
     } finally {
       setLoading(false);
     }
@@ -485,7 +475,7 @@ const App: React.FC = () => {
 
   // Main interface with two clear divs
   return (
-    <div style={{backgroundColor: '#FCFBF7'}}>
+    <div style={{backgroundColor: 'transparent'}}>
       {/* DIV 1 - Search Section (Always exists) */}
       <SearchForm 
         searchParams={searchParams} 
@@ -496,29 +486,31 @@ const App: React.FC = () => {
         error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
       />
 
-      {/* DIV 2 - Process Content (Goes through the process) */}
-      <div ref={resultsSectionRef}>
-        <ProcessContent
-          availability={availability}
-          hasSearched={hasSearched}
-          confirmedSearchParams={lastSearchParams || searchParams}
-          onSelectUnit={selectUnit}
-          calculateNights={calculateNights}
-          showBookingForm={showBookingForm}
-          selectedUnit={selectedUnit}
-          guestDetails={guestDetails}
-          setGuestDetails={setGuestDetails}
-          onGuestDetailsSubmit={handleGuestDetailsSubmit}
-          onBackFromGuestDetails={() => setShowBookingForm(false)}
-          error={error}
-          showPaymentForm={showPaymentForm}
-          onPaymentSuccess={handleStripePaymentSuccess}
-          onBackFromPayment={handleBackFromPayment}
-          bookingComplete={bookingComplete}
-          bookingDetails={bookingDetails}
-          onReset={resetToSearch}
-        />
-      </div>
+      {/* DIV 2 - Process Content (Only render if there's content to show) */}
+      {(availability.length > 0 || showBookingForm || showPaymentForm || bookingComplete) && (
+        <div ref={resultsSectionRef}>
+          <ProcessContent
+            availability={availability}
+            hasSearched={hasSearched}
+            confirmedSearchParams={lastSearchParams || searchParams}
+            onSelectUnit={selectUnit}
+            calculateNights={calculateNights}
+            showBookingForm={showBookingForm}
+            selectedUnit={selectedUnit}
+            guestDetails={guestDetails}
+            setGuestDetails={setGuestDetails}
+            onGuestDetailsSubmit={handleGuestDetailsSubmit}
+            onBackFromGuestDetails={() => setShowBookingForm(false)}
+            error={error}
+            showPaymentForm={showPaymentForm}
+            onPaymentSuccess={handleStripePaymentSuccess}
+            onBackFromPayment={handleBackFromPayment}
+            bookingComplete={bookingComplete}
+            bookingDetails={bookingDetails}
+            onReset={resetToSearch}
+          />
+        </div>
+      )}
     </div>
   );
 };
