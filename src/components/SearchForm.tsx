@@ -204,7 +204,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }
     return classes;
   };
-  return <div id="search-section" className="py-16 md:py-20">
+  return <div id="search-section" className="pt-16 pb-0 md:pt-5 md:pb-5">
       <div className="container-modern">
          {/* Header */}
          <div className="text-center mb-8">
