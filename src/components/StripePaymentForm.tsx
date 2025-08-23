@@ -196,11 +196,13 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
     }
   } : undefined;
   return <div className="min-h-screen py-8 px-4 bg-[#faf9f5]">
-      <div className="max-w-2xl mx-auto">
+  <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="col-span-full">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Secure Payment</h1>
         
         {/* Booking Summary */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 w-full md:w-3/4 mx-auto">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center">
             <Sparkles className="w-6 h-6 text-blue-600 mr-3" />
             Booking Summary
@@ -300,7 +302,9 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                      <CheckoutForm onPaymentSuccess={onPaymentSuccess} onBack={onBack} totalAmount={totalAmount} currency={currency} />
                    </Elements>}
          </div>
-       </div>
-     </div>;
+      </div>
+    </div>
+  </div>
+</div>;
 };
 export default StripePaymentForm;
