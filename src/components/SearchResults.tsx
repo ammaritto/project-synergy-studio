@@ -48,8 +48,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
       [key: number]: string;
     } = {
       38: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/680a675aca567cd974c649a9_ANG-Studio-ThumbnailComp-min.png',
-      11: '/lovable-uploads/f528cfcd-9377-4dad-8f71-2e8ecb9836d9.png',
-      10: '/lovable-uploads/27013fda-d438-4fd6-bec3-a1603019cf01.png'
+      11: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/67a0e42f26139e1447842db9_679b776e8739d51e5d09b6e0_BROStudioThumbnail.png',
+      10: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/67a0e42f38f10cd500444414_679b77b10e3fbe69fb60cc4c_BROStudioPlusThumbnail.png'
     };
     return imageMap[inventoryTypeId] || 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
   };
