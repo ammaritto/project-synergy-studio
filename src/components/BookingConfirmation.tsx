@@ -23,7 +23,7 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
       return dateString;
     }
   };
-  return <div className="min-h-screen bg-gray-50 py-8">
+  return <div className="min-h-screen py-8 bg-[faf9f5] bg-[#faf9f5]">
       <div className="max-w-md mx-auto bg-white rounded-lg shadow-lg p-8">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
         <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Booking Confirmed & Paid!
