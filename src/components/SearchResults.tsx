@@ -84,7 +84,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     return null;
   }
   if (availability.length === 0) {
-    return <div className="py-8 bg-background">
+    return <div className="py-8" style={{backgroundColor: '#FCFBF7'}}>
         <div className="max-w-4xl mx-auto px-4">
           <div className="bg-card rounded-lg shadow-sm p-12 text-center border">
             <div className="mb-6">
@@ -100,7 +100,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         </div>
       </div>;
   }
-  return <div className="py-8 bg-background">
+  return <div className="py-8" style={{backgroundColor: '#FCFBF7'}}>
   <div className="max-w-6xl mx-auto px-4">
     <div className="space-y-6">
       {availability.map((unit, index) => {
