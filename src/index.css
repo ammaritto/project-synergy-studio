@@ -329,3 +329,12 @@
     font-size: 16px;
   }
 }
+
+/* Force left alignment for date inputs */
+input[type="date"] {
+  text-align: left !important;
+}
+
+input[type="date"]::-webkit-datetime-edit {
+  text-align: left;
+}
