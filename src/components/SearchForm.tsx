@@ -231,7 +231,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
               Check-in
             </label>
             <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
               <input 
                 type="date" 
                 value={searchParams.startDate} 
@@ -239,7 +239,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   ...prev,
                   startDate: e.target.value
                 }))} 
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none" 
                 style={{ colorScheme: 'light' }}
               />
             </div>
