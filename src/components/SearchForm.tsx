@@ -226,7 +226,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="bg-white rounded-lg shadow-lg p-4 animate-slide-up">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Check-in */}
-          <div>
+            <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Check-in
             </label>
@@ -239,8 +239,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   ...prev,
                   startDate: e.target.value
                 }))} 
-                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none" 
-                style={{ colorScheme: 'light' }}
+                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none text-left" 
+                style={{ colorScheme: 'light', textAlign: 'left' }}
               />
             </div>
           </div>
@@ -260,8 +260,8 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   endDate: e.target.value
                 }))} 
                 min={getMinEndDate()} 
-                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none" 
-                style={{ colorScheme: 'light' }}
+                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none text-left" 
+                style={{ colorScheme: 'light', textAlign: 'left' }}
               />
             </div>
           </div>
