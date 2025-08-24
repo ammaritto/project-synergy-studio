@@ -88,7 +88,7 @@ const App: React.FC = () => {
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
 
   // ====================
-  // IFRAME HEIGHT COMMUNICATION
+  // ENHANCED IFRAME HEIGHT COMMUNICATION
   // ====================
   useEffect(() => {
     // Check if app is running inside an iframe
@@ -97,24 +97,135 @@ const App: React.FC = () => {
     if (!isInIframe) return;
 
     let isUpdating = false;
+    let heightUpdateTimeout: NodeJS.Timeout;
 
-    // Function to send height to parent
+    // Enhanced visible content height calculation
+    const calculateVisibleHeight = (): number => {
+      try {
+        // Method 1: Calculate height of visible elements only
+        const visibleElements = document.querySelectorAll('*');
+        let calculatedHeight = 0;
+        
+        visibleElements.forEach((element) => {
+          const el = element as HTMLElement;
+          const computedStyle = window.getComputedStyle(el);
+          
+          // Skip if element is hidden
+          if (
+            computedStyle.display === 'none' || 
+            computedStyle.visibility === 'hidden' ||
+            computedStyle.opacity === '0' ||
+            el.offsetHeight === 0
+          ) {
+            return;
+          }
+
+          // Get element's bottom position relative to document
+          const rect = el.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const elementBottom = rect.bottom + scrollTop;
+          
+          calculatedHeight = Math.max(calculatedHeight, elementBottom);
+        });
+
+        // Method 2: Smart container-based calculation
+        const getSmartContainerHeight = (): number => {
+          // Priority order for container selection
+          const containerSelectors = [
+            '[data-app-container]',
+            '[data-main-content]',
+            '.app-container',
+            'main',
+            '#root > div:first-child',
+            'body > div:first-child'
+          ];
+
+          for (const selector of containerSelectors) {
+            const container = document.querySelector(selector) as HTMLElement;
+            if (container && container.offsetHeight > 0) {
+              const rect = container.getBoundingClientRect();
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              return Math.ceil(rect.bottom + scrollTop);
+            }
+          }
+          return 0;
+        };
+
+        // Method 3: Content-specific calculation
+        const getContentSpecificHeight = (): number => {
+          let maxBottom = 0;
+          
+          // Find all visible content containers
+          const contentSelectors = [
+            '.search-form',
+            '.results-section', 
+            '.booking-form',
+            '.payment-form',
+            '.error-message',
+            '.loading-indicator',
+            '[data-visible="true"]',
+            '[data-content-section]'
+          ];
+
+          contentSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+              const element = el as HTMLElement;
+              if (element.offsetHeight > 0 && window.getComputedStyle(element).display !== 'none') {
+                const rect = element.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                maxBottom = Math.max(maxBottom, rect.bottom + scrollTop);
+              }
+            });
+          });
+
+          return maxBottom;
+        };
+
+        // Get heights from all methods
+        const method1Height = calculatedHeight;
+        const method2Height = getSmartContainerHeight();
+        const method3Height = getContentSpecificHeight();
+
+        // Use the most reasonable height
+        const heights = [method1Height, method2Height, method3Height].filter(h => h > 0);
+        const finalHeight = Math.max(...heights, 180); // Minimum 180px
+
+        // Debug logging
+        console.log('Height calculation methods:', {
+          visibleElements: method1Height,
+          smartContainer: method2Height,
+          contentSpecific: method3Height,
+          chosen: finalHeight
+        });
+
+        return Math.ceil(finalHeight);
+      } catch (error) {
+        console.error('Error calculating visible height:', error);
+        // Fallback to simple body height
+        return Math.max(document.body.offsetHeight || 180, 180);
+      }
+    };
+
+    // Enhanced function to send height to parent
     const sendHeight = () => {
       // Prevent recursive updates
       if (isUpdating) return;
       
       try {
-        const bodyRect = document.body.getBoundingClientRect();
-        const height = Math.ceil(bodyRect.height);
+        const height = calculateVisibleHeight();
         
         // Send height to parent window
         window.parent.postMessage(
           { 
             type: 'iframe-height',
-            height: height 
+            height: height,
+            timestamp: Date.now()
           }, 
           '*' // In production, replace with your Webflow domain for security
         );
+        
+        console.log('Sent visible height to parent:', height);
       } catch (error) {
         console.error('Failed to send height to parent:', error);
       }
@@ -123,58 +234,141 @@ const App: React.FC = () => {
     // Send initial height after content loads
     const initTimer = setTimeout(() => {
       sendHeight();
-    }, 1000);
+    }, 500); // Reduced from 1000ms for faster initial sizing
 
-    // Listen for height requests from parent
+    // Enhanced message handler
     const handleMessage = (event: MessageEvent) => {
       if (event.data && event.data.type === 'request-height') {
+        console.log('Height requested from parent, responding...');
         sendHeight();
       }
+      
       // Mark that we're updating to prevent loops
       if (event.data && event.data.type === 'height-updated') {
         isUpdating = true;
-        setTimeout(() => { isUpdating = false; }, 500);
+        setTimeout(() => { isUpdating = false; }, 300); // Reduced timeout
+      }
+      
+      // Handle window resize from parent
+      if (event.data && event.data.type === 'window-resize') {
+        console.log('Window resize detected, recalculating height...');
+        setTimeout(sendHeight, 100);
+      }
+      
+      // Handle visibility change
+      if (event.data && event.data.type === 'content-visibility-change') {
+        console.log('Content visibility changed, updating height...');
+        setTimeout(sendHeight, 100);
       }
     };
+    
     window.addEventListener('message', handleMessage);
+
+    // Mutation Observer to detect DOM changes
+    let mutationObserver: MutationObserver | null = null;
+    
+    if (typeof MutationObserver !== 'undefined') {
+      mutationObserver = new MutationObserver((mutations) => {
+        let shouldUpdate = false;
+        
+        mutations.forEach((mutation) => {
+          // Check if nodes were added/removed or attributes changed
+          if (mutation.type === 'childList' && (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)) {
+            shouldUpdate = true;
+          }
+          if (mutation.type === 'attributes' && 
+              (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
+            shouldUpdate = true;
+          }
+        });
+        
+        if (shouldUpdate) {
+          // Clear existing timeout
+          clearTimeout(heightUpdateTimeout);
+          // Debounce the height update
+          heightUpdateTimeout = setTimeout(sendHeight, 100);
+        }
+      });
+      
+      // Observe the entire document for changes
+      mutationObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class', 'data-visible']
+      });
+    }
+
+    // Resize Observer for element size changes
+    let resizeObserver: ResizeObserver | null = null;
+    
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        clearTimeout(heightUpdateTimeout);
+        heightUpdateTimeout = setTimeout(sendHeight, 50);
+      });
+      
+      // Observe the main container
+      const mainContainer = document.body.firstElementChild as Element;
+      if (mainContainer) {
+        resizeObserver.observe(mainContainer);
+      }
+    }
 
     // Cleanup
     return () => {
       clearTimeout(initTimer);
+      clearTimeout(heightUpdateTimeout);
       window.removeEventListener('message', handleMessage);
+      if (mutationObserver) {
+        mutationObserver.disconnect();
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
   }, []);
 
-  // Also trigger height update when key states change
+  // Enhanced state change height updates
   useEffect(() => {
     const isInIframe = window.parent !== window;
     if (!isInIframe) return;
 
     // Send height update when these states change
     const sendHeightUpdate = () => {
-      const height = Math.max(
-        document.documentElement.scrollHeight || 0,
-        document.body.scrollHeight || 0,
-        document.documentElement.offsetHeight || 0,
-        document.body.offsetHeight || 0
-      );
-      
-      window.parent.postMessage(
-        { 
-          type: 'iframe-height',
-          height: height 
-        }, 
-        '*'
-      );
+      try {
+        // Calculate visible content height
+        const height = Math.max(
+          document.documentElement.scrollHeight || 0,
+          document.body.scrollHeight || 0,
+          document.documentElement.offsetHeight || 0,
+          document.body.offsetHeight || 0
+        );
+        
+        window.parent.postMessage(
+          { 
+            type: 'iframe-height',
+            height: height,
+            source: 'state-change',
+            timestamp: Date.now()
+          }, 
+          '*'
+        );
+        
+        console.log('Height updated due to state change:', height);
+      } catch (error) {
+        console.error('Failed to send height update:', error);
+      }
     };
 
     // Small delay to ensure DOM has updated
-    const timer = setTimeout(sendHeightUpdate, 200);
+    const timer = setTimeout(sendHeightUpdate, 150); // Reduced from 200ms
     
     return () => clearTimeout(timer);
   }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading]);
+  
   // ====================
-  // END IFRAME HEIGHT COMMUNICATION
+  // END ENHANCED IFRAME HEIGHT COMMUNICATION
   // ====================
 
   // Photo mapping based on inventoryTypeId
@@ -473,22 +667,28 @@ const App: React.FC = () => {
     searchAvailability();
   };
 
-  // Main interface with two clear divs
+  // Main interface with enhanced data attributes for height calculation
   return (
-    <div style={{backgroundColor: 'transparent'}}>
+    <div style={{backgroundColor: 'transparent'}} data-app-container data-main-content>
       {/* DIV 1 - Search Section (Always exists) */}
-      <SearchForm 
-        searchParams={searchParams} 
-        setSearchParams={setSearchParams} 
-        onSearch={handleSearch} 
-        loading={loading} 
-        getMinEndDate={getMinEndDate} 
-        error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
-      />
+      <div data-content-section="search" data-visible="true">
+        <SearchForm 
+          searchParams={searchParams} 
+          setSearchParams={setSearchParams} 
+          onSearch={handleSearch} 
+          loading={loading} 
+          getMinEndDate={getMinEndDate} 
+          error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
+        />
+      </div>
 
       {/* DIV 2 - Process Content (Only render if there's content to show) */}
       {(availability.length > 0 || showBookingForm || showPaymentForm || bookingComplete) && (
-        <div ref={resultsSectionRef}>
+        <div 
+          ref={resultsSectionRef} 
+          data-content-section="results" 
+          data-visible="true"
+        >
           <ProcessContent
             availability={availability}
             hasSearched={hasSearched}
