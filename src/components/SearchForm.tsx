@@ -230,7 +230,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Check-in
             </label>
-            <div className="relative">
+            <div className="relative" style={{ direction: 'ltr' }}>
               <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10 direction-ltr" />
               <input 
                 type="date" 
