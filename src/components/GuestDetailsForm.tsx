@@ -148,7 +148,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
           {/* Phone Field */}
           <div>
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
-              Phone Number (Optional)
+              Phone Number
             </label>
             <div className="relative">
               <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
