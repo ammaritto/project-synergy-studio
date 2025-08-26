@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PaymentElement, Elements, useStripe, useElements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { AlertCircle, Lock, ArrowLeft, Shield, CreditCard, Sparkles } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 // Initialize Stripe
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY!);
@@ -134,6 +135,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -271,16 +273,24 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                     </div>
                   </div>
 
-                  <p className="text-xs text-gray-500 text-center mb-4">
-                    By proceeding with the payment, I accept the{' '}
-                    <a href="https://www.allihoopliving.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 transition-colors">
-                      Allihoop Terms & Conditions
-                    </a>
-                  </p>
+                  <div className="flex items-start space-x-3 mb-4">
+                    <Checkbox 
+                      id="terms" 
+                      checked={termsAccepted}
+                      onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
+                      className="mt-1"
+                    />
+                    <label htmlFor="terms" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
+                      I accept the{' '}
+                      <a href="https://www.allihoopliving.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 transition-colors">
+                        Allihoop Terms & Conditions
+                      </a>
+                    </label>
+                  </div>
                   
                   <div className="flex flex-col gap-3">
-                    <button onClick={handleInitiatePayment} disabled={loading} className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center" style={{
-              backgroundColor: '#1461E2',
+                    <button onClick={handleInitiatePayment} disabled={loading || !termsAccepted} className="w-full py-4 px-6 rounded-xl font-semibold text-lg transition-all duration-200 flex items-center justify-center" style={{
+              backgroundColor: termsAccepted ? '#1461E2' : '#94a3b8',
               color: 'white'
             }}>
                       {loading ? <div className="flex items-center justify-center">
