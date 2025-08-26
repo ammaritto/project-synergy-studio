@@ -99,100 +99,30 @@ const App: React.FC = () => {
     let isUpdating = false;
     let heightUpdateTimeout: NodeJS.Timeout;
 
-    // Enhanced visible content height calculation with modal/form handling
+    // Smart visible content height calculation - less aggressive mobile limits
     const calculateVisibleHeight = (): number => {
       try {
         const isMobile = window.innerWidth <= 768;
         const viewportHeight = window.innerHeight;
         
-        // STRICT mobile height limits
-        const MOBILE_MAX_HEIGHT = 1200;
-        const MOBILE_FORM_MAX = 800; // Special limit for forms/modals
-        
-        // Method 1: Smart visible elements calculation (Modal-aware)
-        let calculatedHeight = 0;
-        
-        // Skip modal/overlay calculations that cause issues
-        const problematicSelectors = [
-          '.modal-backdrop',
-          '.overlay',
-          '.fixed',
-          '[style*="position: fixed"]',
-          '[style*="position: absolute"]',
-          '.booking-form-modal', // Add your modal class names here
-          '.payment-form-modal'
-        ];
-        
-        const visibleElements = document.querySelectorAll('*:not(' + problematicSelectors.join(',') + ')');
-        
-        visibleElements.forEach((element) => {
-          const el = element as HTMLElement;
-          const computedStyle = window.getComputedStyle(el);
-          
-          // Skip hidden elements
-          if (
-            computedStyle.display === 'none' || 
-            computedStyle.visibility === 'hidden' ||
-            computedStyle.opacity === '0' ||
-            el.offsetHeight === 0
-          ) {
-            return;
-          }
+        // Use document height as baseline, then validate
+        const documentHeight = Math.max(
+          document.documentElement.scrollHeight || 0,
+          document.body.scrollHeight || 0,
+          document.documentElement.offsetHeight || 0,
+          document.body.offsetHeight || 0
+        );
 
-          // Skip fixed/absolute positioned elements on mobile (common cause of height issues)
-          if (isMobile && (computedStyle.position === 'fixed' || computedStyle.position === 'absolute')) {
-            return;
-          }
-
-          // Skip elements that are clearly outside normal document flow
-          const rect = el.getBoundingClientRect();
-          if (isMobile) {
-            // Skip elements with unusual dimensions
-            if (rect.width === 0 && rect.height === 0) return;
-            if (rect.height > viewportHeight * 2) return; // Skip overly tall elements
-          }
-
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          const elementBottom = rect.bottom + scrollTop;
-          
-          calculatedHeight = Math.max(calculatedHeight, elementBottom);
-        });
-
-        // Method 2: Form/Modal-aware container calculation
-        const getFormAwareHeight = (): number => {
-          // Check if we're in a form/modal state
-          const isInFormState = showBookingForm || showPaymentForm;
-          
-          if (isMobile && isInFormState) {
-            // For mobile forms, use a more conservative approach
-            const formSelectors = [
-              '.booking-form:not(.modal)',
-              '.payment-form:not(.modal)',
-              '[data-content-section="booking"]',
-              '[data-content-section="payment"]'
-            ];
-            
-            let formHeight = 0;
-            formSelectors.forEach(selector => {
-              const element = document.querySelector(selector) as HTMLElement;
-              if (element && window.getComputedStyle(element).display !== 'none') {
-                const rect = element.getBoundingClientRect();
-                formHeight = Math.max(formHeight, rect.height);
-              }
-            });
-            
-            // Add search form height to form height for total
-            const searchForm = document.querySelector('.search-form') as HTMLElement;
-            const searchHeight = searchForm ? searchForm.offsetHeight : 180;
-            
-            return Math.min(searchHeight + formHeight + 50, MOBILE_FORM_MAX); // 50px padding
-          }
-          
-          // Regular container detection for non-form states
+        // Method 1: Clean document height calculation
+        let cleanHeight = documentHeight;
+        
+        // Method 2: Container-based validation
+        const getContainerHeight = (): number => {
           const containerSelectors = [
             '[data-app-container]',
             '[data-main-content]',
-            '.app-container'
+            '.app-container',
+            'main'
           ];
 
           for (const selector of containerSelectors) {
@@ -200,95 +130,84 @@ const App: React.FC = () => {
             if (container && container.offsetHeight > 0) {
               const rect = container.getBoundingClientRect();
               const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-              const containerHeight = Math.ceil(rect.bottom + scrollTop);
-              
-              // Cap mobile container height
-              if (isMobile) {
-                return Math.min(containerHeight, MOBILE_MAX_HEIGHT);
-              }
-              return containerHeight;
+              return Math.ceil(rect.bottom + scrollTop);
             }
           }
-          return 0;
+          return documentHeight;
         };
 
-        // Method 3: Conservative viewport-based calculation
-        const getConservativeHeight = (): number => {
+        // Method 3: Content sections height
+        const getContentSectionsHeight = (): number => {
           const contentSections = document.querySelectorAll('[data-content-section][data-visible="true"]');
           let totalHeight = 0;
+          let hasContent = false;
           
           contentSections.forEach(section => {
             const element = section as HTMLElement;
             if (window.getComputedStyle(element).display !== 'none') {
               totalHeight += element.offsetHeight;
+              hasContent = true;
             }
           });
           
-          // Add some padding
-          totalHeight += 40;
-          
-          // Strict mobile limits
-          if (isMobile) {
-            if (showBookingForm || showPaymentForm) {
-              return Math.min(totalHeight, MOBILE_FORM_MAX);
-            } else {
-              return Math.min(totalHeight, MOBILE_MAX_HEIGHT);
-            }
+          // If we have content sections, use their height + padding
+          if (hasContent) {
+            return totalHeight + 60; // Add reasonable padding
           }
           
-          return totalHeight;
+          // Fallback to document height
+          return documentHeight;
         };
 
-        // Get heights from all methods
-        const method1Height = calculatedHeight;
-        const method2Height = getFormAwareHeight();
-        const method3Height = getConservativeHeight();
+        const containerHeight = getContainerHeight();
+        const contentSectionsHeight = getContentSectionsHeight();
 
-        // Choose height with mobile-specific logic
+        // Choose the most reasonable height
         let finalHeight;
+        
         if (isMobile) {
-          // On mobile, be very conservative, especially for forms
-          const heights = [method1Height, method2Height, method3Height].filter(h => h > 0 && h <= MOBILE_MAX_HEIGHT);
+          // On mobile, be smart about height selection
+          const heights = [cleanHeight, containerHeight, contentSectionsHeight].filter(h => h > 0);
           
-          if (showBookingForm || showPaymentForm) {
-            // For forms, use the smallest reasonable height and cap strictly
-            finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.min(...heights, MOBILE_FORM_MAX);
-            finalHeight = Math.min(finalHeight, MOBILE_FORM_MAX);
-          } else {
-            // For regular content, use conservative approach
-            finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.min(...heights, MOBILE_MAX_HEIGHT);
-            finalHeight = Math.min(finalHeight, MOBILE_MAX_HEIGHT);
+          // Use the median height to avoid extremes
+          heights.sort((a, b) => a - b);
+          const medianIndex = Math.floor(heights.length / 2);
+          finalHeight = heights[medianIndex] || cleanHeight;
+          
+          // Only apply strict limits if height seems obviously wrong
+          if (finalHeight > viewportHeight * 4) {
+            console.warn(`Mobile height ${finalHeight}px seems excessive (>4x viewport), using conservative estimate`);
+            // Use the smallest reasonable height instead of a hard cap
+            finalHeight = Math.min(...heights.filter(h => h <= viewportHeight * 3)) || viewportHeight * 2;
           }
           
-          finalHeight = Math.max(finalHeight, 150); // Ensure minimum
+          // Ensure reasonable minimum
+          finalHeight = Math.max(finalHeight, 150);
         } else {
-          finalHeight = Math.max(...[method1Height, method2Height, method3Height].filter(h => h > 0), 180);
+          // Desktop: use the maximum reasonable height
+          finalHeight = Math.max(cleanHeight, containerHeight, contentSectionsHeight, 180);
         }
 
         // Enhanced debug logging
-        console.log('Height calculation methods:', {
+        console.log('Smart height calculation:', {
           isMobile,
+          viewportHeight,
+          documentHeight,
+          containerHeight,
+          contentSectionsHeight,
+          chosen: finalHeight,
           showBookingForm,
           showPaymentForm,
-          viewportWidth: window.innerWidth,
-          viewportHeight: window.innerHeight,
-          visibleElements: method1Height,
-          formAware: method2Height,
-          conservative: method3Height,
-          chosen: finalHeight,
-          cappedAt: isMobile ? (showBookingForm || showPaymentForm ? MOBILE_FORM_MAX : MOBILE_MAX_HEIGHT) : 'none'
+          availabilityCount: availability.length
         });
 
         return Math.ceil(finalHeight);
       } catch (error) {
         console.error('Error calculating visible height:', error);
-        // Mobile-optimized fallback with strict limits
+        // Simple fallback that shouldn't break the layout
         const isMobile = window.innerWidth <= 768;
-        if (isMobile) {
-          const conservativeFallback = showBookingForm || showPaymentForm ? 600 : 400;
-          return Math.min(document.body.offsetHeight || conservativeFallback, conservativeFallback);
-        }
-        return Math.max(document.body.offsetHeight || 180, 180);
+        const fallback = isMobile ? 400 : 600;
+        return Math.max(document.body.offsetHeight || fallback, fallback);
       }
     };
 
