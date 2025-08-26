@@ -273,7 +273,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex items-start space-x-3 mb-4">
+                  <div className="flex items-start space-x-3 mb-4 justify-center">
                     <Checkbox 
                       id="terms" 
                       checked={termsAccepted}
@@ -281,8 +281,8 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       className="mt-1"
                     />
                     <label htmlFor="terms" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
-                      I accept the{' '}
-                      <a href="https://www.allihoopliving.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 transition-colors">
+                    By proceeding with the payment, I accept the{' '}
+                      <a href="https://allihoop.webflow.io/terms-and-conditions" target="_blank" rel="noopener noreferrer" className="text-blue-600 underline hover:text-blue-800 transition-colors">
                         Allihoop Terms & Conditions
                       </a>
                     </label>
