@@ -62,14 +62,14 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         bathroom: 'Shared',
         kitchen: 'Shared',
         rooms: 1,
-        readMoreUrl: 'https://www.allihoopliving.com/listing/studio-bromma-2'
+        readMoreUrl: 'https://www.allihoopliving.com/studios/bromma-studio'
       },
       11: {
         sqm: 20,
         bathroom: 'Private',
         kitchen: 'Private',
         rooms: 1,
-        readMoreUrl: 'https://www.allihoopliving.com/listing/studio-bromma-140-cm-bed'
+        readMoreUrl: 'https://www.allihoopliving.com/studios/bromma-studio-plus'
       }
     };
     return detailsMap[inventoryTypeId] || {
