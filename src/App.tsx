@@ -99,30 +99,45 @@ const App: React.FC = () => {
     let isUpdating = false;
     let heightUpdateTimeout: NodeJS.Timeout;
 
-    // Smart visible content height calculation - less aggressive mobile limits
+    // Enhanced visible content height calculation
     const calculateVisibleHeight = (): number => {
       try {
-        const isMobile = window.innerWidth <= 768;
-        const viewportHeight = window.innerHeight;
+        // Method 1: Calculate height of visible elements only
+        const visibleElements = document.querySelectorAll('*');
+        let calculatedHeight = 0;
         
-        // Use document height as baseline, then validate
-        const documentHeight = Math.max(
-          document.documentElement.scrollHeight || 0,
-          document.body.scrollHeight || 0,
-          document.documentElement.offsetHeight || 0,
-          document.body.offsetHeight || 0
-        );
+        visibleElements.forEach((element) => {
+          const el = element as HTMLElement;
+          const computedStyle = window.getComputedStyle(el);
+          
+          // Skip if element is hidden
+          if (
+            computedStyle.display === 'none' || 
+            computedStyle.visibility === 'hidden' ||
+            computedStyle.opacity === '0' ||
+            el.offsetHeight === 0
+          ) {
+            return;
+          }
 
-        // Method 1: Clean document height calculation
-        let cleanHeight = documentHeight;
-        
-        // Method 2: Container-based validation
-        const getContainerHeight = (): number => {
+          // Get element's bottom position relative to document
+          const rect = el.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const elementBottom = rect.bottom + scrollTop;
+          
+          calculatedHeight = Math.max(calculatedHeight, elementBottom);
+        });
+
+        // Method 2: Smart container-based calculation
+        const getSmartContainerHeight = (): number => {
+          // Priority order for container selection
           const containerSelectors = [
             '[data-app-container]',
             '[data-main-content]',
             '.app-container',
-            'main'
+            'main',
+            '#root > div:first-child',
+            'body > div:first-child'
           ];
 
           for (const selector of containerSelectors) {
@@ -133,81 +148,62 @@ const App: React.FC = () => {
               return Math.ceil(rect.bottom + scrollTop);
             }
           }
-          return documentHeight;
+          return 0;
         };
 
-        // Method 3: Content sections height
-        const getContentSectionsHeight = (): number => {
-          const contentSections = document.querySelectorAll('[data-content-section][data-visible="true"]');
-          let totalHeight = 0;
-          let hasContent = false;
+        // Method 3: Content-specific calculation
+        const getContentSpecificHeight = (): number => {
+          let maxBottom = 0;
           
-          contentSections.forEach(section => {
-            const element = section as HTMLElement;
-            if (window.getComputedStyle(element).display !== 'none') {
-              totalHeight += element.offsetHeight;
-              hasContent = true;
-            }
+          // Find all visible content containers
+          const contentSelectors = [
+            '.search-form',
+            '.results-section', 
+            '.booking-form',
+            '.payment-form',
+            '.error-message',
+            '.loading-indicator',
+            '[data-visible="true"]',
+            '[data-content-section]'
+          ];
+
+          contentSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+              const element = el as HTMLElement;
+              if (element.offsetHeight > 0 && window.getComputedStyle(element).display !== 'none') {
+                const rect = element.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                maxBottom = Math.max(maxBottom, rect.bottom + scrollTop);
+              }
+            });
           });
-          
-          // If we have content sections, use their height + padding
-          if (hasContent) {
-            return totalHeight + 60; // Add reasonable padding
-          }
-          
-          // Fallback to document height
-          return documentHeight;
+
+          return maxBottom;
         };
 
-        const containerHeight = getContainerHeight();
-        const contentSectionsHeight = getContentSectionsHeight();
+        // Get heights from all methods
+        const method1Height = calculatedHeight;
+        const method2Height = getSmartContainerHeight();
+        const method3Height = getContentSpecificHeight();
 
-        // Choose the most reasonable height
-        let finalHeight;
-        
-        if (isMobile) {
-          // On mobile, be smart about height selection
-          const heights = [cleanHeight, containerHeight, contentSectionsHeight].filter(h => h > 0);
-          
-          // Use the median height to avoid extremes
-          heights.sort((a, b) => a - b);
-          const medianIndex = Math.floor(heights.length / 2);
-          finalHeight = heights[medianIndex] || cleanHeight;
-          
-          // Only apply strict limits if height seems obviously wrong
-          if (finalHeight > viewportHeight * 4) {
-            console.warn(`Mobile height ${finalHeight}px seems excessive (>4x viewport), using conservative estimate`);
-            // Use the smallest reasonable height instead of a hard cap
-            finalHeight = Math.min(...heights.filter(h => h <= viewportHeight * 3)) || viewportHeight * 2;
-          }
-          
-          // Ensure reasonable minimum
-          finalHeight = Math.max(finalHeight, 150);
-        } else {
-          // Desktop: use the maximum reasonable height
-          finalHeight = Math.max(cleanHeight, containerHeight, contentSectionsHeight, 180);
-        }
+        // Use the most reasonable height
+        const heights = [method1Height, method2Height, method3Height].filter(h => h > 0);
+        const finalHeight = Math.max(...heights, 180); // Minimum 180px
 
-        // Enhanced debug logging
-        console.log('Smart height calculation:', {
-          isMobile,
-          viewportHeight,
-          documentHeight,
-          containerHeight,
-          contentSectionsHeight,
-          chosen: finalHeight,
-          showBookingForm,
-          showPaymentForm,
-          availabilityCount: availability.length
+        // Debug logging
+        console.log('Height calculation methods:', {
+          visibleElements: method1Height,
+          smartContainer: method2Height,
+          contentSpecific: method3Height,
+          chosen: finalHeight
         });
 
         return Math.ceil(finalHeight);
       } catch (error) {
         console.error('Error calculating visible height:', error);
-        // Simple fallback that shouldn't break the layout
-        const isMobile = window.innerWidth <= 768;
-        const fallback = isMobile ? 400 : 600;
-        return Math.max(document.body.offsetHeight || fallback, fallback);
+        // Fallback to simple body height
+        return Math.max(document.body.offsetHeight || 180, 180);
       }
     };
 
