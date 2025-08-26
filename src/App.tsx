@@ -99,71 +99,100 @@ const App: React.FC = () => {
     let isUpdating = false;
     let heightUpdateTimeout: NodeJS.Timeout;
 
-    // Enhanced visible content height calculation with mobile optimization
+    // Enhanced visible content height calculation with modal/form handling
     const calculateVisibleHeight = (): number => {
       try {
         const isMobile = window.innerWidth <= 768;
+        const viewportHeight = window.innerHeight;
         
-        // Method 1: Calculate height of visible elements only (Mobile optimized)
-        const visibleElements = document.querySelectorAll('*');
+        // STRICT mobile height limits
+        const MOBILE_MAX_HEIGHT = 1200;
+        const MOBILE_FORM_MAX = 800; // Special limit for forms/modals
+        
+        // Method 1: Smart visible elements calculation (Modal-aware)
         let calculatedHeight = 0;
+        
+        // Skip modal/overlay calculations that cause issues
+        const problematicSelectors = [
+          '.modal-backdrop',
+          '.overlay',
+          '.fixed',
+          '[style*="position: fixed"]',
+          '[style*="position: absolute"]',
+          '.booking-form-modal', // Add your modal class names here
+          '.payment-form-modal'
+        ];
+        
+        const visibleElements = document.querySelectorAll('*:not(' + problematicSelectors.join(',') + ')');
         
         visibleElements.forEach((element) => {
           const el = element as HTMLElement;
           const computedStyle = window.getComputedStyle(el);
           
-          // Skip if element is hidden or has mobile-specific hiding
+          // Skip hidden elements
           if (
             computedStyle.display === 'none' || 
             computedStyle.visibility === 'hidden' ||
             computedStyle.opacity === '0' ||
-            el.offsetHeight === 0 ||
-            (isMobile && computedStyle.display === 'none')
+            el.offsetHeight === 0
           ) {
             return;
           }
 
-          // Skip elements that are outside viewport on mobile
-          if (isMobile) {
-            const rect = el.getBoundingClientRect();
-            if (rect.width === 0 && rect.height === 0) return;
+          // Skip fixed/absolute positioned elements on mobile (common cause of height issues)
+          if (isMobile && (computedStyle.position === 'fixed' || computedStyle.position === 'absolute')) {
+            return;
           }
 
-          // Get element's bottom position relative to document
+          // Skip elements that are clearly outside normal document flow
           const rect = el.getBoundingClientRect();
+          if (isMobile) {
+            // Skip elements with unusual dimensions
+            if (rect.width === 0 && rect.height === 0) return;
+            if (rect.height > viewportHeight * 2) return; // Skip overly tall elements
+          }
+
           const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
           const elementBottom = rect.bottom + scrollTop;
           
           calculatedHeight = Math.max(calculatedHeight, elementBottom);
         });
 
-        // Method 2: Mobile-first container calculation
-        const getMobileOptimizedHeight = (): number => {
-          if (isMobile) {
-            // On mobile, look for specific mobile containers first
-            const mobileSelectors = [
-              '.mobile-container',
-              '[data-mobile="true"]',
-              '.app-container',
-              '[data-app-container]'
+        // Method 2: Form/Modal-aware container calculation
+        const getFormAwareHeight = (): number => {
+          // Check if we're in a form/modal state
+          const isInFormState = showBookingForm || showPaymentForm;
+          
+          if (isMobile && isInFormState) {
+            // For mobile forms, use a more conservative approach
+            const formSelectors = [
+              '.booking-form:not(.modal)',
+              '.payment-form:not(.modal)',
+              '[data-content-section="booking"]',
+              '[data-content-section="payment"]'
             ];
             
-            for (const selector of mobileSelectors) {
-              const container = document.querySelector(selector) as HTMLElement;
-              if (container && container.offsetHeight > 0) {
-                return container.offsetHeight + 20; // Add small padding
+            let formHeight = 0;
+            formSelectors.forEach(selector => {
+              const element = document.querySelector(selector) as HTMLElement;
+              if (element && window.getComputedStyle(element).display !== 'none') {
+                const rect = element.getBoundingClientRect();
+                formHeight = Math.max(formHeight, rect.height);
               }
-            }
+            });
+            
+            // Add search form height to form height for total
+            const searchForm = document.querySelector('.search-form') as HTMLElement;
+            const searchHeight = searchForm ? searchForm.offsetHeight : 180;
+            
+            return Math.min(searchHeight + formHeight + 50, MOBILE_FORM_MAX); // 50px padding
           }
           
-          // Fallback to regular container detection
+          // Regular container detection for non-form states
           const containerSelectors = [
             '[data-app-container]',
             '[data-main-content]',
-            '.app-container',
-            'main',
-            '#root > div:first-child',
-            'body > div:first-child'
+            '.app-container'
           ];
 
           for (const selector of containerSelectors) {
@@ -171,88 +200,95 @@ const App: React.FC = () => {
             if (container && container.offsetHeight > 0) {
               const rect = container.getBoundingClientRect();
               const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-              return Math.ceil(rect.bottom + scrollTop);
+              const containerHeight = Math.ceil(rect.bottom + scrollTop);
+              
+              // Cap mobile container height
+              if (isMobile) {
+                return Math.min(containerHeight, MOBILE_MAX_HEIGHT);
+              }
+              return containerHeight;
             }
           }
           return 0;
         };
 
-        // Method 3: Viewport-aware content calculation
-        const getViewportAwareHeight = (): number => {
-          let maxBottom = 0;
-          const viewportHeight = window.innerHeight;
+        // Method 3: Conservative viewport-based calculation
+        const getConservativeHeight = (): number => {
+          const contentSections = document.querySelectorAll('[data-content-section][data-visible="true"]');
+          let totalHeight = 0;
           
-          // Find all visible content containers
-          const contentSelectors = [
-            '.search-form',
-            '.results-section', 
-            '.booking-form',
-            '.payment-form',
-            '.error-message',
-            '.loading-indicator',
-            '[data-visible="true"]',
-            '[data-content-section]'
-          ];
-
-          contentSelectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-              const element = el as HTMLElement;
-              if (element.offsetHeight > 0 && window.getComputedStyle(element).display !== 'none') {
-                const rect = element.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const elementBottom = rect.bottom + scrollTop;
-                
-                // On mobile, don't let it exceed a reasonable multiple of viewport height
-                if (isMobile && elementBottom > viewportHeight * 3) {
-                  return; // Skip elements that seem unreasonably tall
-                }
-                
-                maxBottom = Math.max(maxBottom, elementBottom);
-              }
-            });
+          contentSections.forEach(section => {
+            const element = section as HTMLElement;
+            if (window.getComputedStyle(element).display !== 'none') {
+              totalHeight += element.offsetHeight;
+            }
           });
-
-          return maxBottom;
+          
+          // Add some padding
+          totalHeight += 40;
+          
+          // Strict mobile limits
+          if (isMobile) {
+            if (showBookingForm || showPaymentForm) {
+              return Math.min(totalHeight, MOBILE_FORM_MAX);
+            } else {
+              return Math.min(totalHeight, MOBILE_MAX_HEIGHT);
+            }
+          }
+          
+          return totalHeight;
         };
 
         // Get heights from all methods
         const method1Height = calculatedHeight;
-        const method2Height = getMobileOptimizedHeight();
-        const method3Height = getViewportAwareHeight();
+        const method2Height = getFormAwareHeight();
+        const method3Height = getConservativeHeight();
 
-        // Use the most reasonable height with mobile-specific logic
-        const heights = [method1Height, method2Height, method3Height].filter(h => h > 0);
-        
+        // Choose height with mobile-specific logic
         let finalHeight;
         if (isMobile) {
-          // On mobile, be more conservative and use the smallest reasonable height
-          finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.max(...heights, 150);
-          finalHeight = Math.min(finalHeight, window.innerHeight * 2); // Never exceed 2x viewport height
+          // On mobile, be very conservative, especially for forms
+          const heights = [method1Height, method2Height, method3Height].filter(h => h > 0 && h <= MOBILE_MAX_HEIGHT);
+          
+          if (showBookingForm || showPaymentForm) {
+            // For forms, use the smallest reasonable height and cap strictly
+            finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.min(...heights, MOBILE_FORM_MAX);
+            finalHeight = Math.min(finalHeight, MOBILE_FORM_MAX);
+          } else {
+            // For regular content, use conservative approach
+            finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.min(...heights, MOBILE_MAX_HEIGHT);
+            finalHeight = Math.min(finalHeight, MOBILE_MAX_HEIGHT);
+          }
+          
+          finalHeight = Math.max(finalHeight, 150); // Ensure minimum
         } else {
-          finalHeight = Math.max(...heights, 180);
+          finalHeight = Math.max(...[method1Height, method2Height, method3Height].filter(h => h > 0), 180);
         }
 
-        // Debug logging with mobile info
+        // Enhanced debug logging
         console.log('Height calculation methods:', {
           isMobile,
+          showBookingForm,
+          showPaymentForm,
           viewportWidth: window.innerWidth,
           viewportHeight: window.innerHeight,
           visibleElements: method1Height,
-          mobileOptimized: method2Height,
-          viewportAware: method3Height,
-          chosen: finalHeight
+          formAware: method2Height,
+          conservative: method3Height,
+          chosen: finalHeight,
+          cappedAt: isMobile ? (showBookingForm || showPaymentForm ? MOBILE_FORM_MAX : MOBILE_MAX_HEIGHT) : 'none'
         });
 
         return Math.ceil(finalHeight);
       } catch (error) {
         console.error('Error calculating visible height:', error);
-        // Mobile-optimized fallback
+        // Mobile-optimized fallback with strict limits
         const isMobile = window.innerWidth <= 768;
-        const fallbackHeight = isMobile ? 
-          Math.min(document.body.offsetHeight || 150, window.innerHeight * 1.5) : 
-          Math.max(document.body.offsetHeight || 180, 180);
-        return fallbackHeight;
+        if (isMobile) {
+          const conservativeFallback = showBookingForm || showPaymentForm ? 600 : 400;
+          return Math.min(document.body.offsetHeight || conservativeFallback, conservativeFallback);
+        }
+        return Math.max(document.body.offsetHeight || 180, 180);
       }
     };
 
