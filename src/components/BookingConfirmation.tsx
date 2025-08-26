@@ -27,8 +27,8 @@ const BookingConfirmation: React.FC<BookingConfirmationProps> = ({
     <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
       <div className="max-w-md mx-auto md:max-w-2xl lg:max-w-3xl md:flex md:flex-col md:items-center md:justify-center md:min-h-[400px]">
         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-        <h2 className="text-2xl font-bold text-gray-800 mb-4 text-center">Booking Confirmed & Paid!</h2>
-        <div className="space-y-2 text-gray-600">
+        <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4 text-center">Booking Confirmed & Paid!</h2>
+        <div className="space-y-2 text-sm md:text-base text-gray-600">
           <p><strong>Booking Reference:</strong> {bookingDetails.bookingReference}</p>
           <p><strong>Guest:</strong> {bookingDetails.guestName}</p>
           <p><strong>Check-in:</strong> {formatDisplayDate(bookingDetails.checkIn)}</p>
