@@ -99,10 +99,12 @@ const App: React.FC = () => {
     let isUpdating = false;
     let heightUpdateTimeout: NodeJS.Timeout;
 
-    // Enhanced visible content height calculation
+    // Enhanced visible content height calculation with mobile optimization
     const calculateVisibleHeight = (): number => {
       try {
-        // Method 1: Calculate height of visible elements only
+        const isMobile = window.innerWidth <= 768;
+        
+        // Method 1: Calculate height of visible elements only (Mobile optimized)
         const visibleElements = document.querySelectorAll('*');
         let calculatedHeight = 0;
         
@@ -110,14 +112,21 @@ const App: React.FC = () => {
           const el = element as HTMLElement;
           const computedStyle = window.getComputedStyle(el);
           
-          // Skip if element is hidden
+          // Skip if element is hidden or has mobile-specific hiding
           if (
             computedStyle.display === 'none' || 
             computedStyle.visibility === 'hidden' ||
             computedStyle.opacity === '0' ||
-            el.offsetHeight === 0
+            el.offsetHeight === 0 ||
+            (isMobile && computedStyle.display === 'none')
           ) {
             return;
+          }
+
+          // Skip elements that are outside viewport on mobile
+          if (isMobile) {
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) return;
           }
 
           // Get element's bottom position relative to document
@@ -128,9 +137,26 @@ const App: React.FC = () => {
           calculatedHeight = Math.max(calculatedHeight, elementBottom);
         });
 
-        // Method 2: Smart container-based calculation
-        const getSmartContainerHeight = (): number => {
-          // Priority order for container selection
+        // Method 2: Mobile-first container calculation
+        const getMobileOptimizedHeight = (): number => {
+          if (isMobile) {
+            // On mobile, look for specific mobile containers first
+            const mobileSelectors = [
+              '.mobile-container',
+              '[data-mobile="true"]',
+              '.app-container',
+              '[data-app-container]'
+            ];
+            
+            for (const selector of mobileSelectors) {
+              const container = document.querySelector(selector) as HTMLElement;
+              if (container && container.offsetHeight > 0) {
+                return container.offsetHeight + 20; // Add small padding
+              }
+            }
+          }
+          
+          // Fallback to regular container detection
           const containerSelectors = [
             '[data-app-container]',
             '[data-main-content]',
@@ -151,9 +177,10 @@ const App: React.FC = () => {
           return 0;
         };
 
-        // Method 3: Content-specific calculation
-        const getContentSpecificHeight = (): number => {
+        // Method 3: Viewport-aware content calculation
+        const getViewportAwareHeight = (): number => {
           let maxBottom = 0;
+          const viewportHeight = window.innerHeight;
           
           // Find all visible content containers
           const contentSelectors = [
@@ -174,7 +201,14 @@ const App: React.FC = () => {
               if (element.offsetHeight > 0 && window.getComputedStyle(element).display !== 'none') {
                 const rect = element.getBoundingClientRect();
                 const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                maxBottom = Math.max(maxBottom, rect.bottom + scrollTop);
+                const elementBottom = rect.bottom + scrollTop;
+                
+                // On mobile, don't let it exceed a reasonable multiple of viewport height
+                if (isMobile && elementBottom > viewportHeight * 3) {
+                  return; // Skip elements that seem unreasonably tall
+                }
+                
+                maxBottom = Math.max(maxBottom, elementBottom);
               }
             });
           });
@@ -184,26 +218,41 @@ const App: React.FC = () => {
 
         // Get heights from all methods
         const method1Height = calculatedHeight;
-        const method2Height = getSmartContainerHeight();
-        const method3Height = getContentSpecificHeight();
+        const method2Height = getMobileOptimizedHeight();
+        const method3Height = getViewportAwareHeight();
 
-        // Use the most reasonable height
+        // Use the most reasonable height with mobile-specific logic
         const heights = [method1Height, method2Height, method3Height].filter(h => h > 0);
-        const finalHeight = Math.max(...heights, 180); // Minimum 180px
+        
+        let finalHeight;
+        if (isMobile) {
+          // On mobile, be more conservative and use the smallest reasonable height
+          finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.max(...heights, 150);
+          finalHeight = Math.min(finalHeight, window.innerHeight * 2); // Never exceed 2x viewport height
+        } else {
+          finalHeight = Math.max(...heights, 180);
+        }
 
-        // Debug logging
+        // Debug logging with mobile info
         console.log('Height calculation methods:', {
+          isMobile,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
           visibleElements: method1Height,
-          smartContainer: method2Height,
-          contentSpecific: method3Height,
+          mobileOptimized: method2Height,
+          viewportAware: method3Height,
           chosen: finalHeight
         });
 
         return Math.ceil(finalHeight);
       } catch (error) {
         console.error('Error calculating visible height:', error);
-        // Fallback to simple body height
-        return Math.max(document.body.offsetHeight || 180, 180);
+        // Mobile-optimized fallback
+        const isMobile = window.innerWidth <= 768;
+        const fallbackHeight = isMobile ? 
+          Math.min(document.body.offsetHeight || 150, window.innerHeight * 1.5) : 
+          Math.max(document.body.offsetHeight || 180, 180);
+        return fallbackHeight;
       }
     };
 
