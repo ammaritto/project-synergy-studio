@@ -160,12 +160,12 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex gap-4 pt-6">
-            <button type="button" onClick={onBack} className="flex-1 py-1.5 md:py-3 px-6 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors font-medium">
+          <div className="flex gap-2 md:gap-4 pt-6">
+            <button type="button" onClick={onBack} className="flex-1 py-2 md:py-3 px-3 md:px-6 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors text-sm md:text-base font-medium">
               Back to Search
             </button>
-            <button type="submit" className="flex-1 py-1.5 md:py-3 px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center justify-center">
-              <CreditCard className="w-5 h-5 mr-2" />
+            <button type="submit" className="flex-1 py-2 md:py-3 px-3 md:px-6 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm md:text-base font-medium flex items-center justify-center">
+              <CreditCard className="w-4 h-4 md:w-5 md:h-5 mr-1 md:mr-2" />
               Continue to Payment
             </button>
           </div>
