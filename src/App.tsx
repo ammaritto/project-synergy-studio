@@ -637,7 +637,9 @@ const App: React.FC = () => {
         stayDetails: lastSearchParams!,
         unitDetails: {
           inventoryTypeId: selectedUnit!.inventoryTypeId,
-          rateId: selectedUnit!.selectedRate.rateId
+          rateId: selectedUnit!.selectedRate.rateId,
+          buildingName: selectedUnit!.buildingName,
+          inventoryTypeName: selectedUnit!.inventoryTypeName
         },
         paymentDetails: {
           amount: selectedUnit!.selectedRate.totalPrice,
