@@ -330,35 +330,30 @@
   }
 }
 
-/* iOS Safari date input text alignment fix */
+/* More aggressive iOS date input targeting */
 input[type="date"] {
   text-align: left !important;
+  direction: ltr !important;
+  unicode-bidi: embed !important;
 }
 
-input[type="date"]::-webkit-datetime-edit {
-  text-align: left !important;
-}
-
-input[type="date"]::-webkit-datetime-edit-text {
-  text-align: left !important;
-}
-
-input[type="date"]::-webkit-datetime-edit-month-field {
-  text-align: left !important;
-}
-
-input[type="date"]::-webkit-datetime-edit-day-field {
-  text-align: left !important;
-}
-
+/* Target the shadow DOM elements more specifically */
+input[type="date"]::-webkit-datetime-edit,
+input[type="date"]::-webkit-datetime-edit-text,
+input[type="date"]::-webkit-datetime-edit-month-field,
+input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field {
   text-align: left !important;
+  direction: ltr !important;
+  padding-left: 0 !important;
+  margin-left: 0 !important;
 }
 
-/* Additional iOS-specific targeting */
-@supports (-webkit-touch-callout: none) {
+/* iOS-specific media query */
+@media screen and (-webkit-min-device-pixel-ratio: 2) {
   input[type="date"] {
     text-align: left !important;
-    -webkit-text-align: left !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
   }
 }
