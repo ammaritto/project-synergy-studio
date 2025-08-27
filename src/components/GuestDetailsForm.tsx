@@ -445,26 +445,41 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                   Phone Number *
                 </label>
-                <div className="relative w-24 sm:w-28 md:w-32">
-  <Select value={countryCode} onValueChange={setCountryCode}>
-    <SelectTrigger className="w-full h-12">
-      <SelectValue className="whitespace-nowrap overflow-visible" />
-    </SelectTrigger>
-    <SelectContent className="max-h-60 overflow-y-auto">
-      {countries.map((country) => (
-        <SelectItem
-          key={`${country.code}-${country.name}`}
-          value={country.code}
-        >
-          <span className="flex items-center gap-2">
-            <span>{country.flag}</span>
-            <span className="text-xs">{country.code}</span>
-          </span>
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div>
+                <div className="flex gap-2">
+                  <div className="relative w-20 sm:w-28 md:w-32">
+                    <Select value={countryCode} onValueChange={setCountryCode}>
+                      <SelectTrigger className="w-full h-12">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="max-h-60 overflow-y-auto">
+                        {countries.map((country) => (
+                          <SelectItem key={`${country.code}-${country.name}`} value={country.code}>
+                            <span className="flex items-center gap-2">
+                              <span>{country.flag}</span>
+                              <span className="text-xs">{country.code}</span>
+                            </span>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="relative flex-1">
+                    <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <input 
+                      type="tel" 
+                      id="phone" 
+                      required
+                      className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
+                      value={guestDetails.phone} 
+                      onChange={e => setGuestDetails(prev => ({
+                        ...prev,
+                        phone: e.target.value
+                      }))} 
+                      onBlur={() => validatePhone(guestDetails.phone)}
+                      placeholder="Phone number" 
+                    />
+                  </div>
+                </div>
                 {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
               </div>
 
