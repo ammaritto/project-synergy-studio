@@ -323,7 +323,7 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                       onCheckedChange={(checked) => setTermsAccepted(checked as boolean)}
                       className="mt-1"
                     />
-                    <label htmlFor="terms" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
+                    <label htmlFor="terms" className="text-xs md:text-sm text-gray-600 leading-relaxed cursor-pointer">
                       By proceeding with the payment, I accept the{' '}
                       <a 
                         href="https://allihoop.webflow.io/terms-and-conditions" 
