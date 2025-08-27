@@ -450,7 +450,7 @@ const App: React.FC = () => {
   useEffect(() => {
     const today = new Date();
     const start = new Date(today);
-    start.setDate(start.getDate() + 1);
+    start.setDate(start.getDate() + 3);
     const end = new Date(start);
     end.setDate(end.getDate() + 3); // minimum 3 nights
 

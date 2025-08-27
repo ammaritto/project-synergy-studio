@@ -239,7 +239,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   ...prev,
                   startDate: e.target.value
                 }))} 
-                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none" 
+                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none text-left" 
                 style={{ colorScheme: 'light' }}
               />
             </div>
@@ -260,7 +260,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                   endDate: e.target.value
                 }))} 
                 min={getMinEndDate()} 
-                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none" 
+                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none text-left" 
                 style={{ colorScheme: 'light' }}
               />
             </div>
