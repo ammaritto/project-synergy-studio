@@ -89,93 +89,85 @@ const App: React.FC = () => {
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
 
   // ====================
-  // ENHANCED IFRAME HEIGHT COMMUNICATION WITH DROPDOWN HANDLING
+  // ENHANCED IFRAME HEIGHT COMMUNICATION
   // ====================
   useEffect(() => {
+    // Check if app is running inside an iframe
     const isInIframe = window.parent !== window;
     
     if (!isInIframe) return;
 
     let isUpdating = false;
     let heightUpdateTimeout: NodeJS.Timeout;
-    let lastCalculatedHeight = 0;
-    const MIN_HEIGHT = 180;
-    const MAX_HEIGHT = 3000;
 
-    // Enhanced height calculation that excludes dropdown portals
+    // Enhanced visible content height calculation with mobile optimization
     const calculateVisibleHeight = (): number => {
       try {
         const isMobile = window.innerWidth <= 768;
         
-        // Get all elements but exclude dropdown portals and overlays
-        const excludeSelectors = [
-          '[data-radix-select-content]',     // Radix Select dropdown content
-          '[data-radix-dropdown-menu-content]', // Dropdown menu content
-          '[data-radix-popover-content]',    // Popover content
-          '.fixed',                          // Fixed positioned elements (likely overlays)
-          '[style*="position: fixed"]',      // Inline fixed positioning
-          '[data-state="open"][data-side]'   // Open dropdown/popover elements
-        ];
+        // Method 1: Calculate height of visible elements only (Mobile optimized)
+        const visibleElements = document.querySelectorAll('*');
+        let calculatedHeight = 0;
         
-        // Method 1: Calculate main content height excluding portals
-        const mainContentHeight = () => {
-          const body = document.body;
-          const html = document.documentElement;
+        visibleElements.forEach((element) => {
+          const el = element as HTMLElement;
+          const computedStyle = window.getComputedStyle(el);
           
-          // Get the natural content height
-          let contentHeight = Math.max(
-            body.scrollHeight || 0,
-            body.offsetHeight || 0,
-            html.clientHeight || 0,
-            html.scrollHeight || 0,
-            html.offsetHeight || 0
-          );
-          
-          // Subtract any portal/overlay elements that shouldn't affect iframe height
-          excludeSelectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-              const element = el as HTMLElement;
-              const rect = element.getBoundingClientRect();
-              const style = window.getComputedStyle(element);
-              
-              // Only subtract if element is positioned outside the normal flow
-              // and is currently visible
-              if ((style.position === 'fixed' || style.position === 'absolute') &&
-                  rect.height > 0 && 
-                  element.offsetParent !== null) {
-                
-                // Check if this element is outside the main content area
-                const isOutsideMainContent = rect.top < 0 || 
-                                           rect.left < 0 || 
-                                           rect.top > window.innerHeight ||
-                                           rect.left > window.innerWidth;
-                
-                if (!isOutsideMainContent) {
-                  // Don't subtract, this might be legitimate content
-                  return;
-                }
-                
-                // For dropdowns that extend beyond viewport, don't count their height
-                contentHeight = Math.max(contentHeight - rect.height, MIN_HEIGHT);
-              }
-            });
-          });
-          
-          return Math.max(contentHeight, MIN_HEIGHT);
-        };
+          // Skip if element is hidden or has mobile-specific hiding
+          if (
+            computedStyle.display === 'none' || 
+            computedStyle.visibility === 'hidden' ||
+            computedStyle.opacity === '0' ||
+            el.offsetHeight === 0 ||
+            (isMobile && computedStyle.display === 'none')
+          ) {
+            return;
+          }
 
-        // Method 2: Container-based calculation (fallback)
-        const containerBasedHeight = () => {
-          const containers = [
+          // Skip elements that are outside viewport on mobile
+          if (isMobile) {
+            const rect = el.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) return;
+          }
+
+          // Get element's bottom position relative to document
+          const rect = el.getBoundingClientRect();
+          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+          const elementBottom = rect.bottom + scrollTop;
+          
+          calculatedHeight = Math.max(calculatedHeight, elementBottom);
+        });
+
+        // Method 2: Mobile-first container calculation
+        const getMobileOptimizedHeight = (): number => {
+          if (isMobile) {
+            // On mobile, look for specific mobile containers first
+            const mobileSelectors = [
+              '.mobile-container',
+              '[data-mobile="true"]',
+              '.app-container',
+              '[data-app-container]'
+            ];
+            
+            for (const selector of mobileSelectors) {
+              const container = document.querySelector(selector) as HTMLElement;
+              if (container && container.offsetHeight > 0) {
+                return container.offsetHeight + 20; // Add small padding
+              }
+            }
+          }
+          
+          // Fallback to regular container detection
+          const containerSelectors = [
             '[data-app-container]',
-            '.app-container', 
+            '[data-main-content]',
+            '.app-container',
             'main',
             '#root > div:first-child',
             'body > div:first-child'
           ];
 
-          for (const selector of containers) {
+          for (const selector of containerSelectors) {
             const container = document.querySelector(selector) as HTMLElement;
             if (container && container.offsetHeight > 0) {
               const rect = container.getBoundingClientRect();
@@ -183,136 +175,246 @@ const App: React.FC = () => {
               return Math.ceil(rect.bottom + scrollTop);
             }
           }
-          return MIN_HEIGHT;
+          return 0;
         };
 
-        // Use the main content method, fall back to container-based
-        const calculatedHeight = mainContentHeight();
-        return calculatedHeight > MIN_HEIGHT ? calculatedHeight : containerBasedHeight();
+        // Method 3: Viewport-aware content calculation
+        const getViewportAwareHeight = (): number => {
+          let maxBottom = 0;
+          const viewportHeight = window.innerHeight;
+          
+          // Find all visible content containers
+          const contentSelectors = [
+            '.search-form',
+            '.results-section', 
+            '.booking-form',
+            '.payment-form',
+            '.error-message',
+            '.loading-indicator',
+            '[data-visible="true"]',
+            '[data-content-section]'
+          ];
 
+          contentSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(el => {
+              const element = el as HTMLElement;
+              if (element.offsetHeight > 0 && window.getComputedStyle(element).display !== 'none') {
+                const rect = element.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                const elementBottom = rect.bottom + scrollTop;
+                
+                // On mobile, don't let it exceed a reasonable multiple of viewport height
+                if (isMobile && elementBottom > viewportHeight * 3) {
+                  return; // Skip elements that seem unreasonably tall
+                }
+                
+                maxBottom = Math.max(maxBottom, elementBottom);
+              }
+            });
+          });
+
+          return maxBottom;
+        };
+
+        // Get heights from all methods
+        const method1Height = calculatedHeight;
+        const method2Height = getMobileOptimizedHeight();
+        const method3Height = getViewportAwareHeight();
+
+        // Use the most reasonable height with mobile-specific logic
+        const heights = [method1Height, method2Height, method3Height].filter(h => h > 0);
+        
+        let finalHeight;
+        if (isMobile) {
+          // On mobile, be more conservative and use the smallest reasonable height
+          finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.max(...heights, 150);
+          finalHeight = Math.min(finalHeight, window.innerHeight * 2); // Never exceed 2x viewport height
+        } else {
+          finalHeight = Math.max(...heights, 180);
+        }
+
+        // Debug logging with mobile info
+        console.log('Height calculation methods:', {
+          isMobile,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight,
+          visibleElements: method1Height,
+          mobileOptimized: method2Height,
+          viewportAware: method3Height,
+          chosen: finalHeight
+        });
+
+        return Math.ceil(finalHeight);
       } catch (error) {
-        console.warn('Height calculation failed:', error);
-        return MIN_HEIGHT;
+        console.error('Error calculating visible height:', error);
+        // Mobile-optimized fallback
+        const isMobile = window.innerWidth <= 768;
+        const fallbackHeight = isMobile ? 
+          Math.min(document.body.offsetHeight || 150, window.innerHeight * 1.5) : 
+          Math.max(document.body.offsetHeight || 180, 180);
+        return fallbackHeight;
       }
     };
 
-    const sendHeightUpdate = () => {
+    // Enhanced function to send height to parent
+    const sendHeight = () => {
+      // Prevent recursive updates
       if (isUpdating) return;
       
       try {
         const height = calculateVisibleHeight();
-        const heightDiff = Math.abs(height - lastCalculatedHeight);
         
-        // More conservative threshold to prevent dropdown-triggered updates
-        const threshold = 20;
-        
-        if (heightDiff > threshold) {
-          isUpdating = true;
-          lastCalculatedHeight = height;
-          
-          window.parent.postMessage({
+        // Send height to parent window
+        window.parent.postMessage(
+          { 
             type: 'iframe-height',
             height: height,
-            source: 'content-change',
             timestamp: Date.now()
-          }, '*');
-          
-          console.log('Height updated:', height, 'diff:', heightDiff);
-          
-          setTimeout(() => {
-            isUpdating = false;
-          }, 100);
-        }
-      } catch (error) {
-        console.error('Failed to send height update:', error);
-        isUpdating = false;
-      }
-    };
-
-    // Debounced height update with longer delay for dropdown scenarios
-    const debouncedHeightUpdate = () => {
-      clearTimeout(heightUpdateTimeout);
-      heightUpdateTimeout = setTimeout(sendHeightUpdate, 200);
-    };
-
-    // Listen for state changes that should trigger height recalculation
-    // But exclude dropdown/select state changes
-    const stateChangeHandler = () => {
-      // Check if a dropdown is currently open
-      const hasOpenDropdown = document.querySelector('[data-state="open"][data-radix-select-content], [data-state="open"][data-radix-dropdown-menu-content]');
-      
-      if (!hasOpenDropdown) {
-        debouncedHeightUpdate();
-      }
-      // If dropdown is open, don't update height
-    };
-
-    // Initial height calculation
-    setTimeout(() => {
-      sendHeightUpdate();
-    }, 300);
-
-    // Observe DOM mutations but filter out dropdown-related changes
-    const observer = new MutationObserver((mutations) => {
-      let shouldUpdate = false;
-      
-      mutations.forEach(mutation => {
-        // Ignore mutations in portal containers (dropdowns)
-        const target = mutation.target as Element;
-        const isPortalMutation = target.closest && (
-          target.closest('[data-radix-select-content]') ||
-          target.closest('[data-radix-dropdown-menu-content]') ||
-          target.closest('[data-radix-popover-content]') ||
-          target.closest('.fixed')
+          }, 
+          '*' // In production, replace with your Webflow domain for security
         );
         
-        if (!isPortalMutation) {
-          shouldUpdate = true;
+        console.log('Sent visible height to parent:', height);
+      } catch (error) {
+        console.error('Failed to send height to parent:', error);
+      }
+    };
+
+    // Send initial height after content loads
+    const initTimer = setTimeout(() => {
+      sendHeight();
+    }, 500); // Reduced from 1000ms for faster initial sizing
+
+    // Enhanced message handler
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'request-height') {
+        console.log('Height requested from parent, responding...');
+        sendHeight();
+      }
+      
+      // Mark that we're updating to prevent loops
+      if (event.data && event.data.type === 'height-updated') {
+        isUpdating = true;
+        setTimeout(() => { isUpdating = false; }, 300); // Reduced timeout
+      }
+      
+      // Handle window resize from parent
+      if (event.data && event.data.type === 'window-resize') {
+        console.log('Window resize detected, recalculating height...');
+        setTimeout(sendHeight, 100);
+      }
+      
+      // Handle visibility change
+      if (event.data && event.data.type === 'content-visibility-change') {
+        console.log('Content visibility changed, updating height...');
+        setTimeout(sendHeight, 100);
+      }
+    };
+    
+    window.addEventListener('message', handleMessage);
+
+    // Mutation Observer to detect DOM changes
+    let mutationObserver: MutationObserver | null = null;
+    
+    if (typeof MutationObserver !== 'undefined') {
+      mutationObserver = new MutationObserver((mutations) => {
+        let shouldUpdate = false;
+        
+        mutations.forEach((mutation) => {
+          // Check if nodes were added/removed or attributes changed
+          if (mutation.type === 'childList' && (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)) {
+            shouldUpdate = true;
+          }
+          if (mutation.type === 'attributes' && 
+              (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
+            shouldUpdate = true;
+          }
+        });
+        
+        if (shouldUpdate) {
+          // Clear existing timeout
+          clearTimeout(heightUpdateTimeout);
+          // Debounce the height update
+          heightUpdateTimeout = setTimeout(sendHeight, 100);
         }
       });
       
-      if (shouldUpdate) {
-        stateChangeHandler();
+      // Observe the entire document for changes
+      mutationObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ['style', 'class', 'data-visible']
+      });
+    }
+
+    // Resize Observer for element size changes
+    let resizeObserver: ResizeObserver | null = null;
+    
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        clearTimeout(heightUpdateTimeout);
+        heightUpdateTimeout = setTimeout(sendHeight, 50);
+      });
+      
+      // Observe the main container
+      const mainContainer = document.body.firstElementChild as Element;
+      if (mainContainer) {
+        resizeObserver.observe(mainContainer);
       }
-    });
-
-    observer.observe(document.body, {
-      childList: true,
-      subtree: true,
-      attributes: true,
-      attributeFilter: ['class', 'style', 'data-state']
-    });
-
-    // Handle specific app state changes (but not dropdown states)
-    const handleStateChange = () => {
-      // Small delay to ensure DOM has updated
-      setTimeout(stateChangeHandler, 150);
-    };
-
-    // Listen for resize events
-    const handleResize = () => {
-      clearTimeout(heightUpdateTimeout);
-      heightUpdateTimeout = setTimeout(sendHeightUpdate, 300);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    // Handle parent requests for height
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'request-height') {
-        sendHeightUpdate();
-      }
-    };
-
-    window.addEventListener('message', handleMessage);
+    }
 
     // Cleanup
     return () => {
+      clearTimeout(initTimer);
       clearTimeout(heightUpdateTimeout);
-      observer.disconnect();
-      window.removeEventListener('resize', handleResize);
       window.removeEventListener('message', handleMessage);
+      if (mutationObserver) {
+        mutationObserver.disconnect();
+      }
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
     };
+  }, []);
+
+  // Enhanced state change height updates
+  useEffect(() => {
+    const isInIframe = window.parent !== window;
+    if (!isInIframe) return;
+
+    // Send height update when these states change
+    const sendHeightUpdate = () => {
+      try {
+        // Calculate visible content height
+        const height = Math.max(
+          document.documentElement.scrollHeight || 0,
+          document.body.scrollHeight || 0,
+          document.documentElement.offsetHeight || 0,
+          document.body.offsetHeight || 0
+        );
+        
+        window.parent.postMessage(
+          { 
+            type: 'iframe-height',
+            height: height,
+            source: 'state-change',
+            timestamp: Date.now()
+          }, 
+          '*'
+        );
+        
+        console.log('Height updated due to state change:', height);
+      } catch (error) {
+        console.error('Failed to send height update:', error);
+      }
+    };
+
+    // Small delay to ensure DOM has updated
+    const timer = setTimeout(sendHeightUpdate, 150); // Reduced from 200ms
+    
+    return () => clearTimeout(timer);
   }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading]);
 
   // Scroll to confirmation when booking completes
