@@ -112,8 +112,8 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
   }
 
   return (
-    <div>
-      {/* Search Results - Only show when we have actual results */}
+    <div data-process-content="true">
+      {/* Search Results */}
       {shouldShowSearchResults && (
         <div data-content-section="search-results" data-visible="true">
           <SearchResults
@@ -125,10 +125,14 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
           />
         </div>
       )}
-
+  
       {/* Guest Details Form */}
       {showBookingForm && selectedUnit && (
-        <div data-content-section="guest-details-wrapper" data-visible="true">
+        <div 
+          className="bg-background" 
+          data-content-section="guest-form" 
+          data-visible="true"
+        >
           <GuestDetailsForm
             selectedUnit={selectedUnit}
             confirmedSearchParams={{
@@ -144,10 +148,14 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
           />
         </div>
       )}
-
+  
       {/* Payment Form */}
       {showPaymentForm && selectedUnit && (
-        <div data-content-section="payment-wrapper" data-visible="true">
+        <div 
+          className="bg-background" 
+          data-content-section="payment-form" 
+          data-visible="true"
+        >
           <StripePaymentForm
             totalAmount={selectedUnit.selectedRate.totalPrice} 
             currency={selectedUnit.selectedRate.currency} 
@@ -164,12 +172,13 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
           />
         </div>
       )}
-
+  
       {/* Booking Confirmation */}
       {bookingComplete && bookingDetails && (
         <div 
           ref={confirmationRef} 
-          data-content-section="booking-confirmation" 
+          className="bg-background" 
+          data-content-section="confirmation" 
           data-visible="true"
         >
           <BookingConfirmation

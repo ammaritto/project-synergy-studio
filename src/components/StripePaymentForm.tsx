@@ -231,15 +231,14 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
 
   return (
     <div 
-      className="min-h-screen py-8 px-4 bg-[#FCFBF7]"
-      data-content-section="payment-form" 
-      data-visible="true"
-    >
-      <div className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto">
-        <div className="pt-[10px] pb-[10px] grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="col-span-full">
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 md:mb-8">Secure Payment</h1>
-            
+    className="min-h-screen py-8 px-4 bg-[#FCFBF7]" 
+    data-form="confirmation" 
+    data-visible="true"
+  >
+    <div 
+      className="bg-white rounded-lg shadow-lg p-8 animate-slide-up max-w-6xl mx-auto"
+      data-form-content="confirmation"
+    >        
             {/* Booking Summary */}
             <div className="bg-white rounded-lg border border-gray-300 p-6 mb-6 w-full md:w-3/4 mx-auto">
               <h3 className="text-sm md:text-base font-semibold text-gray-800 mb-3 md:mb-4 flex items-center">
@@ -381,11 +380,9 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                 )
               )}
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
+            </div>
+  </div>
+);
 };
 
 export default StripePaymentForm;

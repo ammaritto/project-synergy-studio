@@ -100,182 +100,197 @@ const App: React.FC = () => {
     let isUpdating = false;
     let heightUpdateTimeout: NodeJS.Timeout;
 
-    // Enhanced visible content height calculation with mobile optimization
+    // FIXED: Enhanced visible content height calculation specifically for forms
     const calculateVisibleHeight = (): number => {
       try {
         const isMobile = window.innerWidth <= 768;
         
-        // Method 1: Calculate height of visible elements only (Mobile optimized)
-        const visibleElements = document.querySelectorAll('*');
-        let calculatedHeight = 0;
-        
-        visibleElements.forEach((element) => {
-          const el = element as HTMLElement;
-          const computedStyle = window.getComputedStyle(el);
-          
-          // Skip if element is hidden or has mobile-specific hiding
-          if (
-            computedStyle.display === 'none' || 
-            computedStyle.visibility === 'hidden' ||
-            computedStyle.opacity === '0' ||
-            el.offsetHeight === 0 ||
-            (isMobile && computedStyle.display === 'none')
-          ) {
-            return;
-          }
-
-          // Skip elements that are outside viewport on mobile
-          if (isMobile) {
-            const rect = el.getBoundingClientRect();
-            if (rect.width === 0 && rect.height === 0) return;
-          }
-
-          // Get element's bottom position relative to document
-          const rect = el.getBoundingClientRect();
-          const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-          const elementBottom = rect.bottom + scrollTop;
-          
-          calculatedHeight = Math.max(calculatedHeight, elementBottom);
-        });
-
-        // Method 2: Mobile-first container calculation
-        const getMobileOptimizedHeight = (): number => {
-          if (isMobile) {
-            // On mobile, look for specific mobile containers first
-            const mobileSelectors = [
-              '.mobile-container',
-              '[data-mobile="true"]',
-              '.app-container',
-              '[data-app-container]'
-            ];
+        // PRIORITY METHOD: Check for active form content first
+        const getActiveFormHeight = (): number => {
+          // Check for GuestDetails form
+          if (showBookingForm && selectedUnit) {
+            const guestForm = document.querySelector('[data-form="guest-details"], .guest-details-form, [data-content-section="guest-details-wrapper"]') as HTMLElement;
+            if (guestForm) {
+              const rect = guestForm.getBoundingClientRect();
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              return Math.ceil(rect.bottom + scrollTop + (isMobile ? 20 : 40));
+            }
             
-            for (const selector of mobileSelectors) {
-              const container = document.querySelector(selector) as HTMLElement;
-              if (container && container.offsetHeight > 0) {
-                return container.offsetHeight + 20; // Add small padding
+            // Fallback: look for any visible form container with guest details content
+            const formContainers = document.querySelectorAll('.min-h-screen, .bg-\\[\\#FCFBF7\\], .animate-slide-up') as NodeListOf<HTMLElement>;
+            for (const container of formContainers) {
+              if (container.offsetHeight > 0 && window.getComputedStyle(container).display !== 'none') {
+                const rect = container.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                return Math.ceil(rect.bottom + scrollTop + (isMobile ? 20 : 40));
               }
             }
           }
-          
-          // Fallback to regular container detection
-          const containerSelectors = [
-            '[data-app-container]',
-            '[data-main-content]',
-            '.app-container',
-            'main',
-            '#root > div:first-child',
-            'body > div:first-child'
-          ];
 
-          for (const selector of containerSelectors) {
-            const container = document.querySelector(selector) as HTMLElement;
-            if (container && container.offsetHeight > 0) {
-              const rect = container.getBoundingClientRect();
+          // Check for StripePayment form
+          if (showPaymentForm && selectedUnit) {
+            const paymentForm = document.querySelector('[data-form="payment"], .stripe-payment-form, .payment-form, [data-content-section="payment-wrapper"]') as HTMLElement;
+            if (paymentForm) {
+              const rect = paymentForm.getBoundingClientRect();
               const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-              return Math.ceil(rect.bottom + scrollTop);
+              return Math.ceil(rect.bottom + scrollTop + (isMobile ? 20 : 40));
+            }
+            
+            // Fallback: look for Stripe Elements or payment containers
+            const paymentContainers = document.querySelectorAll('.min-h-screen:has(h1), .bg-\\[\\#FCFBF7\\]:has(h1)') as NodeListOf<HTMLElement>;
+            for (const container of paymentContainers) {
+              if (container.offsetHeight > 0 && window.getComputedStyle(container).display !== 'none') {
+                const rect = container.getBoundingClientRect();
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                return Math.ceil(rect.bottom + scrollTop + (isMobile ? 20 : 40));
+              }
             }
           }
+
+          // Check for booking confirmation
+          if (bookingComplete && bookingDetails) {
+            const confirmationEl = document.querySelector('[data-form="confirmation"], .booking-confirmation, [data-content-section="booking-confirmation"]') as HTMLElement;
+            if (confirmationEl) {
+              const rect = confirmationEl.getBoundingClientRect();
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              return Math.ceil(rect.bottom + scrollTop + (isMobile ? 20 : 40));
+            }
+          }
+
           return 0;
         };
 
-        // Method 3: Viewport-aware content calculation
-        const getViewportAwareHeight = (): number => {
-          let maxBottom = 0;
-          const viewportHeight = window.innerHeight;
+        // SECONDARY METHOD: Look for visible content sections using data attributes
+        const getDataAttributeHeight = (): number => {
+          let maxHeight = 0;
           
-          // Find all visible content containers
-          const contentSelectors = [
-            '.search-form',
-            '.results-section', 
-            '.booking-form',
-            '.payment-form',
-            '.error-message',
-            '.loading-indicator',
-            '[data-visible="true"]',
-            '[data-content-section]'
-          ];
+          // Get all visible content sections
+          const visibleSections = document.querySelectorAll('[data-visible="true"], [data-content-section]') as NodeListOf<HTMLElement>;
+          
+          visibleSections.forEach(section => {
+            if (section.offsetHeight > 0 && window.getComputedStyle(section).display !== 'none') {
+              const rect = section.getBoundingClientRect();
+              const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+              const sectionBottom = rect.bottom + scrollTop;
+              maxHeight = Math.max(maxHeight, sectionBottom);
+            }
+          });
 
-          contentSelectors.forEach(selector => {
-            const elements = document.querySelectorAll(selector);
-            elements.forEach(el => {
-              const element = el as HTMLElement;
-              if (element.offsetHeight > 0 && window.getComputedStyle(element).display !== 'none') {
-                const rect = element.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const elementBottom = rect.bottom + scrollTop;
-                
-                // On mobile, don't let it exceed a reasonable multiple of viewport height
-                if (isMobile && elementBottom > viewportHeight * 3) {
-                  return; // Skip elements that seem unreasonably tall
-                }
-                
-                maxBottom = Math.max(maxBottom, elementBottom);
-              }
-            });
+          return maxHeight;
+        };
+
+        // FALLBACK METHOD: Calculate based on all visible elements (improved)
+        const getVisibleElementsHeight = (): number => {
+          const elements = document.querySelectorAll('*') as NodeListOf<HTMLElement>;
+          let maxBottom = 0;
+          
+          elements.forEach(element => {
+            const computedStyle = window.getComputedStyle(element);
+            
+            // Skip hidden elements
+            if (
+              computedStyle.display === 'none' || 
+              computedStyle.visibility === 'hidden' ||
+              computedStyle.opacity === '0' ||
+              element.offsetHeight === 0
+            ) {
+              return;
+            }
+
+            // Skip elements that are positioned absolutely/fixed outside normal flow
+            if (computedStyle.position === 'fixed' && element.offsetParent === null) {
+              return;
+            }
+
+            const rect = element.getBoundingClientRect();
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const elementBottom = rect.bottom + scrollTop;
+            
+            // On mobile, be more conservative about max height
+            if (isMobile && elementBottom > window.innerHeight * 3) {
+              return;
+            }
+            
+            maxBottom = Math.max(maxBottom, elementBottom);
           });
 
           return maxBottom;
         };
 
-        // Get heights from all methods
-        const method1Height = calculatedHeight;
-        const method2Height = getMobileOptimizedHeight();
-        const method3Height = getViewportAwareHeight();
-
-        // Use the most reasonable height with mobile-specific logic
-        const heights = [method1Height, method2Height, method3Height].filter(h => h > 0);
-        
-        let finalHeight;
-        if (isMobile) {
-          // On mobile, be more conservative and use the smallest reasonable height
-          finalHeight = Math.min(...heights.filter(h => h > 100)) || Math.max(...heights, 150);
-          finalHeight = Math.min(finalHeight, window.innerHeight * 2); // Never exceed 2x viewport height
-        } else {
-          finalHeight = Math.max(...heights, 180);
+        // Use the methods in priority order
+        const activeFormHeight = getActiveFormHeight();
+        if (activeFormHeight > 0) {
+          console.log('Using active form height:', activeFormHeight, { showBookingForm, showPaymentForm, bookingComplete });
+          return activeFormHeight;
         }
 
-        // Debug logging with mobile info
-        console.log('Height calculation methods:', {
-          isMobile,
-          viewportWidth: window.innerWidth,
-          viewportHeight: window.innerHeight,
-          visibleElements: method1Height,
-          mobileOptimized: method2Height,
-          viewportAware: method3Height,
-          chosen: finalHeight
-        });
+        const dataAttributeHeight = getDataAttributeHeight();
+        if (dataAttributeHeight > 0) {
+          console.log('Using data attribute height:', dataAttributeHeight);
+          return dataAttributeHeight;
+        }
 
-        return Math.ceil(finalHeight);
-      } catch (error) {
-        console.error('Error calculating visible height:', error);
-        // Mobile-optimized fallback
-        const isMobile = window.innerWidth <= 768;
+        const visibleElementsHeight = getVisibleElementsHeight();
+        if (visibleElementsHeight > 0) {
+          console.log('Using visible elements height:', visibleElementsHeight);
+          return visibleElementsHeight;
+        }
+
+        // Final fallback
         const fallbackHeight = isMobile ? 
           Math.min(document.body.offsetHeight || 150, window.innerHeight * 1.5) : 
           Math.max(document.body.offsetHeight || 180, 180);
+        
+        console.log('Using fallback height:', fallbackHeight);
         return fallbackHeight;
+
+      } catch (error) {
+        console.error('Error calculating visible height:', error);
+        return isMobile ? 150 : 180;
       }
     };
 
     // Enhanced function to send height to parent
     const sendHeight = () => {
-      // Prevent recursive updates
       if (isUpdating) return;
       
       try {
         const height = calculateVisibleHeight();
+        const isMobile = window.innerWidth <= 768;
         
-        // Send height to parent window
+        // Add minimum constraints based on current state
+        let minHeight = isMobile ? 150 : 180;
+        
+        if (showBookingForm || showPaymentForm) {
+          minHeight = isMobile ? 400 : 500; // Forms need more height
+        } else if (bookingComplete) {
+          minHeight = isMobile ? 300 : 350; // Confirmation needs decent height
+        }
+        
+        const finalHeight = Math.max(height, minHeight);
+        
         window.parent.postMessage(
           { 
             type: 'iframe-height',
-            height: height,
-            timestamp: Date.now()
+            height: finalHeight,
+            timestamp: Date.now(),
+            context: {
+              showBookingForm,
+              showPaymentForm,
+              bookingComplete,
+              isMobile
+            }
           }, 
-          '*' // In production, replace with your Webflow domain for security
+          '*'
         );
         
-        console.log('Sent visible height to parent:', height);
+        console.log('Sent height to parent:', finalHeight, {
+          calculated: height,
+          minHeight,
+          showBookingForm,
+          showPaymentForm,
+          bookingComplete
+        });
       } catch (error) {
         console.error('Failed to send height to parent:', error);
       }
@@ -284,7 +299,7 @@ const App: React.FC = () => {
     // Send initial height after content loads
     const initTimer = setTimeout(() => {
       sendHeight();
-    }, 500); // Reduced from 1000ms for faster initial sizing
+    }, 300);
 
     // Enhanced message handler
     const handleMessage = (event: MessageEvent) => {
@@ -293,19 +308,16 @@ const App: React.FC = () => {
         sendHeight();
       }
       
-      // Mark that we're updating to prevent loops
       if (event.data && event.data.type === 'height-updated') {
         isUpdating = true;
-        setTimeout(() => { isUpdating = false; }, 300); // Reduced timeout
+        setTimeout(() => { isUpdating = false; }, 200);
       }
       
-      // Handle window resize from parent
       if (event.data && event.data.type === 'window-resize') {
         console.log('Window resize detected, recalculating height...');
         setTimeout(sendHeight, 100);
       }
       
-      // Handle visibility change
       if (event.data && event.data.type === 'content-visibility-change') {
         console.log('Content visibility changed, updating height...');
         setTimeout(sendHeight, 100);
@@ -314,33 +326,58 @@ const App: React.FC = () => {
     
     window.addEventListener('message', handleMessage);
 
-    // Mutation Observer to detect DOM changes
+    // Enhanced Mutation Observer for better form detection
     let mutationObserver: MutationObserver | null = null;
     
     if (typeof MutationObserver !== 'undefined') {
       mutationObserver = new MutationObserver((mutations) => {
         let shouldUpdate = false;
         
-        mutations.forEach((mutation) => {
-          // Check if nodes were added/removed or attributes changed
-          if (mutation.type === 'childList' && (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0)) {
-            shouldUpdate = true;
+        mutations.forEach(mutation => {
+          // Check if any form-related elements were added/removed/modified
+          if (mutation.type === 'childList') {
+            const addedNodes = Array.from(mutation.addedNodes) as HTMLElement[];
+            const removedNodes = Array.from(mutation.removedNodes) as HTMLElement[];
+            
+            [...addedNodes, ...removedNodes].forEach(node => {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node as HTMLElement;
+                
+                // Check for form-related classes
+                const formClasses = [
+                  'guest-details', 'payment-form', 'stripe-payment', 
+                  'booking-confirmation', 'min-h-screen', 'animate-slide-up'
+                ];
+                
+                if (formClasses.some(cls => 
+                  element.classList?.contains(cls) || 
+                  element.querySelector?.(`.${cls}`)
+                )) {
+                  shouldUpdate = true;
+                }
+              }
+            });
           }
-          if (mutation.type === 'attributes' && 
-              (mutation.attributeName === 'style' || mutation.attributeName === 'class')) {
-            shouldUpdate = true;
+          
+          // Check for attribute changes on key elements
+          if (mutation.type === 'attributes' && mutation.target) {
+            const target = mutation.target as HTMLElement;
+            if (
+              mutation.attributeName === 'style' || 
+              mutation.attributeName === 'class' ||
+              mutation.attributeName === 'data-visible'
+            ) {
+              shouldUpdate = true;
+            }
           }
         });
         
         if (shouldUpdate) {
-          // Clear existing timeout
           clearTimeout(heightUpdateTimeout);
-          // Debounce the height update
-          heightUpdateTimeout = setTimeout(sendHeight, 100);
+          heightUpdateTimeout = setTimeout(sendHeight, 150);
         }
       });
       
-      // Observe the entire document for changes
       mutationObserver.observe(document.body, {
         childList: true,
         subtree: true,
@@ -377,7 +414,31 @@ const App: React.FC = () => {
         resizeObserver.disconnect();
       }
     };
-  }, []);
+  }, [showBookingForm, showPaymentForm, bookingComplete, selectedUnit, bookingDetails]); // Re-run when form states change
+
+  // Form state change notification to iframe container
+  useEffect(() => {
+    const isInIframe = window.parent !== window;
+    
+    if (isInIframe) {
+      // Notify parent of form state change
+      window.parent.postMessage({
+        type: 'form-state-change',
+        context: {
+          showBookingForm,
+          showPaymentForm, 
+          bookingComplete,
+          hasSelectedUnit: !!selectedUnit,
+          hasBookingDetails: !!bookingDetails
+        }
+      }, '*');
+      
+      // Also send an immediate height update
+      setTimeout(() => {
+        window.parent.postMessage({ type: 'request-height' }, '*');
+      }, 100);
+    }
+  }, [showBookingForm, showPaymentForm, bookingComplete, selectedUnit, bookingDetails]);
 
   // Enhanced state change height updates
   useEffect(() => {
@@ -387,7 +448,7 @@ const App: React.FC = () => {
     // Send height update when these states change
     const sendHeightUpdate = () => {
       try {
-        // Calculate visible content height
+        // Use the enhanced calculation method
         const height = Math.max(
           document.documentElement.scrollHeight || 0,
           document.body.scrollHeight || 0,
@@ -412,7 +473,7 @@ const App: React.FC = () => {
     };
 
     // Small delay to ensure DOM has updated
-    const timer = setTimeout(sendHeightUpdate, 150); // Reduced from 200ms
+    const timer = setTimeout(sendHeightUpdate, 150);
     
     return () => clearTimeout(timer);
   }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading]);
@@ -602,8 +663,6 @@ const App: React.FC = () => {
           ...searchParams
         });
         setHasSearched(true);
-
-        // DON'T scroll when no results found - removed this section
       }
     } catch (err: any) {
       console.error('Search error:', err);
@@ -613,8 +672,6 @@ const App: React.FC = () => {
         ...searchParams
       });
       setHasSearched(true);
-
-      // DON'T scroll on error either - removed this section
     } finally {
       setLoading(false);
     }
