@@ -1,6 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Search, Calendar, Users, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 interface SearchParams {
   startDate: string;
@@ -25,200 +27,45 @@ const SearchForm: React.FC<SearchFormProps> = ({
   getMinEndDate,
   error
 }) => {
-  // Calendar state
-  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
-  const [dateRange, setDateRange] = useState<{
-    from: Date | null;
-    to: Date | null;
-  }>({
-    from: searchParams.startDate ? new Date(searchParams.startDate) : null,
-    to: searchParams.endDate ? new Date(searchParams.endDate) : null
-  });
-  const [hoveredDate, setHoveredDate] = useState<Date | null>(null);
-  const [currentMonth, setCurrentMonth] = useState(new Date());
-  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-  const weekDays = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  // Convert string dates to Date objects for DatePicker
+  const startDateObj = searchParams.startDate ? new Date(searchParams.startDate) : null;
+  const endDateObj = searchParams.endDate ? new Date(searchParams.endDate) : null;
 
   // Helper function to convert Date to ISO string
-  const toLocalISO = (d: Date | null) => {
-    if (!d) return '';
-    const y = d.getFullYear();
-    const m = String(d.getMonth() + 1).padStart(2, '0');
-    const day = String(d.getDate()).padStart(2, '0');
+  const toLocalISO = (date: Date | null) => {
+    if (!date) return '';
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
     return `${y}-${m}-${day}`;
   };
 
-  // Get days in month
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
-    const days: (Date | null)[] = [];
-
-    // Add empty cells for days before month starts
-    for (let i = 0; i < startingDayOfWeek; i++) {
-      days.push(null);
-    }
-
-    // Add all days of the month
-    for (let i = 1; i <= daysInMonth; i++) {
-      days.push(new Date(year, month, i));
-    }
-    return days;
-  };
-  const days = useMemo(() => getDaysInMonth(currentMonth), [currentMonth]);
-
-  // Get days for next month (for two-month view)
-  const nextMonth = useMemo(() => {
-    const next = new Date(currentMonth);
-    next.setMonth(next.getMonth() + 1);
-    return next;
-  }, [currentMonth]);
-  const nextMonthDays = useMemo(() => getDaysInMonth(nextMonth), [nextMonth]);
-  
-  const handleDateClick = (date: Date) => {
-    if (!dateRange.from || dateRange.from && dateRange.to) {
-      // Start new selection
-      setDateRange({
-        from: date,
-        to: null
-      });
-    } else {
-      // Complete the range - enforce 3-night minimum
-      if (date < dateRange.from) {
-        setDateRange({
-          from: date,
-          to: dateRange.from
-        });
-      } else {
-        const daysDiff = Math.floor((date.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-        if (daysDiff >= 3) {
-          setDateRange({
-            from: dateRange.from,
-            to: date
-          });
-        }
-        // If less than 3 days, don't complete the selection
-      }
-    }
-  };
-
-  const handlePrevMonth = () => {
-    const prev = new Date(currentMonth);
-    prev.setMonth(prev.getMonth() - 1);
-    setCurrentMonth(prev);
-  };
-
-  const handleNextMonth = () => {
-    const next = new Date(currentMonth);
-    next.setMonth(next.getMonth() + 1);
-    setCurrentMonth(next);
-  };
-
-  const isToday = (date: Date | null) => {
-    if (!date) return false;
-    const today = new Date();
-    return date.toDateString() === today.toDateString();
-  };
-
-  const isSelected = (date: Date | null) => {
-    if (!date) return false;
-    if (dateRange.from && date.toDateString() === dateRange.from.toDateString()) return true;
-    if (dateRange.to && date.toDateString() === dateRange.to.toDateString()) return true;
-    return false;
-  };
-
-  const isInRange = (date: Date | null) => {
-    if (!date || !dateRange.from) return false;
-    if (dateRange.to) {
-      return date > dateRange.from && date < dateRange.to;
-    }
-
-    // While selecting, show preview with hover
-    if (hoveredDate && dateRange.from && !dateRange.to) {
-      const start = dateRange.from < hoveredDate ? dateRange.from : hoveredDate;
-      const end = dateRange.from < hoveredDate ? hoveredDate : dateRange.from;
-      return date > start && date < end;
-    }
-    return false;
-  };
-
-  const isPastDate = (date: Date | null) => {
-    if (!date) return false;
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    return date < today;
-  };
-
-  const isInvalidEndDate = (date: Date | null) => {
-    if (!date || !dateRange.from || dateRange.to) return false;
-    const daysDiff = Math.floor((date.getTime() - dateRange.from.getTime()) / (1000 * 60 * 60 * 24));
-    return date > dateRange.from && daysDiff < 3;
-  };
-
-  const formatDateRange = () => {
-    const formatDate = (date: Date) => {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-      });
-    };
-    if (!dateRange.from) return 'Pick a date range';
-    if (!dateRange.to) return `${formatDate(dateRange.from)} - Select end date`;
-    return `${formatDate(dateRange.from)} - ${formatDate(dateRange.to)}`;
-  };
-
-  const clearDates = () => {
-    setDateRange({
-      from: null,
-      to: null
-    });
+  const handleStartDateChange = (date: Date | null) => {
+    const dateStr = toLocalISO(date);
     setSearchParams(prev => ({
       ...prev,
-      startDate: '',
-      endDate: ''
+      startDate: dateStr
     }));
   };
 
-  const applyDates = () => {
-    if (dateRange.from && dateRange.to) {
-      setSearchParams(prev => ({
-        ...prev,
-        startDate: toLocalISO(dateRange.from),
-        endDate: toLocalISO(dateRange.to)
-      }));
-      setIsCalendarOpen(false);
-      onSearch(); // Trigger search when apply is clicked
-    }
+  const handleEndDateChange = (date: Date | null) => {
+    const dateStr = toLocalISO(date);
+    setSearchParams(prev => ({
+      ...prev,
+      endDate: dateStr
+    }));
   };
 
-  const getDayClassName = (date: Date | null) => {
-    if (!date) return '';
-    let classes = 'relative w-10 h-10 sm:w-11 sm:h-11 flex items-center justify-center text-sm rounded-lg cursor-pointer transition-all duration-300 ';
-    if (isPastDate(date)) {
-      classes += 'text-gray-300 cursor-not-allowed hover:bg-transparent ';
-    } else if (isInvalidEndDate(date)) {
-      // Invalid end dates (less than 3 nights from start) - grayed out and not clickable
-      classes += 'text-red-300 cursor-not-allowed hover:bg-transparent ';
-    } else if (isSelected(date)) {
-      // Selected dates - using the blue theme color with reduced padding
-      classes += 'bg-[#1461E2] text-white font-semibold hover:bg-[#1252CC] shadow-md ';
-    } else if (isInRange(date)) {
-      // Dates in range - light blue
-      classes += 'bg-blue-50 text-gray-700 hover:bg-blue-100 ';
-    } else if (isToday(date)) {
-      // Today - subtle gray background with border
-      classes += 'bg-gray-50 text-gray-900 font-medium ring-1 ring-gray-200 hover:bg-gray-100 ';
-    } else {
-      // Regular dates
-      classes += 'text-gray-700 hover:bg-gray-50 ';
-    }
-    return classes;
-  };
+  // Get minimum dates
+  const today = new Date();
+  const minStartDate = new Date(today);
+  minStartDate.setDate(today.getDate() + 1); // Tomorrow
+
+  const minEndDate = startDateObj ? (() => {
+    const min = new Date(startDateObj);
+    min.setDate(startDateObj.getDate() + 3); // 3 nights minimum
+    return min;
+  })() : null;
 
   return (
     <div id="search-section" className="pt-4 pb-6 bg-[#FCFBF7]">
@@ -226,45 +73,48 @@ const SearchForm: React.FC<SearchFormProps> = ({
         <div className="bg-white rounded-lg shadow-lg p-4 animate-slide-up">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Check-in */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Check-in
-            </label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
-              <input 
-                type="date" 
-                value={searchParams.startDate} 
-                onChange={e => setSearchParams(prev => ({
-                  ...prev,
-                  startDate: e.target.value
-                }))} 
-                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none text-left [&::-webkit-datetime-edit]:text-left" 
-                style={{ colorScheme: 'light' }}
-              />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Check-in
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+                <DatePicker
+                  selected={startDateObj}
+                  onChange={handleStartDateChange}
+                  minDate={minStartDate}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select check-in"
+                  className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white text-left"
+                  wrapperClassName="w-full"
+                  popperClassName="z-50"
+                  showPopperArrow={false}
+                  fixedHeight
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Check-out */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Check-out
-            </label>
-            <div className="relative">
-              <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
-              <input 
-                type="date" 
-                value={searchParams.endDate} 
-                onChange={e => setSearchParams(prev => ({
-                  ...prev,
-                  endDate: e.target.value
-                }))} 
-                min={getMinEndDate()} 
-                className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white appearance-none text-left [&::-webkit-datetime-edit]:text-left" 
-                style={{ colorScheme: 'light' }}
-              />
+            {/* Check-out */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Check-out
+              </label>
+              <div className="relative">
+                <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+                <DatePicker
+                  selected={endDateObj}
+                  onChange={handleEndDateChange}
+                  minDate={minEndDate}
+                  dateFormat="dd/MM/yyyy"
+                  placeholderText="Select check-out"
+                  className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white text-left"
+                  wrapperClassName="w-full"
+                  popperClassName="z-50"
+                  showPopperArrow={false}
+                  fixedHeight
+                />
+              </div>
             </div>
-          </div>
 
             {/* Guests Dropdown */}
             <div>
@@ -313,7 +163,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
             </div>
           </div>
           
-          {/* Error message - Compact styling */}
+          {/* Error message */}
           {error && (
             <div className="mt-2 text-center">
               <p className="text-red-600 text-sm font-medium">{error}</p>
