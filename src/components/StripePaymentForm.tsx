@@ -254,21 +254,21 @@ const StripePaymentForm: React.FC<StripePaymentFormProps> = ({
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Guest:</span>
                   <div className="text-right">
-                    <div className="text-xs md:text-sm font-medium">{bookingDetails.guestName}</div>
+                    <div className="text-xs md:text-sm font-medium text-right">{bookingDetails.guestName}</div>
                     <div className="text-xs md:text-sm text-gray-600">{bookingDetails.guests} {bookingDetails.guests === 1 ? 'guest' : 'guests'}</div>
                   </div>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Arrival Date:</span>
-                  <span className="text-xs md:text-sm font-medium">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
+                  <span className="text-xs md:text-sm font-medium text-right">{formatDateWithWeekday(bookingDetails.checkIn)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Departure Date:</span>
-                  <span className="text-xs md:text-sm font-medium">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
+                  <span className="text-xs md:text-sm font-medium text-right">{formatDateWithWeekday(bookingDetails.checkOut)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Duration:</span>
-                  <span className="text-xs md:text-sm font-medium">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</span>
+                  <span className="text-xs md:text-sm font-medium text-right">{bookingDetails.nights} {bookingDetails.nights === 1 ? 'night' : 'nights'}</span>
                 </div>
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-sm md:text-xl font-bold">

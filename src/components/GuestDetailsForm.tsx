@@ -328,28 +328,28 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Arrival Date:</span>
-                  <span className="text-xs md:text-sm font-medium">{formatDateWithWeekday(confirmedSearchParams.startDate)}</span>
+                  <span className="text-xs md:text-sm font-medium text-right">{formatDateWithWeekday(confirmedSearchParams.startDate)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Departure Date:</span>
-                  <span className="text-xs md:text-sm font-medium">{formatDateWithWeekday(confirmedSearchParams.endDate)}</span>
+                  <span className="text-xs md:text-sm font-medium text-right">{formatDateWithWeekday(confirmedSearchParams.endDate)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Duration:</span>
-                  <span className="text-xs md:text-sm font-medium">{calculateNights()} nights</span>
+                  <span className="text-xs md:text-sm font-medium text-right">{calculateNights()} nights</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-xs md:text-sm text-gray-600">Guests:</span>
-                  <span className="text-xs md:text-sm font-medium">1</span>
+                  <span className="text-xs md:text-sm font-medium text-right">1</span>
                 </div>
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between">
                     <span className="text-xs md:text-sm text-gray-600">Price (excl. VAT):</span>
-                    <span className="text-xs md:text-sm font-medium">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.88)}</span>
+                    <span className="text-xs md:text-sm font-medium text-right">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.88)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-xs md:text-sm text-gray-600">VAT (12%):</span>
-                    <span className="text-xs md:text-sm font-medium">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.12)}</span>
+                    <span className="text-xs md:text-sm font-medium text-right">{formatCurrency(selectedUnit.selectedRate.totalPrice * 0.12)}</span>
                   </div>
                   <div className="flex justify-between text-sm md:text-xl font-bold border-t pt-2">
                     <span>Total:</span>
