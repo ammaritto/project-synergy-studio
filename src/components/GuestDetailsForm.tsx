@@ -417,7 +417,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
               Phone Number *
             </label>
             <div className="flex gap-2">
-              <div className="relative w-32">
+              <div className="relative w-20 sm:w-28 md:w-32">
                 <Select value={countryCode} onValueChange={setCountryCode}>
                   <SelectTrigger className="w-full h-12">
                     <SelectValue />
