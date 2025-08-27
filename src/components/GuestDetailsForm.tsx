@@ -1,6 +1,7 @@
-import React from 'react';
-import { User, Mail, Phone, CreditCard, Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { User, Mail, Phone, CreditCard, Sparkles, ChevronDown } from 'lucide-react';
 import { GuestDetails, SelectedUnit, SearchParams } from '../hooks/useBookingState';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 interface GuestDetailsFormProps {
   selectedUnit: SelectedUnit;
   confirmedSearchParams: SearchParams;
@@ -42,6 +43,65 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
       return date.toLocaleDateString('en-GB', options);
     } catch (e) {
       return dateString;
+    }
+  };
+
+  const [countryCode, setCountryCode] = useState('+46');
+  const [emailError, setEmailError] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+
+  const countries = [
+    { code: '+1', name: 'US/CA', flag: '🇺🇸' },
+    { code: '+44', name: 'UK', flag: '🇬🇧' },
+    { code: '+46', name: 'SE', flag: '🇸🇪' },
+    { code: '+47', name: 'NO', flag: '🇳🇴' },
+    { code: '+45', name: 'DK', flag: '🇩🇰' },
+    { code: '+49', name: 'DE', flag: '🇩🇪' },
+    { code: '+33', name: 'FR', flag: '🇫🇷' },
+    { code: '+39', name: 'IT', flag: '🇮🇹' },
+    { code: '+34', name: 'ES', flag: '🇪🇸' },
+    { code: '+31', name: 'NL', flag: '🇳🇱' }
+  ];
+
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) {
+      setEmailError('Email is required');
+      return false;
+    }
+    if (!emailRegex.test(email)) {
+      setEmailError('Please enter a valid email address');
+      return false;
+    }
+    setEmailError('');
+    return true;
+  };
+
+  const validatePhone = (phone: string): boolean => {
+    const phoneRegex = /^[\d\s\-\(\)]+$/;
+    if (!phone) {
+      setPhoneError('Phone number is required');
+      return false;
+    }
+    if (!phoneRegex.test(phone) || phone.length < 7) {
+      setPhoneError('Please enter a valid phone number');
+      return false;
+    }
+    setPhoneError('');
+    return true;
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const isEmailValid = validateEmail(guestDetails.email);
+    const isPhoneValid = validatePhone(guestDetails.phone);
+    
+    if (isEmailValid && isPhoneValid) {
+      // Combine phone with country code for API
+      const fullPhone = countryCode + guestDetails.phone.replace(/^0+/, '');
+      setGuestDetails(prev => ({ ...prev, phone: fullPhone }));
+      onSubmit(e);
     }
   };
   return <div className="min-h-screen py-8 px-4 bg-[#FCFBF7]">
@@ -101,7 +161,7 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
             {error}
           </div>}
           <br/><br />
-        <form onSubmit={onSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name Fields */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -138,11 +198,21 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input type="email" id="email" required className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={guestDetails.email} onChange={e => setGuestDetails(prev => ({
-              ...prev,
-              email: e.target.value
-            }))} placeholder="name@example.com" />
+              <input 
+                type="email" 
+                id="email" 
+                required 
+                className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${emailError ? 'border-red-500' : 'border-gray-300'}`}
+                value={guestDetails.email} 
+                onChange={e => setGuestDetails(prev => ({
+                  ...prev,
+                  email: e.target.value
+                }))} 
+                onBlur={() => validateEmail(guestDetails.email)}
+                placeholder="name@example.com" 
+              />
             </div>
+            {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
           </div>
 
           {/* Phone Field */}
@@ -150,13 +220,42 @@ const GuestDetailsForm: React.FC<GuestDetailsFormProps> = ({
             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
               Phone Number *
             </label>
-            <div className="relative">
-              <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-              <input type="tel" id="phone" className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value={guestDetails.phone} onChange={e => setGuestDetails(prev => ({
-              ...prev,
-              phone: e.target.value
-            }))} placeholder="Phone number" />
+            <div className="flex gap-2">
+              <div className="relative w-32">
+                <Select value={countryCode} onValueChange={setCountryCode}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countries.map((country) => (
+                      <SelectItem key={country.code} value={country.code}>
+                        <span className="flex items-center gap-2">
+                          <span>{country.flag}</span>
+                          <span>{country.code}</span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="relative flex-1">
+                <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                <input 
+                  type="tel" 
+                  id="phone" 
+                  required
+                  className={`w-full pl-12 pr-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${phoneError ? 'border-red-500' : 'border-gray-300'}`}
+                  value={guestDetails.phone} 
+                  onChange={e => setGuestDetails(prev => ({
+                    ...prev,
+                    phone: e.target.value
+                  }))} 
+                  onBlur={() => validatePhone(guestDetails.phone)}
+                  placeholder="Phone number" 
+                />
+              </div>
             </div>
+            {phoneError && <p className="text-red-500 text-xs mt-1">{phoneError}</p>}
           </div>
 
           {/* Action Buttons */}
