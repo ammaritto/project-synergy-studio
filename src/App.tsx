@@ -426,22 +426,7 @@ const App: React.FC = () => {
           block: 'start'
         });
       }, 300);
-     // NEW: Notify parent window about booking completion for iframe scroll
-     const isInIframe = window.parent !== window;
-     if (isInIframe) {
-       try {
-         setTimeout(() => {
-           window.parent.postMessage({ 
-             type: 'booking-complete',
-             timestamp: Date.now()
-           }, '*');
-           console.log('Notified parent window of booking completion');
-         }, 500); // Slight delay to ensure confirmation component has rendered
-       } catch (error) {
-         console.error('Failed to notify parent of booking completion:', error);
-       }
-     }
-   }
+    }
   }, [bookingComplete]);
   
   // ====================
