@@ -1,4 +1,3 @@
-<script>
 (function() {
   // Get references to elements
   const iframe = document.getElementById('booking-iframe');
@@ -255,4 +254,3 @@
     }
   };
 })();
-</script>
