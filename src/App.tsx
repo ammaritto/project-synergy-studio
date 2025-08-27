@@ -61,6 +61,7 @@ const App: React.FC = () => {
   
   // Refs
   const resultsSectionRef = useRef<HTMLDivElement>(null);
+  const confirmationSectionRef = useRef<HTMLDivElement>(null);
 
   // Main state
   const [selectedUnit, setSelectedUnit] = useState<SelectedUnit | null>(null);
@@ -415,6 +416,18 @@ const App: React.FC = () => {
     
     return () => clearTimeout(timer);
   }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading]);
+
+  // Scroll to confirmation when booking completes
+  useEffect(() => {
+    if (bookingComplete && confirmationSectionRef.current) {
+      setTimeout(() => {
+        confirmationSectionRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }, 300);
+    }
+  }, [bookingComplete]);
   
   // ====================
   // END ENHANCED IFRAME HEIGHT COMMUNICATION
@@ -759,6 +772,7 @@ const App: React.FC = () => {
             bookingComplete={bookingComplete}
             bookingDetails={bookingDetails}
             onReset={resetToSearch}
+            confirmationRef={confirmationSectionRef}
           />
         </div>
       )}

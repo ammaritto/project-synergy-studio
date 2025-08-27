@@ -78,6 +78,7 @@ interface ProcessContentProps {
   bookingComplete: boolean;
   bookingDetails: BookingDetails | null;
   onReset: () => void;
+  confirmationRef?: React.RefObject<HTMLDivElement>;
 }
 
 const ProcessContent: React.FC<ProcessContentProps> = ({
@@ -98,7 +99,8 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
   onBackFromPayment,
   bookingComplete,
   bookingDetails,
-  onReset
+  onReset,
+  confirmationRef
 }) => {
   // Determine if we should show search results
   // Only show when we have searched AND have actual results AND not in booking steps
@@ -163,7 +165,7 @@ const ProcessContent: React.FC<ProcessContentProps> = ({
 
       {/* Booking Confirmation */}
       {bookingComplete && bookingDetails && (
-        <div className="bg-background">
+        <div ref={confirmationRef} className="bg-background">
           <BookingConfirmation
             bookingDetails={bookingDetails}
             onReset={onReset}
