@@ -15,6 +15,7 @@ interface SearchFormProps {
   setSearchParams: React.Dispatch<React.SetStateAction<SearchParams>>;
   onSearch: () => void;
   loading: boolean;
+  getMinStartDate: () => string; // NEW: Added this prop
   getMinEndDate: () => string;
   error?: string;
 }
@@ -24,6 +25,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
   setSearchParams,
   onSearch,
   loading,
+  getMinStartDate, // NEW: Added this prop
   getMinEndDate,
   error
 }) => {
@@ -56,14 +58,12 @@ const SearchForm: React.FC<SearchFormProps> = ({
     }));
   };
 
-  // Get minimum dates
-  const today = new Date();
-  const minStartDate = new Date(today);
-  minStartDate.setDate(today.getDate() + 1); // Tomorrow
-
+  // UPDATED: Get minimum dates using the props from App component
+  const minStartDate = new Date(getMinStartDate()); // Today + 3 days
+  
   const minEndDate = startDateObj ? (() => {
     const min = new Date(startDateObj);
-    min.setDate(startDateObj.getDate() + 3); // 3 nights minimum
+    min.setDate(startDateObj.getDate() + 3); // Check-in + 3 days
     return min;
   })() : null;
 
@@ -82,7 +82,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 <DatePicker
                   selected={startDateObj}
                   onChange={handleStartDateChange}
-                  minDate={minStartDate}
+                  minDate={minStartDate} // UPDATED: Now uses today + 3 days
                   dateFormat="dd/MM/yyyy"
                   placeholderText="Select check-in"
                   className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white text-left"
@@ -104,7 +104,7 @@ const SearchForm: React.FC<SearchFormProps> = ({
                 <DatePicker
                   selected={endDateObj}
                   onChange={handleEndDateChange}
-                  minDate={minEndDate}
+                  minDate={minEndDate} // UPDATED: Now uses check-in + 3 days
                   dateFormat="dd/MM/yyyy"
                   placeholderText="Select check-out"
                   className="w-full h-12 pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:outline-none text-gray-900 bg-white text-left"

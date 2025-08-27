@@ -446,13 +446,13 @@ const App: React.FC = () => {
   };
   const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
 
-  // Set default dates
+  // UPDATED: Set default dates - check-in today+3, check-out checkin+3
   useEffect(() => {
     const today = new Date();
     const start = new Date(today);
-    start.setDate(start.getDate() + 3);
+    start.setDate(start.getDate() + 3); // Check-in default: today + 3 days
     const end = new Date(start);
-    end.setDate(end.getDate() + 3); // minimum 3 nights
+    end.setDate(end.getDate() + 3); // Check-out default: check-in + 3 days
 
     setSearchParams({
       startDate: start.toISOString().split('T')[0],
@@ -508,25 +508,35 @@ const App: React.FC = () => {
     }
   };
 
-  // Get minimum end date (always 3 nights minimum)
-  const getMinEndDate = (): string => {
-    if (!searchParams.startDate) return '';
-    const minDate = new Date(searchParams.startDate);
-    minDate.setDate(minDate.getDate() + 3);
+  // UPDATED: Get minimum start date (today + 3 days)
+  const getMinStartDate = (): string => {
+    const today = new Date();
+    const minDate = new Date(today);
+    minDate.setDate(minDate.getDate() + 3); // Today + 3 days
     return minDate.toISOString().split('T')[0];
   };
 
-  // Auto-update checkout date when checkin changes
+  // UPDATED: Get minimum end date (check-in + 3 days)
+  const getMinEndDate = (): string => {
+    if (!searchParams.startDate) return '';
+    const minDate = new Date(searchParams.startDate);
+    minDate.setDate(minDate.getDate() + 3); // Check-in + 3 days
+    return minDate.toISOString().split('T')[0];
+  };
+
+  // UPDATED: Auto-update checkout date when checkin changes (ensure minimum 3 nights)
   useEffect(() => {
     if (searchParams.startDate) {
       const checkIn = new Date(searchParams.startDate);
       const checkOut = new Date(searchParams.endDate);
-      if (!searchParams.endDate || checkOut <= checkIn) {
-        const newCheckOut = new Date(checkIn);
-        newCheckOut.setDate(newCheckOut.getDate() + 3);
+      const minCheckOut = new Date(checkIn);
+      minCheckOut.setDate(minCheckOut.getDate() + 3); // Check-in + 3 days
+      
+      // If current end date is invalid or less than minimum, set to minimum
+      if (!searchParams.endDate || checkOut < minCheckOut) {
         setSearchParams(prev => ({
           ...prev,
-          endDate: newCheckOut.toISOString().split('T')[0]
+          endDate: minCheckOut.toISOString().split('T')[0]
         }));
       }
     }
@@ -741,6 +751,7 @@ const App: React.FC = () => {
           setSearchParams={setSearchParams} 
           onSearch={handleSearch} 
           loading={loading} 
+          getMinStartDate={getMinStartDate} // NEW: Added minimum start date function
           getMinEndDate={getMinEndDate} 
           error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
         />
