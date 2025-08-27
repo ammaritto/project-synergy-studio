@@ -109,7 +109,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <h3 className="text-2xl font-bold text-foreground mb-1">{unit.inventoryTypeName}</h3>
-                  <h3 className="text-2xl font-light text-muted-foreground">{unit.buildingName}</h3>
+                  <h3 className="text-l sm:text-2xl font-light text-muted-foreground">{unit.buildingName}</h3>
                 </div>
                 <div className="text-right">
                   <div className="flex flex-col items-end">
@@ -117,7 +117,7 @@ const SearchResults: React.FC<SearchResultsProps> = ({
                       <span className="text-2xl sm:text-3xl font-bold text-foreground">{Math.round(rate.totalPrice)}</span>
                       <span className="text-sm text-muted-foreground">SEK</span>
                     </div>
-                    <span className="text-sm text-muted-foreground">avg. {Math.round(rate.avgNightlyRate)} SEK/night</span>
+                    <span className="text-sm text-muted-foreground">{Math.round(rate.avgNightlyRate)} SEK/night</span>
                   </div>
                 </div>
               </div>
