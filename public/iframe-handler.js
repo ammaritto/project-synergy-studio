@@ -101,7 +101,11 @@
     //   console.warn('Received message from unauthorized origin:', event.origin);
     //   return;
     // }
-    
+    // Enhanced security check (uncomment for production)
+if (event.origin !== 'https://allihoop.webflow.io/short-stays') {
+  console.warn('Received message from unauthorized origin:', event.origin);
+  return;
+}
     if (event.data && event.data.type === 'iframe-height') {
       // Filter out potential scroll-related updates if height is already stable
       if (isStableHeight && event.data.source === 'scroll-related') {
