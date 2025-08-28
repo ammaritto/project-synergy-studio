@@ -4,6 +4,114 @@ import { Search, Calendar, Users, MapPin, Phone, Mail, User, CreditCard, CheckCi
 import SearchForm from './components/SearchForm';
 import ProcessContent from './components/ProcessContent';
 
+// Domain restriction configuration
+const ALLOWED_PARENT_DOMAINS = [
+  'https://allihoop.webflow.io',
+  'https://www.allihoop.webflow.io'
+];
+
+// Component to show when domain is not allowed
+const DomainRestrictedMessage: React.FC<{ currentDomain: string }> = ({ currentDomain }) => (
+  <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="max-w-md w-full bg-white rounded-lg shadow-md p-8 text-center">
+      <div className="text-6xl mb-6">🔒</div>
+      <h2 className="text-2xl font-bold text-gray-800 mb-4">Access Restricted</h2>
+      <p className="text-gray-600 mb-4">
+        This booking system is only available on authorized domains.
+      </p>
+      <div className="bg-gray-100 rounded p-3 text-sm text-gray-500">
+        Current domain: <code className="font-mono">{currentDomain}</code>
+      </div>
+      <p className="text-xs text-gray-400 mt-4">
+        Contact support if you believe this is an error.
+      </p>
+    </div>
+  </div>
+);
+
+// Custom hook for domain restriction
+const useDomainRestriction = () => {
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [currentDomain, setCurrentDomain] = useState<string>('');
+  const [isInIframe, setIsInIframe] = useState<boolean>(false);
+
+  useEffect(() => {
+    const checkDomainAuthorization = () => {
+      const inIframe = window.parent !== window;
+      setIsInIframe(inIframe);
+
+      if (!inIframe) {
+        // Not in iframe, allow access (for development/direct access)
+        setIsAuthorized(true);
+        setCurrentDomain(window.location.origin);
+        return;
+      }
+
+      try {
+        // Try to get parent origin
+        let parentDomain = '';
+        
+        // Method 1: Check document.referrer (most reliable)
+        if (document.referrer) {
+          const referrerUrl = new URL(document.referrer);
+          parentDomain = referrerUrl.origin;
+        }
+        
+        // Method 2: Check if we can access parent.location (same origin)
+        try {
+          if (window.parent.location.origin) {
+            parentDomain = window.parent.location.origin;
+          }
+        } catch (e) {
+          // Cross-origin, will use referrer
+        }
+
+        setCurrentDomain(parentDomain);
+
+        // Check if parent domain is in allowed list
+        const authorized = ALLOWED_PARENT_DOMAINS.some(domain => 
+          parentDomain === domain || 
+          parentDomain.startsWith(domain)
+        );
+
+        setIsAuthorized(authorized);
+
+        // Log for debugging
+        console.log('Domain check:', {
+          parentDomain,
+          authorized,
+          allowedDomains: ALLOWED_PARENT_DOMAINS,
+          inIframe
+        });
+
+        // If not authorized, prevent any further functionality
+        if (!authorized) {
+          console.warn('Access denied - unauthorized parent domain:', parentDomain);
+          
+          // Optional: Send message to parent about restriction
+          try {
+            window.parent.postMessage({
+              type: 'access-restricted',
+              parentDomain,
+              allowedDomains: ALLOWED_PARENT_DOMAINS
+            }, '*');
+          } catch (e) {
+            console.error('Could not send restriction message to parent:', e);
+          }
+        }
+
+      } catch (error) {
+        console.error('Error checking domain authorization:', error);
+        setIsAuthorized(false);
+      }
+    };
+
+    checkDomainAuthorization();
+  }, []);
+
+  return { isAuthorized, currentDomain, isInIframe };
+};
+
 // TypeScript interfaces
 interface SearchParams {
   startDate: string;
@@ -53,11 +161,12 @@ interface BookingDetails {
 }
 
 const App: React.FC = () => {
+  // Domain restriction check - this happens first
+  const { isAuthorized, currentDomain, isInIframe } = useDomainRestriction();
+
   // Get inventory type ID from URL
   const { inventoryTypeId } = useParams<{ inventoryTypeId?: string }>();
   const filterByInventoryTypeId = inventoryTypeId ? parseInt(inventoryTypeId, 10) : null;
-  
-  console.log('App component loaded - inventory filter removed, using URL-based filtering:', filterByInventoryTypeId);
   
   // Refs
   const resultsSectionRef = useRef<HTMLDivElement>(null);
@@ -88,14 +197,29 @@ const App: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
 
+  // Early return if domain check is still loading
+  if (isAuthorized === null) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Early return if domain is not authorized
+  if (!isAuthorized) {
+    return <DomainRestrictedMessage currentDomain={currentDomain} />;
+  }
+
   // ====================
-  // ENHANCED IFRAME HEIGHT COMMUNICATION
+  // ENHANCED IFRAME HEIGHT COMMUNICATION (only if authorized)
   // ====================
   useEffect(() => {
     // Check if app is running inside an iframe
-    const isInIframe = window.parent !== window;
-    
-    if (!isInIframe) return;
+    if (!isInIframe || !isAuthorized) return;
 
     let isUpdating = false;
     let heightUpdateTimeout: NodeJS.Timeout;
@@ -257,25 +381,27 @@ const App: React.FC = () => {
       }
     };
 
-    // Enhanced function to send height to parent
+    // Enhanced function to send height to parent (only if authorized)
     const sendHeight = () => {
       // Prevent recursive updates
-      if (isUpdating) return;
+      if (isUpdating || !isAuthorized) return;
       
       try {
         const height = calculateVisibleHeight();
         
-        // Send height to parent window
+        // Send height to parent window - only to authorized domains
         window.parent.postMessage(
           { 
             type: 'iframe-height',
             height: height,
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            source: 'project-synergy-studio',
+            authorized: true
           }, 
-          '*' // In production, replace with your Webflow domain for security
+          '*' // We've already verified the parent domain in the hook
         );
         
-        console.log('Sent visible height to parent:', height);
+        console.log('Sent visible height to authorized parent:', height);
       } catch (error) {
         console.error('Failed to send height to parent:', error);
       }
@@ -283,25 +409,32 @@ const App: React.FC = () => {
 
     // Send initial height after content loads
     const initTimer = setTimeout(() => {
-      sendHeight();
-    }, 500); // Reduced from 1000ms for faster initial sizing
+      if (isAuthorized) {
+        sendHeight();
+      }
+    }, 500);
 
-    // Enhanced message handler
+    // Enhanced message handler (only process if authorized)
     const handleMessage = (event: MessageEvent) => {
+      if (!isAuthorized) {
+        console.warn('Ignoring message - not authorized');
+        return;
+      }
+
       if (event.data && event.data.type === 'request-height') {
-        console.log('Height requested from parent, responding...');
+        console.log('Height requested from authorized parent, responding...');
         sendHeight();
       }
       
       // Mark that we're updating to prevent loops
       if (event.data && event.data.type === 'height-updated') {
         isUpdating = true;
-        setTimeout(() => { isUpdating = false; }, 300); // Reduced timeout
+        setTimeout(() => { isUpdating = false; }, 300);
       }
       
       // Handle window resize from parent
       if (event.data && event.data.type === 'window-resize') {
-        console.log('Window resize detected, recalculating height...');
+        console.log('Window resize detected from authorized parent, recalculating height...');
         setTimeout(sendHeight, 100);
       }
       
@@ -314,10 +447,10 @@ const App: React.FC = () => {
     
     window.addEventListener('message', handleMessage);
 
-    // Mutation Observer to detect DOM changes
+    // Mutation Observer to detect DOM changes (only if authorized)
     let mutationObserver: MutationObserver | null = null;
     
-    if (typeof MutationObserver !== 'undefined') {
+    if (typeof MutationObserver !== 'undefined' && isAuthorized) {
       mutationObserver = new MutationObserver((mutations) => {
         let shouldUpdate = false;
         
@@ -349,10 +482,10 @@ const App: React.FC = () => {
       });
     }
 
-    // Resize Observer for element size changes
+    // Resize Observer for element size changes (only if authorized)
     let resizeObserver: ResizeObserver | null = null;
     
-    if (typeof ResizeObserver !== 'undefined') {
+    if (typeof ResizeObserver !== 'undefined' && isAuthorized) {
       resizeObserver = new ResizeObserver(() => {
         clearTimeout(heightUpdateTimeout);
         heightUpdateTimeout = setTimeout(sendHeight, 50);
@@ -377,12 +510,11 @@ const App: React.FC = () => {
         resizeObserver.disconnect();
       }
     };
-  }, []);
+  }, [isInIframe, isAuthorized]);
 
-  // Enhanced state change height updates
+  // Enhanced state change height updates (only if authorized)
   useEffect(() => {
-    const isInIframe = window.parent !== window;
-    if (!isInIframe) return;
+    if (!isInIframe || !isAuthorized) return;
 
     // Send height update when these states change
     const sendHeightUpdate = () => {
@@ -400,7 +532,8 @@ const App: React.FC = () => {
             type: 'iframe-height',
             height: height,
             source: 'state-change',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            authorized: true
           }, 
           '*'
         );
@@ -412,10 +545,10 @@ const App: React.FC = () => {
     };
 
     // Small delay to ensure DOM has updated
-    const timer = setTimeout(sendHeightUpdate, 150); // Reduced from 200ms
+    const timer = setTimeout(sendHeightUpdate, 150);
     
     return () => clearTimeout(timer);
-  }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading]);
+  }, [availability, selectedUnit, showBookingForm, showPaymentForm, bookingComplete, hasSearched, error, loading, isInIframe, isAuthorized]);
 
   // Scroll to confirmation when booking completes
   useEffect(() => {
@@ -433,6 +566,17 @@ const App: React.FC = () => {
   // END ENHANCED IFRAME HEIGHT COMMUNICATION
   // ====================
 
+  // Log successful authorization
+  useEffect(() => {
+    if (isAuthorized) {
+      console.log('App component loaded with domain authorization:', {
+        currentDomain,
+        isInIframe,
+        filterByInventoryTypeId
+      });
+    }
+  }, [isAuthorized, currentDomain, isInIframe, filterByInventoryTypeId]);
+
   // Photo mapping based on inventoryTypeId
   const getPropertyImage = (inventoryTypeId: number): string => {
     const imageMap: {
@@ -444,6 +588,7 @@ const App: React.FC = () => {
     };
     return imageMap[inventoryTypeId] || 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
   };
+  
   const API_BASE_URL = 'https://short-stay-backend.vercel.app/api';
 
   // UPDATED: Set default dates - check-in today+3, check-out checkin+3
@@ -612,8 +757,6 @@ const App: React.FC = () => {
           ...searchParams
         });
         setHasSearched(true);
-
-        // DON'T scroll when no results found - removed this section
       }
     } catch (err: any) {
       console.error('Search error:', err);
@@ -623,8 +766,6 @@ const App: React.FC = () => {
         ...searchParams
       });
       setHasSearched(true);
-
-      // DON'T scroll on error either - removed this section
     } finally {
       setLoading(false);
     }
@@ -751,7 +892,7 @@ const App: React.FC = () => {
           setSearchParams={setSearchParams} 
           onSearch={handleSearch} 
           loading={loading} 
-          getMinStartDate={getMinStartDate} // NEW: Added minimum start date function
+          getMinStartDate={getMinStartDate}
           getMinEndDate={getMinEndDate} 
           error={hasSearched && !loading && availability.length === 0 ? "Dates unavailable" : ""} 
         />
@@ -785,6 +926,17 @@ const App: React.FC = () => {
             onReset={resetToSearch}
             confirmationRef={confirmationSectionRef}
           />
+        </div>
+      )}
+
+      {/* Debug info in development */}
+      {process.env.NODE_ENV === 'development' && (
+        <div className="fixed bottom-4 right-4 p-3 bg-black bg-opacity-75 text-white rounded text-xs max-w-xs">
+          <strong>Debug Info:</strong><br />
+          Domain: {currentDomain}<br />
+          In iframe: {isInIframe ? 'Yes' : 'No'}<br />
+          Authorized: {isAuthorized ? 'Yes' : 'No'}<br />
+          Filter ID: {filterByInventoryTypeId || 'None'}
         </div>
       )}
     </div>
