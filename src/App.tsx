@@ -288,6 +288,15 @@ const App: React.FC = () => {
 
     // Enhanced message handler
     const handleMessage = (event: MessageEvent) => {
+      const allowedOrigins = [
+        'https://allihoop.webflow.io',
+        'https://www.allihoopliving.com'
+      ];
+      if (!allowedOrigins.includes(event.origin)) {
+        console.warn('Received message from unauthorized origin:', event.origin);
+        return;
+      }
+      
       if (event.data && event.data.type === 'request-height') {
         console.log('Height requested from parent, responding...');
         sendHeight();

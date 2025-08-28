@@ -96,11 +96,14 @@
   
   // Enhanced message handler with scroll filtering
   window.addEventListener('message', function(event) {
-    // Enhanced security check (uncomment for production)
-    // if (event.origin !== 'https://project-synergy-studio.vercel.app') {
-    //   console.warn('Received message from unauthorized origin:', event.origin);
-    //   return;
-    // }
+    const allowedOrigins = [
+      'https://allihoop.webflow.io',
+      'https://www.allihoopliving.com'
+    ];
+    if (!allowedOrigins.includes(event.origin)) {
+      console.warn('Received message from unauthorized origin:', event.origin);
+      return;
+    }
     
     if (event.data && event.data.type === 'iframe-height') {
       // Filter out potential scroll-related updates if height is already stable
