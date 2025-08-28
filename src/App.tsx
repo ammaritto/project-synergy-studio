@@ -452,7 +452,7 @@ const App: React.FC = () => {
     const start = new Date(today);
     start.setDate(start.getDate() + 3); // Check-in default: today + 3 days
     const end = new Date(start);
-    end.setDate(end.getDate() + 2); // Check-out default: check-in + 2 days
+    end.setDate(end.getDate() + 3); // Check-out default: check-in + 2 days
 
     setSearchParams({
       startDate: start.toISOString().split('T')[0],
@@ -520,7 +520,7 @@ const App: React.FC = () => {
   const getMinEndDate = (): string => {
     if (!searchParams.startDate) return '';
     const minDate = new Date(searchParams.startDate);
-    minDate.setDate(minDate.getDate() + 2); // Check-in + 2 days
+    minDate.setDate(minDate.getDate() + 3); // Check-in + 3 days
     return minDate.toISOString().split('T')[0];
   };
 
@@ -530,7 +530,7 @@ const App: React.FC = () => {
       const checkIn = new Date(searchParams.startDate);
       const checkOut = new Date(searchParams.endDate);
       const minCheckOut = new Date(checkIn);
-      minCheckOut.setDate(minCheckOut.getDate() + 2); // Check-in + 2 days
+      minCheckOut.setDate(minCheckOut.getDate() + 3); // Check-in + 2 days
       
       // If current end date is invalid or less than minimum, set to minimum
       if (!searchParams.endDate || checkOut < minCheckOut) {
