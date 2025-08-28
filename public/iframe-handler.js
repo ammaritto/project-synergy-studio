@@ -97,7 +97,7 @@
   // Enhanced message handler with scroll filtering
   window.addEventListener('message', function(event) {
     // Enhanced security check (uncomment for production)
-     if (event.origin !== 'https://allihoop.webflow.io/short-stays') {
+     if (event.origin !== 'https://allihoop.webflow.io') {
        console.warn('Received message from unauthorized origin:', event.origin);
        return;
      }
