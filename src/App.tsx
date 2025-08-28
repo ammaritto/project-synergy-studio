@@ -6,7 +6,8 @@ import ProcessContent from './components/ProcessContent';
 
 // Domain restriction configuration
 const ALLOWED_PARENT_DOMAINS = [
-  'https://allihoop.webflow.io'
+  'https://allihoop.webflow.io',
+  'https://www.allihoop.webflow.io'
 ];
 
 // Component to show when domain is not allowed
@@ -30,7 +31,7 @@ const DomainRestrictedMessage: React.FC<{ currentDomain: string }> = ({ currentD
 
 // Custom hook for domain restriction
 const useDomainRestriction = () => {
-  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(true); // Default to true to avoid blocking
   const [currentDomain, setCurrentDomain] = useState<string>('');
   const [isInIframe, setIsInIframe] = useState<boolean>(false);
 
@@ -43,69 +44,57 @@ const useDomainRestriction = () => {
         // Not in iframe, allow access (for development/direct access)
         setIsAuthorized(true);
         setCurrentDomain(window.location.origin);
+        console.log('Not in iframe - allowing direct access');
         return;
       }
 
-      try {
-        // Try to get parent origin
-        let parentDomain = '';
-        
-        // Method 1: Check document.referrer (most reliable)
-        if (document.referrer) {
+      // In iframe - check domain
+      let parentDomain = '';
+      
+      // Try document.referrer first (most reliable for cross-origin)
+      if (document.referrer) {
+        try {
           const referrerUrl = new URL(document.referrer);
           parentDomain = referrerUrl.origin;
-        }
-        
-        // Method 2: Check if we can access parent.location (same origin)
-        try {
-          if (window.parent.location.origin) {
-            parentDomain = window.parent.location.origin;
-          }
         } catch (e) {
-          // Cross-origin, will use referrer
+          console.warn('Could not parse referrer URL:', document.referrer);
         }
+      }
 
-        setCurrentDomain(parentDomain);
+      setCurrentDomain(parentDomain);
 
-        // Check if parent domain is in allowed list
-        const authorized = ALLOWED_PARENT_DOMAINS.some(domain => 
-          parentDomain === domain || 
-          parentDomain.startsWith(domain)
-        );
+      // If no referrer or empty domain, allow access (could be same origin or local testing)
+      if (!parentDomain) {
+        console.log('No parent domain detected - allowing access');
+        setIsAuthorized(true);
+        return;
+      }
 
-        setIsAuthorized(authorized);
+      // Check if parent domain is in allowed list
+      const authorized = ALLOWED_PARENT_DOMAINS.some(domain => {
+        return parentDomain === domain || 
+               parentDomain.startsWith(domain) ||
+               parentDomain.includes('allihoop.webflow.io');
+      });
 
-        // Log for debugging
-        console.log('Domain check:', {
-          parentDomain,
-          authorized,
-          allowedDomains: ALLOWED_PARENT_DOMAINS,
-          inIframe
-        });
+      setIsAuthorized(authorized);
 
-        // If not authorized, prevent any further functionality
-        if (!authorized) {
-          console.warn('Access denied - unauthorized parent domain:', parentDomain);
-          
-          // Optional: Send message to parent about restriction
-          try {
-            window.parent.postMessage({
-              type: 'access-restricted',
-              parentDomain,
-              allowedDomains: ALLOWED_PARENT_DOMAINS
-            }, '*');
-          } catch (e) {
-            console.error('Could not send restriction message to parent:', e);
-          }
-        }
+      // Log for debugging
+      console.log('Domain check result:', {
+        parentDomain,
+        authorized,
+        allowedDomains: ALLOWED_PARENT_DOMAINS,
+        inIframe,
+        referrer: document.referrer
+      });
 
-      } catch (error) {
-        console.error('Error checking domain authorization:', error);
-        setIsAuthorized(false);
+      if (!authorized) {
+        console.warn('Access denied - unauthorized parent domain:', parentDomain);
       }
     };
 
-    checkDomainAuthorization();
+    // Small delay to ensure everything is loaded
+    setTimeout(checkDomainAuthorization, 100);
   }, []);
 
   return { isAuthorized, currentDomain, isInIframe };
@@ -196,17 +185,8 @@ const App: React.FC = () => {
   const [hasSearched, setHasSearched] = useState(false);
   const [lastSearchParams, setLastSearchParams] = useState<SearchParams | null>(null);
 
-  // Early return if domain check is still loading
-  if (isAuthorized === null) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
-  }
+  // Early return if domain check is still loading - REMOVED to avoid blocking
+  // The app now starts with isAuthorized=true by default
 
   // Early return if domain is not authorized
   if (!isAuthorized) {
