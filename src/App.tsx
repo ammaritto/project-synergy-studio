@@ -6,8 +6,7 @@ import ProcessContent from './components/ProcessContent';
 
 // Domain restriction configuration
 const ALLOWED_PARENT_DOMAINS = [
-  'https://allihoop.webflow.io',
-  'https://www.allihoop.webflow.io'
+  'https://www.allihoopliving.com/',
 ];
 
 // Component to show when domain is not allowed
