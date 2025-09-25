@@ -49,7 +49,8 @@ const SearchResults: React.FC<SearchResultsProps> = ({
     } = {
       38: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/680a675aca567cd974c649a9_ANG-Studio-ThumbnailComp-min.png',
       10: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/67a0e42f26139e1447842db9_679b776e8739d51e5d09b6e0_BROStudioThumbnail.png',
-      11: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/67a0e42f38f10cd500444414_679b77b10e3fbe69fb60cc4c_BROStudioPlusThumbnail.png'
+      11: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/67a0e42f38f10cd500444414_679b77b10e3fbe69fb60cc4c_BROStudioPlusThumbnail.png',
+      14: 'https://cdn.prod.website-files.com/606d62996f9e70103c982ffe/65b03d0e7b02081aca9bd1d4_1-p-1600.png'
     };
     return imageMap[inventoryTypeId] || 'https://via.placeholder.com/400x240/e5e7eb/9ca3af?text=Photo+Coming+Soon';
   };
@@ -70,7 +71,14 @@ const SearchResults: React.FC<SearchResultsProps> = ({
         kitchen: 'Private',
         rooms: 1,
         readMoreUrl: 'https://www.allihoopliving.com/studios/bromma-studio-plus'
-      }
+      },
+     14: {
+      sqm: 30,
+      bathroom: 'Private',
+      kitchen: 'Private',
+      rooms: 1,
+      readMoreUrl: 'https://www.allihoopliving.com/studios/bromma-studio-max'
+    }
     };
     return detailsMap[inventoryTypeId] || {
       sqm: 15,
